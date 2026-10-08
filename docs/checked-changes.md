@@ -2,7 +2,7 @@
 
 A checked change records the program you started from, the files you may edit, the intended public contract change, and independent tests for the requested behavior. The compiler checks the candidate before writing source. Compiler acceptance and passing tests remain separate results.
 
-This is the experimental AUG-0001 implementation in the development compiler. It is not included in the published 0.23.0 packages. These commands require a build containing the amendment; release notes will identify its first published version. The initial protocol supports one standalone function rename, one implementation body replacement, or one verified forwarding conversion per plan. It does not add inputs, invent argument values, or decide how to handle a new error.
+August 1.0 includes the experimental AUG-0001 protocol. Its revision checks, supported operations and evidence limits are described below. The initial protocol supports one standalone function rename, one implementation body replacement, or one verified forwarding conversion per plan. It does not add inputs, invent argument values, or decide how to handle a new error.
 
 ## Forward an operation
 

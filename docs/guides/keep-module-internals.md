@@ -1,6 +1,6 @@
 # Keep module internals
 
-**Unreleased:** this guide requires the compiler containing internal folder contracts. Published 0.23.0 does not accept `internal` entries.
+Use `internal` entries to name the folder's own contracts while keeping them out of its public exports.
 
 An application should depend on the service it needs. The repository and concrete service that provide it can stay inside the service folder. `export.aug` declares both surfaces; each source file still imports what it uses.
 

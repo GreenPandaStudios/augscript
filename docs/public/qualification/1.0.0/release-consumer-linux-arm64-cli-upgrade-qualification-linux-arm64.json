@@ -1,0 +1,27 @@
+{
+  "format": 1,
+  "host": "linux-arm64",
+  "baseline": "0.23.0",
+  "passed": true,
+  "checks": [
+    "baseline LLVM execution",
+    "candidate npm install",
+    "LLVM execution, tests, specs, doctor and source preservation",
+    "frozen offline execution",
+    "source diagnostics"
+  ],
+  "candidate": "1.0.0",
+  "candidateExpectedSha256": "b0226ba04c10590177068f9209c08cce643b7896ed13cd625f7e4f15d143c0b2",
+  "candidateArtifactSha256": "b0226ba04c10590177068f9209c08cce643b7896ed13cd625f7e4f15d143c0b2",
+  "mode": "version-upgrade",
+  "baselineArtifactSha256": "bc4527fb487fcd70ad50964fc188e8a75acb62172fb5b237a59e79c471935c7f",
+  "candidateCompilerTransport": "verified-local-candidate",
+  "sourcePreserved": true,
+  "backend": "llvm",
+  "nativeToolsOnPath": false,
+  "frozenOffline": true,
+  "testPassed": true,
+  "sourceDiagnostic": true,
+  "baselineLockCompiler": "0.23.0",
+  "candidateLockCompiler": "1.0.0"
+}

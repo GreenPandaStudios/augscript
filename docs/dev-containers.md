@@ -7,7 +7,7 @@ Open an existing August project, create one with [the CLI](getting-started.md), 
 ```json
 {
   "name": "August",
-  "image": "ghcr.io/greenpandastudios/aug-build:0.23.0",
+  "image": "ghcr.io/greenpandastudios/aug-build:1.0.0",
   "remoteUser": "node",
   "updateRemoteUserUID": true,
   "init": true,

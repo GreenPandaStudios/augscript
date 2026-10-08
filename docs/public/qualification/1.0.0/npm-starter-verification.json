@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-10-08T19:34:08.399Z",
+  "host": "darwin-arm64",
+  "compiler": "1.0.0",
+  "source": "npm-latest",
+  "npmCache": "fresh",
+  "sourceCache": "fresh",
+  "nativeCache": "fresh",
+  "nativeToolsOnPath": false,
+  "installation": "npx @greenpandastudios/aug-cli",
+  "starter": true,
+  "agentsFile": true,
+  "sameFileTests": 1,
+  "compiledSpec": true,
+  "specDrift": true,
+  "backend": "llvm",
+  "developmentToolchain": false,
+  "frozenOffline": true,
+  "catalogMatchesReviewedRelease": true
+}

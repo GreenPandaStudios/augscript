@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-10-08T19:31:24.961Z",
+  "packages": [
+    {
+      "name": "@greenpandastudios/aug-stdlib",
+      "version": "1.0.0",
+      "status": "verified",
+      "integrity": "sha512-/mkzLs3Yc5xaUlXPCL3GlJIRDzLiDBd2CN+b52K/y31+8ljVkRJUK97rHZdwy20+Gw02jNcJvoNy83nUYqFuDw==",
+      "latest": "1.0.0",
+      "latestMatches": true
+    },
+    {
+      "name": "@greenpandastudios/aug-web",
+      "version": "1.0.0",
+      "status": "verified",
+      "integrity": "sha512-WBL8robAaEEUXR60WsC+ns1Wv9og+NZSncavn7d4DDI1s9H/PRmQO399AsAIYvkQGOfMgwFbzGQCJCkSornYoA==",
+      "latest": "1.0.0",
+      "latestMatches": true
+    },
+    {
+      "name": "@greenpandastudios/aug-crypto",
+      "version": "1.0.0",
+      "status": "verified",
+      "integrity": "sha512-fTGOXFUFJsNFQin4WSv1bhmrQiNP1zi1fH1FFtZxBN2wKGvLo6PegCF0TS/ZqyEoClSAH+Blgso4h58JbFC1qQ==",
+      "latest": "1.0.0",
+      "latestMatches": true
+    },
+    {
+      "name": "@greenpandastudios/aug-cli",
+      "version": "1.0.0",
+      "status": "verified",
+      "integrity": "sha512-hB2xtoE6eaTk9evRpc7Ff2GBLuD7N+UwOOBpUDVE1YtfVLPTRjwDuk3O4Uo+4OSTTp+aBmfGyP99Dm1jVPd4qQ==",
+      "latest": "1.0.0",
+      "latestMatches": true
+    }
+  ]
+}

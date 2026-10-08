@@ -1,6 +1,6 @@
 # Why August exists
 
-August is a statically checked language for native applications, designed around **understanding at every resolution**. Its code reads like pseudocode; its compiler also produces connected explanations and diagrams. Developers and coding agents can work from the project down to an operation without reading every implementation. The diagram views are unreleased work for 1.0.
+August is a statically checked language for native applications, designed around **understanding at every resolution**. Its code reads like pseudocode; its compiler also produces connected explanations and diagrams. Developers and coding agents can work from the project down to an operation without reading every implementation.
 
 The language's two tenets are **simplicity** and **developer scalability**. Write the code needed for the operation. Let the compiler infer repeated information. Keep the module small enough that a new reader can follow its behavior and find its dependencies.
 
@@ -30,4 +30,4 @@ The [research notes](research/understanding-at-every-resolution.md) connect this
 
 August compiles through LLVM to native executables. [The performance reports](performance.md) compare complete programs with C, Node, and Python, including the source and measurements.
 
-The published tools include a CLI, VS Code extension, standard libraries, and native-library packages. August remains experimental and has no stable 1.0 compatibility promise. Check [supported platforms](compatibility.md), [production readiness](production-readiness.md), and the [roadmap](roadmap.md) before choosing it for a deployment.
+The published tools include a CLI, VS Code extension, standard libraries, and native-library packages. August 1.x defines a source, package, CLI and native ABI compatibility contract. Check [supported platforms](compatibility.md), [production readiness](production-readiness.md), and the [roadmap](roadmap.md) before choosing it for a deployment.

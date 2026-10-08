@@ -1,6 +1,6 @@
 # Structured execution architecture
 
-Cooperative tasks run on their current heap and OS thread. A worker task runs on a pool thread with its own heap. `start` creates a child in the current scope, and `wait for` observes results in the written order. A scope joins its children before releasing dependencies. August 0.23.0 supports `start worker`; channels and broadcasts are not provided.
+Cooperative tasks run on their current heap and OS thread. A worker task runs on a pool thread with its own heap. `start` creates a child in the current scope, and `wait for` observes results in the written order. A scope joins its children before releasing dependencies. August 1.0 supports `start worker`; channels and broadcasts are not provided.
 
 The checker tracks captured references, ownership, mutation permissions, delayed checked errors, and possible siblings. The parent cannot mutate or move an object while a child may still use it. Waiting for one dynamically selected task does not release unrelated captures. See [ownership and task conformance](language-conformance.md) for executable cases.
 

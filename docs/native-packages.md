@@ -2,7 +2,7 @@
 
 Import a native library like any other August package. The package supplies August bindings and prebuilt libraries for supported hosts. Your application uses typed functions and owned resources; the bindings handle native pointers.
 
-August 0.23.0 supports macOS 14+ on Apple Silicon and GNU/Linux x86-64/ARM64 with glibc 2.36+. It downloads the LLVM tools and libraries it needs, so consumers need Node 24 but no separate native compiler or SDK. Native packages require the LLVM backend. Musl and cross-compilation are unsupported; incompatible hosts are rejected before compilation.
+August 1.0 supports macOS 14+ on Apple Silicon and GNU/Linux x86-64/ARM64 with glibc 2.36+. It downloads the LLVM tools and libraries it needs, so consumers need Node 24 but no separate native compiler or SDK. Native packages require the LLVM backend. Musl and cross-compilation are unsupported; incompatible hosts are rejected before compilation.
 
 ## Import a library
 
@@ -10,13 +10,13 @@ The [PyTorch](https://github.com/GreenPandaStudios/aug-pytorch),
 [SQLite](https://github.com/GreenPandaStudios/aug-sqlite),
 [zlib](https://github.com/GreenPandaStudios/aug-zlib), and
 [BLAKE3](https://github.com/GreenPandaStudios/aug-blake3) repositories publish
-source and native preview archives for all three platforms: PyTorch `v0.1.6` and
-the other three packages `v0.1.5`. Use [August 0.23.0](https://github.com/GreenPandaStudios/augscript/releases/tag/v0.23.0) with these releases.
+source and prebuilt native artifacts for all three platforms. Their `v0.2.0`
+releases target [August 1.0](https://github.com/GreenPandaStudios/augscript/releases/tag/v1.0.0). PyTorch remains a small CPU API; broader tensor operations and GPU support are outside that package.
 
 Use the normal package commands. This example adds CPU LibTorch under a short name:
 
 ```sh
-aug add https://github.com/GreenPandaStudios/aug-pytorch#v0.1.6 --as pytorch
+aug add https://github.com/GreenPandaStudios/aug-pytorch#v0.2.0 --as pytorch
 aug run
 ```
 
@@ -51,11 +51,11 @@ Read the complete projects with their compiled explanations:
 a downloadable project. Native dependency pages link to the exact binding
 descriptor, so ownership and native boundaries stay visible beside the code.
 
-The [ABI reference](native-abi.md) specifies scalar and buffer mappings, the error record, resource lifetimes and thread requirements. [Package compatibility](package-compatibility.md) records the versioned formats and unreleased upgrade/recovery behavior.
+The [ABI reference](native-abi.md) specifies scalar and buffer mappings, the error record, resource lifetimes and thread requirements. [Package compatibility](package-compatibility.md) records the versioned formats and upgrade and recovery behavior.
 
 ## Start a C package
 
-**Unreleased:** the native starter builds a real signed-integer identity function
+The native starter builds a real signed-integer identity function
 on macOS ARM64. It needs a maintainer's Clang, macOS SDK and `ar`; consumers do
 not need these tools. Supply your package name, prospective repository and
 artifact URLs, and a license you are entitled to use:
@@ -117,7 +117,7 @@ Rust libraries continue to use their reviewed C adapters.
 
 ## Check and generate bindings
 
-Binding maintainers can use the preview's `aug bind header` command. Supply a
+Binding maintainers can use `aug bind header`. Supply a
 reviewed `native.abi.json` ownership contract and the adapter's C header. The
 command uses your explicitly selected Clang; it does not install a toolchain or
 run a package recipe.
@@ -162,7 +162,7 @@ SHA-256 checked. Extraction rejects links, traversal, duplicate paths, and
 unexpected files. Cached files are checked again before use. Package installation
 does not execute native recipes or npm lifecycle scripts.
 
-**Unreleased:** cached native file manifests are authenticated against the
+Cached native file manifests are authenticated against the
 original archive's published checksum before their member hashes are used when the package has no separate manifest pin.
 Changing a library and regenerating its cached manifest is rejected. The cache
 retains the compressed archive outside the extracted library directory. An older
@@ -170,7 +170,7 @@ cache without that archive needs one online `aug install`; offline use rejects
 it. Compiler packs with a compiler-owned manifest pin retain their existing
 verification path.
 
-**Unreleased:** a native artifact may also declare `fileManifestSha256`, the
+a native artifact may also declare `fileManifestSha256`, the
 lowercase SHA-256 digest of the exact bytes of its `fileManifest` file. Compute
 it from the archive's final manifest, including its whitespace. The first
 installation checks that pin against the original archive; subsequent cache
@@ -187,7 +187,7 @@ A failed download or extraction leaves no accepted artifact cache. Disk-full
 errors include the CLI's space-recovery guidance; they do not leave a partially
 installed library selected by a lockfile.
 
-**Unreleased:** `aug install`, `aug add` and automatic source preparation in `aug run` verify native artifacts before publishing a new source lock. A rejected artifact preserves the previously accepted graph; `aug add` also restores its dependency aliases.
+`aug install`, `aug add` and automatic source preparation in `aug run` verify native artifacts before publishing a new source lock. A rejected artifact preserves the previously accepted graph; `aug add` also restores its dependency aliases.
 
 A missing or incompatible artifact produces an error. Installation never falls back to a source build.
 Use `aug run --offline --frozen` after an online installation to require the
@@ -202,7 +202,7 @@ Keep the executable together with its adjacent `lib` and `share` directories.
 The libraries load relative to the executable. `share/august-native` preserves
 the selected packages' notices, provenance, and file manifests.
 
-**Unreleased:** [`aug bundle`](tooling.md#create-a-deployment-bundle-unreleased) assembles this deployment directory and records its complete file hashes and platform requirements. `aug bundle verify` checks it without running native code.
+[`aug bundle`](tooling.md#create-a-deployment-bundle-unreleased) assembles this deployment directory and records its complete file hashes and platform requirements. `aug bundle verify` checks it without running native code.
 
 ## Author a binding
 
@@ -228,7 +228,7 @@ use Clang, platform headers and Linux relocation tools explicitly, while Rust
 adapters also use their pinned Rust/Cargo toolchain. Consumer installation has
 no automatic source-build fallback.
 
-## Verify a local native build (unreleased)
+## Verify a local native build {#verify-a-local-native-build-unreleased}
 
 Build the adapter with the maintainer toolchain recorded in its provenance.
 Prepare a format-2 `aug-package.json` with the archive's real SHA-256 and size

@@ -2,7 +2,7 @@
 
 Use a composition when several applications or test groups need the same explicit bindings. Each file still imports its own dependencies. An include selects the listed providers before startup; it does not scan for implementations or replace another binding.
 
-The source feature is available in August 0.23.0. Include completion and the graph commands below are **unreleased** and require the compiler release that contains them.
+The editor completes included compositions. `aug graph` shows which providers the checked bindings select.
 
 ## Declare the services
 
@@ -55,11 +55,11 @@ resolve Worker to worker
 print(value=worker.read())
 ```
 
-`aug run` prints `9`. `aug test` runs the test that expects `7`. To share the compositions across folders or packages, list them in the appropriate `export.aug` and import them normally. In the unreleased editor, completing `include Services` can add that import. Private and unexported compositions remain inside their allowed scope; includes are suggested in main and test setup.
+`aug run` prints `9`. `aug test` runs the test that expects `7`. To share the compositions across folders or packages, list them in the appropriate `export.aug` and import them normally. In the editor, completing `include Services` can add that import. Private and unexported compositions remain inside their allowed scope; includes are suggested in main and test setup.
 
 ## Inspect the selected providers
 
-The unreleased graph command checks existing source without running the application, executing tests or installing dependencies:
+The graph command checks existing source without running the application, executing tests or installing dependencies:
 
 ```sh
 aug graph --composition

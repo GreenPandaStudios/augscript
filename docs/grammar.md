@@ -1,8 +1,8 @@
 # Grammar and line boundaries
 
-Grammar for the current August preview; additions marked unreleased are not in 0.23.0. `Name` is an identifier; bracketed groups are optional. The blocks below describe syntax and are not executable programs.
+Grammar for August 1.0. `Name` is an identifier; bracketed groups are optional. The blocks below describe syntax and are not executable programs.
 
-Forwarding requires the unreleased development build described in [checked changes](checked-changes.md).
+Forwarding uses the supported standalone-function profile described in [checked changes](checked-changes.md).
 
 ## Blocks and declarations
 
@@ -21,9 +21,9 @@ Class       := [Tags] Name [Generics] ["(" Fields ")"]
 ClassBlock  := BlockOfFieldsAndMethodsWithOptionalInitialize
 Initialize  := "initialize" Block
 
-Error       := "error" Name [Generics] "(" ReadOnlyFields ")" End  // unreleased
+Error       := "error" Name [Generics] "(" ReadOnlyFields ")" End
 
-Choice      := "choice" Name "from" Type {"and" Type} End  // unreleased
+Choice      := "choice" Name "from" Type {"and" Type} End
 
 Record      := "record" Name [Generics] "(" Fields ")"
                ["unless" Types] [BlockOfInitialize]
@@ -66,7 +66,7 @@ Variance is accepted only on interfaces; mutable storage applies to class header
 Import      := "import" (Name {"and" Name} | "everything") "from" (DottedPath | RepositoryUrl {"." Name}) End
 Export      := "export" Name "from" SiblingName End
              | "export" "folder" ChildName End
-Internal    := "internal" Name "from" SiblingName End  // unreleased
+Internal    := "internal" Name "from" SiblingName End
 Binding     := "implement" Key ["<" Types ">"] "with" Type
                ["shared" | "fresh" | "scoped"] ["mutable"] End
 Include     := "include" Name End
@@ -115,35 +115,35 @@ TestName    := Identifier | String
 
 Setup bindings precede setup statements, which precede cases. Empty bodies use pass. Includes are composition/setup operations; declarations and setup ordering are checked beyond parsing.
 
-Unreleased record and nested tuple binding patterns apply to assignment and ordinary loops. A lone parenthesized name groups that name; a trailing comma creates a one-cell tuple pattern. Named fields select immutable record data; tuple arity, private access and new binding names are checked. Parameterized test rows retain TestPattern.
+Record and nested tuple binding patterns apply to assignment and ordinary loops. A lone parenthesized name groups that name; a trailing comma creates a one-cell tuple pattern. Named fields select immutable record data; tuple arity, private access and new binding names are checked. Parameterized test rows retain TestPattern.
 
-Unreleased expression matches reuse the case patterns above. An expression case block contains exactly one expression, not statements. Signed numeric, text and bool literals are scalar patterns. Result types must be compatible; null makes the result optional. Owned and native-resource results require statement matches.
+Expression matches reuse the case patterns above. An expression case block contains exactly one expression, not statements. Signed numeric, text and bool literals are scalar patterns. Result types must be compatible; null makes the result optional. Owned and native-resource results require statement matches.
 
 Optional values have two cases: null and some. Omitted inputs become null. Type? and missing are obsolete spellings; use optional Type and null. Old matches with separate missing and null branches require one merged null branch.
 
 ## Expressions and ambiguity
 
 ```text
-Closure     := "(" [Type Name {"," Type Name}] ")" "=>" Expression  // unreleased
+Closure     := "(" [Type Name {"," Type Name}] ")" "=>" Expression
 Comprehension := "[" Expression "for" BindingPattern "in" Expression ["if" Expression] "]"
 ```
 
-An unreleased list comprehension has one iteration clause and one optional bool condition. Its input is evaluated once before its local bindings exist. It snapshots the collection, checks the condition for each item, and appends the result only for selected items. The new list retains referenced objects with their existing read permissions and lifetimes. Set and Map comprehensions and multiple iteration clauses are not supported.
+A list comprehension has one iteration clause and one optional bool condition. Its input is evaluated once before its local bindings exist. It snapshots the collection, checks the condition for each item, and appends the result only for selected items. The new list retains referenced objects with their existing read permissions and lifetimes. Set and Map comprehensions and multiple iteration clauses are not supported.
 
 | Spelling | Meaning |
 | --- | --- |
-| `(int value) => value > 0` | Unreleased: pure expression callback for an expected single-method interface. |
+| `(int value) => value > 0` | pure expression callback for an expected single-method interface. |
 | `[a, b]` | List literal. |
-| `[result for pattern in values if condition]` | Unreleased: new list from read-only snapshot items; the condition is optional. |
+| `[result for pattern in values if condition]` | new list from read-only snapshot items; the condition is optional. |
 | `(a, b)`, `(a,)`, `()` | Tuple literals. |
 | `(a)` | Grouping. |
 | `{a, b}` | Set literal. |
 | `{key: value}` | Map literal. |
 | `{}` | Empty Set or Map determined by context. |
 | `[Validator] header...` | Interceptor annotation on a declaration. |
-| `receiver[index]` | Unreleased: checked List/Tuple read or optional Map lookup. |
-| `match value { when true { a } when false { b } }` | Unreleased: exhaustive value-producing match; each case has one result expression. |
-| `value otherwise fallback` | Unreleased: lazy null fallback. |
+| `receiver[index]` | checked List/Tuple read or optional Map lookup. |
+| `match value { when true { a } when false { b } }` | exhaustive value-producing match; each case has one result expression. |
+| `value otherwise fallback` | lazy null fallback. |
 | `receiver.member(label=value)` | Labeled method call. |
 | `receiver.member(value)` | Same-name label shorthand when value is a name. |
 | `start load(input=value)` | A cooperative scope-owned task. |
@@ -153,7 +153,7 @@ An unreleased list comprehension has one iteration clause and one optional bool 
 | `handle save(input from form)` | A checked deferred HTTP form action. |
 | `<Panel title={name}>...</Panel>` | Checked server component producing Html. |
 
-Operators from high to low precedence: member/call, unary minus, multiplication/division/remainder (remainder is unreleased), addition/subtraction, ordered comparisons, equality, not, and, or, otherwise (unreleased). Thus `not count == 0` means `not (count == 0)`. Boolean operations short-circuit from left to right. Only the word spellings are accepted; `&&`, `||`, and unary `!` are syntax errors. `!=` remains accepted. Binary operators associate left. No assignment expression or implicit truthiness is supported. Exponentiation and implicit casts are absent.
+Operators from high to low precedence: member/call, unary minus, multiplication/division/remainder, addition/subtraction, ordered comparisons, equality, not, and, or, otherwise. Thus `not count == 0` means `not (count == 0)`. Boolean operations short-circuit from left to right. Only the word spellings are accepted; `&&`, `||`, and unary `!` are syntax errors. `!=` remains accepted. Binary operators associate left. No assignment expression or implicit truthiness is supported. Exponentiation and implicit casts are absent.
 
 Function contract clauses may appear in any order, once each; the formatter writes returns, changes, uses, then unless. Storage aliases apply to class/record/interceptor fields rather than ordinary function parameters or closure inputs. Closure inputs use Type name order; the arrow is a low-precedence expression form. The old constructor arrow remains rejected in favor of initialize.
 
@@ -171,10 +171,10 @@ The parser owns these rules. The formatter reparses and compares program structu
 
 `start worker name(...)` uses the existing task operations with copied data and an isolated heap. `worker` is contextual here; a function named `worker` can still be called normally. See [workers](workers.md) for checked boundary types and native package requirements.
 
-Pure literal defaults are unreleased: an ordinary managed parameter can end with `= LiteralData` or `to LiteralData`. `LiteralData` is a scalar, negative numeric literal, or nested collection literal. The field storage alias, when present, comes before the default. Omission selects the default; explicit null does not.
+An ordinary managed parameter can end with `= LiteralData` or `to LiteralData`. `LiteralData` is a scalar, negative numeric literal, or nested collection literal. The field storage alias, when present, comes before the default. Omission selects the default; explicit null does not.
 
-Interpolated text is unreleased: `$"Text {Expression}"` permits scalar expressions between braces. Doubling an opening or closing brace inserts it literally; quoted strings inside an expression retain their ordinary syntax. An unterminated expression or unescaped closing brace is a diagnostic.
+In interpolated text, `$"Text {Expression}"` permits scalar expressions between braces. Doubling an opening or closing brace inserts it literally; quoted strings inside an expression retain their ordinary syntax. An unterminated expression or unescaped closing brace is a diagnostic.
 
-The unreleased `immutable` qualifier follows `optional`, when present, and precedes a collection type: `optional immutable List<int>`. It promises deep freezing; the underlying collection representation and element identities remain the same.
+The `immutable` qualifier follows `optional`, when present, and precedes a collection type: `optional immutable List<int>`. It promises deep freezing; the underlying collection representation and element identities remain the same.
 
-The unreleased record-copy postfix form is `Expression with (Name=Expression, ...)`. Replacements also accept `to` or same-name shorthand. It applies only to a narrowed, concrete record value.
+The record-copy postfix form is `Expression with (Name=Expression, ...)`. Replacements also accept `to` or same-name shorthand. It applies only to a narrowed, concrete record value.

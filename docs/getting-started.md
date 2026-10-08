@@ -13,14 +13,14 @@ Create a greeting application, run it, and check its test. Then read the explana
 
 You need Node.js 24 or later and npm on macOS 14+ with Apple Silicon, or GNU/Linux x64/ARM64 with glibc 2.36+. August downloads its own LLVM compiler and prebuilt runtime. You do not install Clang, LLVM, or an SDK.
 
-You can run the compiler and native libraries in [a VS Code Dev Container](dev-containers.md). The [Docker guide](docker.md) covers container builds and deployment. The smaller starter below is in the unreleased compiler. With published August 0.23.0, replace its two source files with the versions shown here; they also work with that release.
+You can run the compiler and native libraries in [a VS Code Dev Container](dev-containers.md). The [Docker guide](docker.md) covers container builds and deployment. The starter below is created by August 1.0.
 
 ## Create and run the starter
 
 Install August once, then create and run the starter:
 
 ```sh
-npm install --global @greenpandastudios/aug-cli@next
+npm install --global @greenpandastudios/aug-cli
 aug init hello-august
 cd hello-august
 aug run
@@ -90,7 +90,7 @@ aug spec . --check
 
 Open `main.aug.md` and `greeting.aug.md`. They describe the import, call, greeting behavior, and test. Their dependency links lead to the used declarations. The compiler generates this text offline. The same source produces the same explanation.
 
-The unreleased compiler also creates `.aug-spec/diagrams/index.md` and adjacent `.aug.diagrams.md` pages. Start with the project overview, then follow module interactions and operation sequences to the explanation and source. Its generated `AGENTS.md` teaches coding agents to follow that same path before editing. [Explore the greeting example](examples/hello/diagrams/index.md).
+August 1.0 also creates `.aug-spec/diagrams/index.md` and adjacent `.aug.diagrams.md` pages. Start with the project overview, then follow module interactions and operation sequences to the explanation and source. Its generated `AGENTS.md` teaches coding agents to follow that same path before editing. [Explore the greeting example](examples/hello/diagrams/index.md).
 
 After an edit, regenerate before committing the explanation. `--check` reports stale files and does not write them. [Compiled specifications](specifications.md) explains the full workflow and its limits.
 

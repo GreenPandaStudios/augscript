@@ -1,0 +1,350 @@
+{
+  "schemaVersion": 1,
+  "tag": "v1.0.0",
+  "sourceCommit": "9e8be2926e83f551c365f1db1154f0ba2a43c11f",
+  "taggedRun": 37800823512,
+  "status": "GitHub, all four npm packages and both Docker images published; tagged qualification, archive reviews, public native downloads, empty-cache npm starter and anonymous container pulls passed. The 1.0 VSIX is public; Marketplace publication awaits CAPTCHA approval after its trusted-publishing service rejected OIDC.",
+  "compilerArtifacts": [
+    {
+      "host": "darwin-arm64",
+      "artifactId": 11565044700,
+      "producerJobId": 113392360511,
+      "producerConclusion": "success",
+      "specFindings": 0,
+      "standardsHardFindings": 0,
+      "standardsHeuristicFindings": 0,
+      "compilerTarSha256": "459cddb4f11f14a4a8f4d23996f328c77809934f82c05f6eeededfdad7ad537e",
+      "conformance": {
+        "file": "darwin-arm64-conformance.json.gz",
+        "sha256": "317b1ede6bf004b13638d432383f0ac2d4b929399c88614cd5b8e8d45e9f935f",
+        "compression": "gzip",
+        "compressedSha256": "fc79748603617e45cf53d779a092f94e3681c50eeee76913e748479a9baa0606"
+      },
+      "performance": {
+        "file": "darwin-arm64-performance.json.gz",
+        "sha256": "90d5af4e2330d0619dbc75439ee4fa252160f57ca380e29fee246f089684ed73",
+        "compression": "gzip",
+        "compressedSha256": "7e22cc11c1445192d2ab850d46008c566f8368c0c9479619a0074bff2617090b"
+      },
+      "reliability": {
+        "file": "darwin-arm64-reliability.json.gz",
+        "sha256": "c21963e57018930d71d65fa3e9c6434be8ab0461b8f58b7b3fd71a9008f4e633",
+        "compression": "gzip",
+        "compressedSha256": "834cf38171ba337604ce01568bd87454283dd4dedba6e1988907c5db4f2ef20c"
+      },
+      "gyms": {
+        "file": "darwin-arm64-gyms.json.gz",
+        "sha256": "32efd58df603895afb47a57472d87738fcce49b5eef5d9823eae54756234f271",
+        "compression": "gzip",
+        "compressedSha256": "7f310069364ad188a9cf377210e0b89d116c966ba11aa2c5e4db188709150f8e"
+      },
+      "kernels": {
+        "file": "darwin-arm64-kernels.json.gz",
+        "sha256": "5e4fac3a3fb22f61a1b66652ed1b48661f28e1d0e86eecc5a18dae7458966565",
+        "compression": "gzip",
+        "compressedSha256": "01de9592c4399c9e612545e045e75cb257651201618f54bacd65de674b868772"
+      }
+    },
+    {
+      "host": "linux-arm64",
+      "artifactId": 11565965745,
+      "producerJobId": 113392360338,
+      "producerConclusion": "success",
+      "specFindings": 0,
+      "standardsHardFindings": 0,
+      "standardsHeuristicFindings": 0,
+      "compilerTarSha256": "c4a8a660ed0b9b41199fdec9b66117c88ba44ee0a6067ad53a4b9305430f9bc9",
+      "conformance": {
+        "file": "linux-arm64-conformance.json.gz",
+        "sha256": "d34e26d26110e74e406cffb08bdcaeee00fd8d80788489f6fe7e678fa91a609d",
+        "compression": "gzip",
+        "compressedSha256": "26a45a07b2769e6afcc25bbbe95607e480cabeacfec72ee6d3453376d3590b45"
+      },
+      "performance": {
+        "file": "linux-arm64-performance.json.gz",
+        "sha256": "a5d109cb65a27f5877dbca7e41f98f240fe88eeeedb8306dc6368dab5c48127f",
+        "compression": "gzip",
+        "compressedSha256": "45ce21db47bb2292b444860c09f9086fcf6b9615d0fec649057ed4fafefb7f52"
+      },
+      "reliability": {
+        "file": "linux-arm64-reliability.json.gz",
+        "sha256": "07c92f1e404adce59887bdc18b40e227e84296b01a08f76934d0b68d1d321d8f",
+        "compression": "gzip",
+        "compressedSha256": "ea6b5b57c03ff37a0182f7ad86a95110f568749d0dad3a32acdd11579abc1e21"
+      },
+      "gyms": {
+        "file": "linux-arm64-gyms.json.gz",
+        "sha256": "0989c7e352750440d0088a24dc9699fb99db1269eec733d5b1bcbf843a298d38",
+        "compression": "gzip",
+        "compressedSha256": "77445b574a8b5508c8954df448e25e2c4406f7f819c27dcd5ba8d6480a4a15c5"
+      },
+      "kernels": {
+        "file": "linux-arm64-kernels.json.gz",
+        "sha256": "f69b8a50f0fb2a1b6358ac554636eb59768d567540ce7971d0f3a8ba06f5c32a",
+        "compression": "gzip",
+        "compressedSha256": "3b963b73824e45cb55c8c67c27b9d0402c58c06c1a731e56a085f6b4323bb0e5"
+      }
+    },
+    {
+      "host": "linux-x64",
+      "artifactId": 11565857946,
+      "producerJobId": 113392360247,
+      "producerConclusion": "success",
+      "specFindings": 0,
+      "standardsHardFindings": 0,
+      "standardsHeuristicFindings": 0,
+      "compilerTarSha256": "2ef9f98ec0e1a933d0f233e4c402d6e602b4e5e8c538156e14bd36182e1ee0ab",
+      "conformance": {
+        "file": "linux-x64-conformance.json.gz",
+        "sha256": "02a0208bc8b7483871f82f123f22f6a0f67d538fba3bafeec0f8e8ebbccd6fde",
+        "compression": "gzip",
+        "compressedSha256": "86fd3cb7aa6edb92a7577992b98d5fac4ff9a320e3eb776783ac32bdeb3d8e3c"
+      },
+      "performance": {
+        "file": "linux-x64-performance.json.gz",
+        "sha256": "2edeaa8957f9a9b3505029f46463f8cbeb0a07a775b73b28dbaec51e14da325c",
+        "compression": "gzip",
+        "compressedSha256": "2a26805228eb4f425e9363ddcfdf8cc483b88f90dfee4aa1b8167ca9658f7fea"
+      },
+      "reliability": {
+        "file": "linux-x64-reliability.json.gz",
+        "sha256": "883f9056fc08f6840917eb07961dc7c4ae08716e86687de9be20f3e5a0a11043",
+        "compression": "gzip",
+        "compressedSha256": "bcfa535d1d18a3cee0c4c7f0447ed756b3bd9163831a808301348de7918abcb0"
+      },
+      "gyms": {
+        "file": "linux-x64-gyms.json.gz",
+        "sha256": "cb0ab50273d18464cd0c869398aebd4cb81a807298d5b119bed8d69c19609854",
+        "compression": "gzip",
+        "compressedSha256": "f874876dd1734b171fe0d5d67e2e6a4f64c7d75d4fb25d7a8409bb8a23ad95fc"
+      },
+      "kernels": {
+        "file": "linux-x64-kernels.json.gz",
+        "sha256": "bbfa7935de241f1ab500d3def852b970c4f693c48ae609b6b7312c194906e280",
+        "compression": "gzip",
+        "compressedSha256": "b0575fa7819e95043d03dcc3304ca09432a8ccb62ddcd1f903441277d326a891"
+      }
+    }
+  ],
+  "scope": "Finite producer checks and static review of exact sealed compiler bytes. Installed npm/VSIX, minimum-platform consumers, registry publication and public transport are separate gates.",
+  "qualificationConclusion": "success",
+  "receipts": [
+    {
+      "file": "editor-macos-14-1.139.1-reviewed-release-editor-qualification-darwin-arm64-1.139.1.json",
+      "sha256": "a762a8e7f568227e15b28c708ba0c211d67b2eb165710cefe38238bf0ca6d904",
+      "scope": "editor-macos-14-1.139.1-reviewed-release"
+    },
+    {
+      "file": "editor-macos-14-1.90.0-reviewed-release-editor-qualification-darwin-arm64-1.90.0.json",
+      "sha256": "5be570438884f12b7de47abd61606ab4b41ae0f9f265a01c536d5ca2a244d4e5",
+      "scope": "editor-macos-14-1.90.0-reviewed-release"
+    },
+    {
+      "file": "editor-ubuntu-24.04-1.139.1-reviewed-release-editor-qualification-linux-x64-1.139.1.json",
+      "sha256": "3ec9ca5591f3bf5d9b14427f733e7d992d035a2db6922a3a5e2be788b37d25e0",
+      "scope": "editor-ubuntu-24.04-1.139.1-reviewed-release"
+    },
+    {
+      "file": "editor-ubuntu-24.04-1.90.0-reviewed-release-editor-qualification-linux-x64-1.90.0.json",
+      "sha256": "70603a70ffd11497857961929076a8ecc1e1d432b904baba7ffbd133df4a902f",
+      "scope": "editor-ubuntu-24.04-1.90.0-reviewed-release"
+    },
+    {
+      "file": "editor-ubuntu-24.04-arm-1.139.1-reviewed-release-editor-qualification-linux-arm64-1.139.1.json",
+      "sha256": "1a330191f952c068afbdb686ca7f0d6d2261316995b9a609d3cdb8712330c6ac",
+      "scope": "editor-ubuntu-24.04-arm-1.139.1-reviewed-release"
+    },
+    {
+      "file": "editor-ubuntu-24.04-arm-1.90.0-reviewed-release-editor-qualification-linux-arm64-1.90.0.json",
+      "sha256": "4db50596ab4ec7213934c88e0ad8668e2d815c68a6aaa951bae8514138987ccd",
+      "scope": "editor-ubuntu-24.04-arm-1.90.0-reviewed-release"
+    },
+    {
+      "file": "release-consumer-darwin-arm64-cli-upgrade-qualification-darwin-arm64.json",
+      "sha256": "959b2ac617c81ddf64e0baf72280177c14304d8289c6e00def4c83ca0ac2a2a9",
+      "scope": "release-consumer-darwin-arm64"
+    },
+    {
+      "file": "release-consumer-darwin-arm64-native-consumer-qualification.json",
+      "sha256": "1908798511126fca3eaa0efdff28d2e42300f1f1ea255e05b12bb43328a60725",
+      "scope": "release-consumer-darwin-arm64"
+    },
+    {
+      "file": "release-consumer-linux-arm64-cli-upgrade-qualification-linux-arm64.json",
+      "sha256": "cc62371eeff0a346a37e2b2fe02b7a29fd73d6068709f90fa05b82ad9a51b105",
+      "scope": "release-consumer-linux-arm64"
+    },
+    {
+      "file": "release-consumer-linux-arm64-native-consumer-qualification.json",
+      "sha256": "0a1b51de730f062a1bdd8e3943da51366fd92dcc4514c11a6e5fdbb5c6ee5890",
+      "scope": "release-consumer-linux-arm64"
+    },
+    {
+      "file": "release-consumer-linux-x64-cli-upgrade-qualification-linux-x64.json",
+      "sha256": "3d0e3dddf9be5fed0ee12a8a10e63b95f6f6d1c49c314edffb86e74545099c84",
+      "scope": "release-consumer-linux-x64"
+    },
+    {
+      "file": "release-consumer-linux-x64-native-consumer-qualification.json",
+      "sha256": "36a4a3dbbc1431063019867996b4c6d40a643f7a8ed040932616163231fe1a62",
+      "scope": "release-consumer-linux-x64"
+    }
+  ],
+  "release": {
+    "id": 407130055,
+    "url": "https://github.com/GreenPandaStudios/augscript/releases/tag/v1.0.0",
+    "publishedAt": "2026-10-08T19:08:20Z",
+    "npmRun": 37829680524,
+    "marketplaceRun": 37829680432,
+    "assets": [
+      {
+        "name": "aug-llvm-linux-arm64.tar.gz",
+        "size": 441878429,
+        "sha256": "c4a8a660ed0b9b41199fdec9b66117c88ba44ee0a6067ad53a4b9305430f9bc9"
+      },
+      {
+        "name": "aug-llvm-linux-x64.tar.gz",
+        "size": 448880031,
+        "sha256": "2ef9f98ec0e1a933d0f233e4c402d6e602b4e5e8c538156e14bd36182e1ee0ab"
+      },
+      {
+        "name": "aug-llvm-macos-arm64.tar.gz",
+        "size": 217142981,
+        "sha256": "459cddb4f11f14a4a8f4d23996f328c77809934f82c05f6eeededfdad7ad537e"
+      },
+      {
+        "name": "augscript-1.0.0.vsix",
+        "size": 10702664,
+        "sha256": "e1b35388ae8b5733824b177aeee61ca6e1817ca8fab7d3cb7dbf5781b21dcff8"
+      },
+      {
+        "name": "augscript-docs-1.0.0.tar.gz",
+        "size": 18190477,
+        "sha256": "4ed81de18b72e428ead1ee9268f444daaed5cc8c778740269db653cb2c686ceb"
+      },
+      {
+        "name": "compiler-packs.json",
+        "size": 1771,
+        "sha256": "5e7ae987580dcb3f232cf4d5a3b941eb66d7f8b6b1e0aa655fd5280437d67420"
+      },
+      {
+        "name": "docs-provenance.json",
+        "size": 1002,
+        "sha256": "a869660a67f8491459fc64ccf7578f78aea9d2d0e9115d023c3b608c4cb594ce"
+      },
+      {
+        "name": "greenpandastudios-aug-cli-1.0.0.tgz",
+        "size": 8394861,
+        "sha256": "b0226ba04c10590177068f9209c08cce643b7896ed13cd625f7e4f15d143c0b2"
+      },
+      {
+        "name": "greenpandastudios-aug-crypto-1.0.0.tgz",
+        "size": 30036,
+        "sha256": "bb7cc1927d22d3fa388bd06753dcdfdcd71a4f7486bbe16ad12c905e2422932c"
+      },
+      {
+        "name": "greenpandastudios-aug-stdlib-1.0.0.tgz",
+        "size": 55597,
+        "sha256": "1b83ccee757dc192f5b8e1137c67ec192342e1003bc04820e9e2874a2e89a14b"
+      },
+      {
+        "name": "greenpandastudios-aug-web-1.0.0.tgz",
+        "size": 18385,
+        "sha256": "f62aba5b590ee8fc765b284b666d871c0f2f91a834d8c283af649e9776024e4f"
+      },
+      {
+        "name": "packages.json",
+        "size": 1425,
+        "sha256": "ebc3655b69f54dcfabe893a234c9229e9705a52a978417838525fe2e304ec591"
+      },
+      {
+        "name": "SHA256SUMS",
+        "size": 1128,
+        "sha256": "965587157cecede16231433ba48ba5076096ba96dc1f9b6bfad2c5b20899e3f0"
+      }
+    ],
+    "latest": true,
+    "npmConclusion": "success",
+    "containerRun": 37832531461,
+    "marketplaceStatus": "Automated publication failed: Marketplace rejected OIDC trusted publishing. Verified 1.0 VSIX is public and selected in the signed-in publisher; Upload is blocked by automatic review pending fresh CAPTCHA approval."
+  },
+  "documentation": {
+    "format": 1,
+    "compilerTag": "v1.0.0",
+    "compilerCommit": "9e8be2926e83f551c365f1db1154f0ba2a43c11f",
+    "documentationCommit": "68bb488e91b7f121bc27c0946695869136138d40",
+    "documentationPullRequest": "https://github.com/GreenPandaStudios/augscript/pull/58",
+    "wikiArchive": {
+      "file": "augscript-docs-1.0.0.tar.gz",
+      "sha256": "4ed81de18b72e428ead1ee9268f444daaed5cc8c778740269db653cb2c686ceb",
+      "bytes": 18190477
+    },
+    "qualification": "https://github.com/GreenPandaStudios/augscript/actions/runs/37800823512",
+    "correction": "HTML backlink routes, retained errors anchor and source-menu click targets",
+    "compilerAndClientArchives": "unchanged from the qualified tagged artifacts",
+    "sourceNavigation": {
+      "htmlPages": 460,
+      "backlinks": 3368,
+      "missingRoutesOrAnchors": 0,
+      "highlighterRegressionTests": 9,
+      "browserSingleLink": true,
+      "browserBracesMenu": true
+    },
+    "replacedWikiSha256": "3bb1258940f29f56544943a02665b1f725501921c87e0a62f2068af3368b53bf"
+  },
+  "archiveReview": {
+    "specFindings": 0,
+    "standardsHardFindings": 0,
+    "standardsHeuristicFindings": 0,
+    "correctedDocumentation": true
+  },
+  "publicConsumer": {
+    "file": "public-native-consumer-darwin-arm64.json",
+    "sha256": "ef97996a2ab9a227c7176c9008b0f3a086f3b22ddc696e722c31ba57f3f0d358",
+    "host": "darwin-arm64",
+    "compilerTransport": "public-release-asset",
+    "libraryTransport": "public-release-assets",
+    "installation": "npm-archive-in-node_modules",
+    "nativeToolsOnPath": false,
+    "minimumOSQualification": false,
+    "scope": "Exact reviewed npm archives installed with empty npm/source/native caches; anonymous public compiler and real library downloads; local host is newer than minimum supported macOS."
+  },
+  "registry": {
+    "file": "npm-registry-verification.json",
+    "sha256": "4e81757d291a666abdf690867aac54b980ed8fc79d70640cbce92fb6aaa2c569",
+    "allVersions": "1.0.0",
+    "allLatest": true,
+    "reviewedIntegrityMatches": true
+  },
+  "npmStarter": {
+    "file": "npm-starter-verification.json",
+    "sha256": "bec325f2d01d9749051e1db6f25d86451fb39fe97ca98e26cefeffb86ba4a759",
+    "nativeToolsOnPath": false,
+    "cache": "fresh",
+    "scope": "Public npm latest installation and public compiler download on local macOS ARM64; starter, AGENTS.md, same-file test, compiled spec and frozen/offline run."
+  },
+  "postQualificationDeadlineCheck": {
+    "file": "http-deadline-replay.json",
+    "sha256": "6397ec3f4d656b9e97c0a3fa9ce5c5dff3ff35c8def0cffba3eab9b01094e892",
+    "scope": "Superseded documentation CI timed out its whole C release test process at 30 seconds. Original runner cause remains unconfirmed; both optimized native fixtures passed 40 replays per backend locally. Main regression separates compile budget from stricter native case execution limits; compiler/runtime bytes unchanged."
+  },
+  "containers": {
+    "file": "container-publication.json",
+    "sha256": "456686a47d177efcd8ff9f3c6197b884bf30e425e69ea56c69174fe95d93adf7",
+    "run": 37832531461,
+    "conclusion": "success",
+    "architectures": [
+      "linux/amd64",
+      "linux/arm64"
+    ],
+    "anonymousPulls": true
+  },
+  "marketplace": {
+    "run": 37829680432,
+    "conclusion": "failure",
+    "reason": "Marketplace OIDC token exchange: Trusted Publishing is not supported.",
+    "publicVersion": "0.23.1",
+    "qualifiedVsixVersion": "1.0.0",
+    "manualUpload": "pending fresh CAPTCHA approval"
+  }
+}

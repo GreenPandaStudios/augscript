@@ -1,6 +1,6 @@
 # Measure text in the right unit
 
-The explicit byte and grapheme operations are unreleased. Choose the unit your limit or operation needs. A network payload has a byte size; a user-facing text selection usually needs grapheme boundaries. A grapheme approximates one perceived character, including combining marks and many emoji sequences.
+Choose the unit your limit or operation needs. A network payload has a byte size; a user-facing text selection usually needs grapheme boundaries. A grapheme approximates one perceived character, including combining marks and many emoji sequences.
 
 ## Count and split text
 

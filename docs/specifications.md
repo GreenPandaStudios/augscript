@@ -30,7 +30,7 @@ Generation also adds one managed comment at the top of each project source file:
 
 The comment points readers and coding agents to the explanation before an edit. Generation updates it after a rename and preserves handwritten comments. Installed dependencies are left unchanged. `aug spec --check` reports missing or outdated pointers without adding them.
 
-## Choose a resolution (unreleased) {#move-from-the-overview-to-the-code-unreleased}
+## Choose a resolution {#move-from-the-overview-to-the-code-unreleased}
 
 `aug spec` also generates Mermaid diagrams from the checked program. Open `.aug-spec/diagrams/index.md` to see calls between its folders and HTTP APIs, with their inputs and returned data. Folders containing at least two implementation files get their own linked overview; export manifests do not count toward that threshold. Each module links to an adjacent `FILE.aug.diagrams.md` containing class interactions, operation sequences and linked called contracts. The prose spec links to that page.
 
@@ -107,7 +107,7 @@ Implementation methods can inherit documentation from their interfaces. This set
 
 In VS Code, use **AugScript: Open Compiled Specification** to generate and preview the current file's document. Save sources first. **AugScript: Generate Specifications** generates the project's documents. Language diagnostics and migration actions use the same compiler as the CLI.
 
-`aug pack` includes adjacent specs and their offline dependency documents in the archive. The unreleased diagram generator includes adjacent diagrams and the project overview too. Consumers import August declarations normally; Markdown files do not change the package's public exports or execute code. See [packages](packages.md).
+`aug pack` includes adjacent specs and their offline dependency documents in the archive. The diagram generator includes adjacent diagrams and the project overview too. Consumers import August declarations normally; Markdown files do not change the package's public exports or execute code. See [packages](packages.md).
 
 ## Determinism and limits
 
@@ -120,6 +120,6 @@ ASD-STE100 guides the wording. The output is best effort Simplified Technical En
 The writer refuses to replace a handwritten neighboring `.aug.md` file. Rename that file before generation. Files marked as generated belong to the compiler; edit their August source or Javadoc and regenerate.
 
 
-## Review an exported explanation (unreleased)
+## Review an exported explanation {#review-an-exported-explanation-unreleased}
 
 `aug package diff BEFORE AFTER` compares two checked local package revisions. It shows changes to their exported contracts and to the corresponding spec paragraphs without generating files. Source positions and interface disclosures are kept separate from the prose comparison. JSON includes source locations and revision identities; behavioral acceptance still requires independent tests. See [package reviews](packages.md#review-a-package-change-unreleased).

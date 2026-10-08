@@ -10,21 +10,21 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 
 | Command | Output |
 | --- | --- |
-| `cache [PROJECT] [--json]` | **Unreleased:** inspect cache sizes, locked identities and offline/frozen input readiness without writes. |
-| `cache prune [PROJECT] [--write] [--json]` | **Unreleased:** preview or clear verified idle test compilation; shared native and source entries stay protected. |
-| `doctor [PROJECT] [--json]` | Setup report without downloads or writes; unreleased. |
-| `libraries [QUERY] [--json]` | **Unreleased:** search curated task/import/platform/ownership/license/test metadata offline. |
-| `update PROJECT --preview [--offline] [--json]` | **Unreleased:** check proposed dependency contracts, callers and native selections without accepting the update. |
-| `dependencies PROJECT [--json]` | **Unreleased:** explain verified installed source and locked native dependencies without downloads. |
-| `package workflow [DIRECTORY] [--write] [--json]` | **Unreleased:** print or create reviewed consumer CI; current candidate templates require the next compiler release. |
-| `package release [DIRECTORY] --tag vVERSION [--json]` | **Unreleased:** verify the tag, tracked source/specs, public contracts, dependency lock and cached native host artifacts without publication. |
-| `package check DIRECTORY [--json]` | **Unreleased:** static package publishing readiness; behavioral tests remain explicit. |
-| `compare BEFORE AFTER [--json]` | **Unreleased:** compare local checked projects, source/contract/visibility changes and known consumer sites; execution remains separate. |
-| `package diff BEFORE AFTER [--json]` | **Unreleased:** compare resolved public contracts, changed spec prose and native metadata of local revisions. |
-| `scratch FILE [--prepare] [--run] [--offline] [--json]` | **Unreleased:** check an isolated temporary entry module; execution requires --run. See [Try a snippet](guides/try-a-snippet.md). |
+| `cache [PROJECT] [--json]` | inspect cache sizes, locked identities and offline/frozen input readiness without writes. |
+| `cache prune [PROJECT] [--write] [--json]` | preview or clear verified idle test compilation; shared native and source entries stay protected. |
+| `doctor [PROJECT] [--json]` | Setup report without downloads or writes. |
+| `libraries [QUERY] [--json]` | search curated task/import/platform/ownership/license/test metadata offline. |
+| `update PROJECT --preview [--offline] [--json]` | check proposed dependency contracts, callers and native selections without accepting the update. |
+| `dependencies PROJECT [--json]` | explain verified installed source and locked native dependencies without downloads. |
+| `package workflow [DIRECTORY] [--write] [--json]` | print or create reviewed consumer CI; templates pin the compiler release that generated them. |
+| `package release [DIRECTORY] --tag vVERSION [--json]` | verify the tag, tracked source/specs, public contracts, dependency lock and cached native host artifacts without publication. |
+| `package check DIRECTORY [--json]` | static package publishing readiness; behavioral tests remain explicit. |
+| `compare BEFORE AFTER [--json]` | compare local checked projects, source/contract/visibility changes and known consumer sites; execution remains separate. |
+| `package diff BEFORE AFTER [--json]` | compare resolved public contracts, changed spec prose and native metadata of local revisions. |
+| `scratch FILE [--prepare] [--run] [--offline] [--json]` | check an isolated temporary entry module; execution requires --run. See [Try a snippet](guides/try-a-snippet.md). |
 | `check PROJECT [--json]` | Production, tests, module policy, documentation, and configuration diagnostics. |
-| `bundle PROJECT --out DIRECTORY [--offline] [--frozen] [--json]` | **Unreleased:** release executable, runtime libraries, notices and verification manifest. |
-| `bundle verify DIRECTORY [--json]` | **Unreleased:** verify bundle files without executing the application. |
+| `bundle PROJECT --out DIRECTORY [--offline] [--frozen] [--json]` | release executable, runtime libraries, notices and verification manifest. |
+| `bundle verify DIRECTORY [--json]` | verify bundle files without executing the application. |
 | `build PROJECT [--out NAME] [--json]` | Native path; JSON contains output and sourceMap. |
 | `run [PROJECT] [--offline] -- args...` | Prepares declared packages and required native libraries, checks, compiles, and runs; program stdout is preserved. |
 | `emit-c PROJECT` | Generated C for inspection. |
@@ -33,13 +33,13 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `format PROJECT [--file PATH] [--write] [--json]` | Canonical source; --write updates files. |
 | `migrate PROJECT [--file PATH] [--write] [--json]` | Verified migration of rejected legacy syntax; preview by default. |
 | `spec PROJECT [--check] [--json]` | Adjacent prose specs with expandable checked interfaces, paragraph source links and offline dependencies; --check detects drift without writing. |
-| `test PROJECT --suggest-inputs FUNCTION --file FILE [--cases JSON_FILE] [--combinations] [--limit N] [--json]` | **Unreleased:** propose bounded, compiler-checked scalar input rows; assertions remain author decisions. See [test inputs](testing.md#suggest-boundary-inputs). |
-| `verify PROJECT --requirements FILE [--backend c\|llvm] [--timeout MS] [--offline] [--frozen] [--json]` | **Unreleased:** check current code/context and record concrete author-selected acceptance cases. See [requirements and results](testing.md#review-requirements-with-test-results). |
-| `test PROJECT [--coverage] [--json]` | Isolated native tests and optional statement-line report; the unreleased core-runtime cache reuses compilation. Add `--rebuild` to compile selected cases again. |
+| `test PROJECT --suggest-inputs FUNCTION --file FILE [--cases JSON_FILE] [--combinations] [--limit N] [--json]` | propose bounded, compiler-checked scalar input rows; assertions remain author decisions. See [test inputs](testing.md#suggest-boundary-inputs). |
+| `verify PROJECT --requirements FILE [--backend c\|llvm] [--timeout MS] [--offline] [--frozen] [--json]` | check current code/context and record concrete author-selected acceptance cases. See [requirements and results](testing.md#review-requirements-with-test-results). |
+| `test PROJECT [--coverage] [--json]` | Isolated native tests and optional statement-line report; the core-runtime cache reuses compilation. Add `--rebuild` to compile selected cases again. |
 | `bench PROJECT [--iterations N] [--warmup N] [--timeout MS] [--json] -- args...` | Release build with timed native executions. |
 | `explain PROJECT --file PATH [--name NAME]` | Checked contracts, dependencies, layers, origins, tests, and module surface. |
 | `context PROJECT --file PATH [--name NAME] [--budget N] [--mode implementation\|interface-change\|review] [--require-complete]` | Bounded JSON context, including related declarations and source snippets. |
-| `graph PROJECT --composition [--case TEST_ID] [--json\|--mermaid]` | **Unreleased:** inspect selected application/test providers, lifetimes and constructor dependencies without execution. |
+| `graph PROJECT --composition [--case TEST_ID] [--json\|--mermaid]` | inspect selected application/test providers, lifetimes and constructor dependencies without execution. |
 | `change plan-dependency PROJECT --file FILE --symbol CALLABLE --capability TYPE --name INPUT` | Review missing capability inputs, imports, reverse callers and public changes before source writes. |
 | `change plan PROJECT request.json` | Candidate, exact edits, public delta and agent exchange; no source writes. |
 | `change check PROJECT plan.json` | Independent native verification without source writes. |
@@ -54,19 +54,19 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `add URL [--as NAME] [--project DIRECTORY]` | Installs a repository or archive under a short import alias. |
 | `install PROJECT [--frozen|--update] [--offline]` | Explicit dependency snapshot and aug.lock.json. |
 
-Warnings are nonblocking. Human diagnostics show the source line, a pointer, and help. Machine diagnostics carry severity, code, file, line, column, message, and help. The unreleased compiler adds `related` declaration locations and `expected`/`actual` input facts. Call-input type errors name the public input and its substituted type; label errors list the callable’s accepted caller labels. Human output shows an excerpt at each related location. Fix malformed labels first: omitted-input checks resume after those labels are valid. The compiler does not choose missing argument values. check/build fail on errors; invalid options and missing option values return status 2. Test failure returns nonzero and includes the case output. Put runtime arguments after `--`, for example `aug run -- --port 8080`.
+Warnings are nonblocking. Human diagnostics show the source line, a pointer, and help. Machine diagnostics carry severity, code, file, line, column, message, and help. The compiler adds `related` declaration locations and `expected`/`actual` input facts. Call-input type errors name the public input and its substituted type; label errors list the callable’s accepted caller labels. Human output shows an excerpt at each related location. Fix malformed labels first: omitted-input checks resume after those labels are valid. The compiler does not choose missing argument values. check/build fail on errors; invalid options and missing option values return status 2. Test failure returns nonzero and includes the case output. Put runtime arguments after `--`, for example `aug run -- --port 8080`.
 
 ## Check an installation
 
-The unreleased CLI adds `aug doctor`. It reports the compiler version, Node version, host target, writable project/cache paths, cached compiler/runtime integrity, and source or installed-package errors. Each selected native package includes its target, runtime requirements, cache identity and the files it links or deploys. Cached files are hashed and checked against the source-verified artifact contract. Add `--json` for a versioned report. Exit status 1 means a check failed; status 0 can still include warnings.
+`aug doctor` reports the compiler version, Node version, host target, writable project/cache paths, cached compiler/runtime integrity, and source or installed-package errors. Each selected native package includes its target, runtime requirements, cache identity and the files it links or deploys. Cached files are hashed and checked against the source-verified artifact contract. Add `--json` for a versioned report. Exit status 1 means a check failed; status 0 can still include warnings.
 
 Doctor does not download dependencies, create caches, or edit source and locks. An uncached compiler pack is a warning: the first `aug run` still needs network access. Missing project packages require `aug install`. The JSON fields `offlineReady` and `frozenReady` describe LLVM inputs separately from `ready`, which means no setup error was found. Offline readiness requires checked source and verified cached compiler/native bytes. Frozen readiness also requires matching compiler/runtime and native locks for this host, with contributor overrides unset. A passing report does not run the application or guarantee that a future download will succeed.
 
-Set `AUG_NATIVE_ARTIFACT_CACHE` to a writable directory when the default cache is unsuitable. When a verified cache is damaged, stop active builds before removing that entry and running online again. Contributor LLVM/runtime overrides are reported separately; unset them to check the ordinary installation. The published 0.23.0 CLI has no doctor command.
+Set `AUG_NATIVE_ARTIFACT_CACHE` to a writable directory when the default cache is unsuitable. When a verified cache is damaged, stop active builds before removing that entry and running online again. Contributor LLVM/runtime overrides are reported separately; unset them to check the ordinary installation.
 
 ## Inspect and clear caches
 
-**Unreleased:** run `aug cache` in a project to see the repository source transport, shared native downloads, test compilation, and installed source snapshots separately. The report includes accepted package digests and repository commits, locked native targets and archive hashes, and the current host’s selected compiler pack. `--json` includes individual cache entries and the same verified offline/frozen input checks as `aug doctor`. Inspection creates no cache directories, downloads nothing, and runs no package or application code. An invalid lock still returns sizes and failed readiness, with accepted selections marked unavailable.
+Run `aug cache` in a project to see the repository source transport, shared native downloads, test compilation, and installed source snapshots separately. The report includes accepted package digests and repository commits, locked native targets and archive hashes, and the current host’s selected compiler pack. `--json` includes individual cache entries and the same verified offline/frozen input checks as `aug doctor`. Inspection creates no cache directories, downloads nothing, and runs no package or application code. An invalid lock still returns sizes and failed readiness, with accepted selections marked unavailable.
 
 Sizes count regular-file logical bytes, rather than disk allocation. Links and special files are not followed. A scan that reaches its file or nesting bound reports an incomplete lower bound. Presence and size do not establish integrity; the offline readiness checks verify the selected inputs separately.
 
@@ -76,9 +76,9 @@ Pruning leaves repository transport, accepted installed sources, and all shared 
 
 ## Native standard libraries
 
-August 0.23.0 uses LLVM by default on macOS 14+ ARM64 and GNU/Linux x64/ARM64 with glibc 2.36+. `aug run` prepares source packages and the verified compiler/runtime pack, then builds and starts the application. `build`, `test`, and `bench` use the same backend; install source packages before running them in a fresh project. Consumers do not install Clang, LLVM, or an SDK.
+August 1.0 uses LLVM by default on macOS 14+ ARM64 and GNU/Linux x64/ARM64 with glibc 2.36+. `aug run` prepares source packages and the verified compiler/runtime pack, then builds and starts the application. `build`, `test`, and `bench` use the same backend; install source packages before running them in a fresh project. Consumers do not install Clang, LLVM, or an SDK.
 
-The first LLVM run downloads the host's tools and prebuilt runtime components. JSON, tasks, crypto, and HTTP select components from that pack. A native package can add its own platform archives. Each download has a SHA-256 pin and size bound; later projects share verified cache entries. The unreleased compiler also pins its complete extracted tool-pack file manifest, so a regenerated local manifest cannot authorize changed compiler members. Installation never runs package build scripts or silently falls back to a source build. Missing artifacts and unsupported platforms include the failed requirement and a recovery step.
+The first LLVM run downloads the host's tools and prebuilt runtime components. JSON, tasks, crypto, and HTTP select components from that pack. A native package can add its own platform archives. Each download has a SHA-256 pin and size bound; later projects share verified cache entries. The compiler also pins its complete extracted tool-pack file manifest, so a regenerated local manifest cannot authorize changed compiler members. Installation never runs package build scripts or silently falls back to a source build. Missing artifacts and unsupported platforms include the failed requirement and a recovery step.
 
 For an offline run, prepare the project once with network access, then use:
 
@@ -123,8 +123,8 @@ module_dependencies:
 | --- | --- |
 | output | Executable name under .aug-build, or an absolute output path. |
 | optimization | debug (-O0) or release (-O2); both retain debug information. |
-| backend | llvm (default in 0.23.0) or the temporary c migration reference. |
-| compiler | **Unreleased:** optional exact project compiler pin. A mismatch fails checking in the CLI and editor, before dependency installation. |
+| backend | llvm (default) or the temporary c migration reference. |
+| compiler | optional exact project compiler pin. A mismatch fails checking in the CLI and editor, before dependency installation. |
 | block_style | Braces or indent for formatting and generated source. |
 | indentation | Spaces (four) or tabs for formatting and generated source. |
 | assignment | Formatter equals or to; both remain accepted source forms. |
@@ -147,7 +147,7 @@ Unknown/duplicate keys, invalid values, and unsupported list shapes fail during 
 - float uses IEEE 754 binary64. Literals must be finite. Mixed int/float arithmetic widens to double and can lose integer precision. Runtime floating-point results follow native double behavior.
 - c_int is signed 32-bit and maps to the platform C int, whose width is checked during compilation. c_int(value=wide) raises ConversionError outside its range; int(value=narrow) widens without loss.
 - Source strings are Unicode text, emitted as UTF-8. NUL and unpaired surrogates are compile errors. File text rejects embedded NUL and malformed/overlong UTF-8 as FileError. Binary files need a future byte API.
-- **Unreleased text measurements:** `byteLength()` and `length()` count UTF-8 bytes; `codePointLength()` counts scalars, and `utf16Length()` counts UTF-16 units. `graphemeLength()` and `graphemes()` use pinned Unicode 18.0.0 default extended boundaries. The scalar and grapheme operations reject invalid UTF-8 with `ConversionError`; segmentation preserves original bytes and does not measure display width. See [measure text](guides/measure-text.md).
+- **Text measurements:** `byteLength()` and `length()` count UTF-8 bytes; `codePointLength()` counts scalars, and `utf16Length()` counts UTF-16 units. `graphemeLength()` and `graphemes()` use pinned Unicode 18.0.0 default extended boundaries. The scalar and grapheme operations reject invalid UTF-8 with `ConversionError`; segmentation preserves original bytes and does not measure display width. See [measure text](guides/measure-text.md).
 - Immutable tuples and records have structural equality/hashing. Behavioral classes and mutable collection objects have identity equality. Map/Set preserve insertion order for iteration.
 
 ## C boundary
@@ -215,9 +215,9 @@ Benchmark the compiled executable with a workload representative of your applica
 
 `aug explain` reports a declaration's inputs, result, state changes, I/O, checked errors, dependencies, tests, and source locations. It also reports interceptor order and binding lifetimes. For endpoints, it includes routes, statuses, streaming, input sources, and policy settings.
 
-`aug context` adds related declarations, source snippets and available same-file tests. Its budget ranges from 512 to 100000, with a default of 12000. In the unreleased schema 3 protocol, the unit is a UTF-16 code unit in the compact JSON response, including the final newline. This is the emitted character count, not an estimate of model tokens.
+`aug context` adds related declarations, source snippets and available same-file tests. Its budget ranges from 512 to 100000, with a default of 12000. In context schema 3, the unit is a UTF-16 code unit in the compact JSON response, including the final newline. This is the emitted character count, not an estimate of model tokens.
 
-The unreleased context packet gives the selected contract and actual implementation priority over import summaries. Checked semantic coloring recognizes contextual internal entries without treating a type or function named `internal` as a keyword. The fallback grammar leaves that classification to the language server. Declaration visibility distinguishes file-public names from folder exports, internal entries and unlisted declarations. Resolved type identities, required dependency contracts, reverse callers, source digests, configuration and physical dependency metadata digests, and the compiler identity follow. Locations use project-relative or package-relative paths. `aug explain` retains its declaration report and absolute navigation locations.
+The context packet gives the selected contract and actual implementation priority over import summaries. Checked semantic coloring recognizes contextual internal entries without treating a type or function named `internal` as a keyword. The fallback grammar leaves that classification to the language server. Declaration visibility distinguishes file-public names from folder exports, internal entries and unlisted declarations. Resolved type identities, required dependency contracts, reverse callers, source digests, configuration and physical dependency metadata digests, and the compiler identity follow. Locations use project-relative or package-relative paths. `aug explain` retains its declaration report and absolute navigation locations.
 
 The default `--mode implementation` follows the target's checked dependencies. Use `--mode interface-change` when changing an interface: it also expands known transitive callers, inherited implementations and resolved type/field consumers. `--mode review` uses that same conservative impact closure for a change review. Contributing startup and export source units are included without copying unrelated declarations. Available test suites retain their authored source and exact case IDs; their independence is unassessed and their execution remains `not-run`.
 
@@ -227,11 +227,11 @@ A successful `status: "ready"` response always contains the selected contracts a
 
 Use `--require-complete` in an agent integration to return exit status 1 when required facts, project coverage, reverse callers or dispatch coverage are incomplete. A complete packet establishes compiler context about the starting code. Requirements have not been supplied, and behavioral evidence has not run. Select independent acceptance cases with [aug verify](testing.md#review-requirements-with-test-results).
 
-Graph schema 2 and context schema 3 are unreleased protocol versions. Clients must check the schema number, accept unknown fields within a supported version, and reject versions they do not understand. Embedding responses are detached from compiler state; modifying them cannot alter subsequent checks or queries. The CLI and language server use the same packet builder. The `aug/editor` LSP request with `command: "describe"` and `options.context: true` checks the whole project with the current unsaved sources. Local navigation paths in `aug explain` are absolute; portable context and graph locations are relative.
+The current versions are graph schema 2 and context schema 3. Clients must check the schema number, accept unknown fields within a supported version, and reject versions they do not understand. Embedding responses are detached from compiler state; modifying them cannot alter subsequent checks or queries. The CLI and language server use the same packet builder. The `aug/editor` LSP request with `command: "describe"` and `options.context: true` checks the whole project with the current unsaved sources. Local navigation paths in `aug explain` are absolute; portable context and graph locations are relative.
 
 A snapshot retains its captured metadata. A later source, configuration, manifest, lock, binding descriptor or notice change produces a different revision when refreshed. These digests identify the inspected inputs; foreign implementations are not inspected by a type query. Native builds and test receipts carry their own execution evidence.
 
-The unreleased `aug compare BEFORE AFTER --json` reads two local projects whose source dependencies are already installed. It compares checked declaration contracts, source bytes, visibility and source/configuration/dependency digests. Each side has its own semantic revision and diagnostics. A rejected side returns a rejected comparison. Source changes include formatting and comments; they do not establish different execution.
+The `aug compare BEFORE AFTER --json` reads two local projects whose source dependencies are already installed. It compares checked declaration contracts, source bytes, visibility and source/configuration/dependency digests. Each side has its own semantic revision and diagnostics. A rejected side returns a rejected comparison. Source changes include formatting and comments; they do not establish different execution.
 
 Known consumer sites come from resolved calls, types, inheritance, injection, applied interceptors and imports/exports, including startup and authored tests. Dynamic dispatch, native code and external consumers remain boundaries. Available cases carry `not-run` and `not-assessed` markers. Moves and renames appear as removal/addition unless their existing compiler identity matches; no correspondence is guessed. Use `aug package diff` for the exported surface of two package versions. Comparison does not fetch dependencies, run a native compiler or write files. Its repeated captures can detect changing inputs, but do not provide atomic observation of uncoordinated writers.
 
@@ -271,23 +271,23 @@ Compiler and extension development dependencies use exact versions and lockfiles
 
 ## Inferred contract hints
 
-**Unreleased:** generic interceptor chains show each application’s resolved dependencies and effects. A second use with different types does not replace the first application’s contract.
+Generic interceptor chains show each application’s resolved dependencies and effects. A second use with different types does not replace the first application’s contract.
 
 VS Code shows inferred results, mutations, capability operations, and escaping checked errors beside executable headers. Long capability/error lists collapse to counts; their tooltip shows the full contract. These hints use the checked project, including unsaved edits and imported declarations. They are display text; formatting and saving do not add them to source. Hover, signature help, `aug explain`, and compiled specs share the same contracts. Bodyless interfaces and foreign declarations keep explicit contracts.
 
 Hints are enabled by default. Disable `augscript.inferredContractHints` to hide them, or use VS Code’s `editor.inlayHints.enabled` setting. The language server supports `textDocument/inlayHint` with range filtering for other editors.
 
-## Resolved project references (unreleased)
+## Resolved project references {#resolved-project-references-unreleased}
 
 `aug graph PROJECT --file PATH` returns a revision-bearing graph with reproducible project/package paths, source and configuration digests, compiler identity, resolved symbols and occurrences, forward dependencies, and reverse callers. Coverage distinguishes checking the project, enumerating its source callers, runtime dispatch boundaries, and callers outside the project. `aug references PROJECT --file PATH --offset N` returns the selected symbol's occurrences with that revision and coverage. Offsets and editor columns use UTF-16 code units.
 
 The language server uses the same graph for Find References and checks rename candidates before returning edits. Standard LSP clients can request versioned `documentChanges`; clients that support change annotations also receive the fix's consequence in its preview. The initial rename profile is described in [the editor guide](editor.md#find-references-and-rename-unreleased). Use the [checked-change commands](#checked-source-changes-unreleased) to save and apply a disk-source plan with a recovery journal. Editor workspace edits still use the LSP client's version checks; they do not enter that command-line transaction.
 
-### Inferred-hint detail (unreleased)
+### Inferred-hint detail {#inferred-hint-detail-unreleased}
 
 LSP clients can select `inferredContractHintDetail: "full"` in initialization options or under `settings.augscript` in `workspace/didChangeConfiguration`. The default is `"compact"`. The `aug/editor` `inlay-hints` request also accepts `options.detail`. Both views return the same complete tooltip and never insert inferred clauses into source.
 
-### Checked syntax examples (unreleased)
+### Checked syntax examples {#checked-syntax-examples-unreleased}
 
 Context packets can include small independent examples for the constructs in the selected code. Each example includes complete source units, a source digest, and its compiler regression fixture. The catalog covers inferred bindings, field comparisons, labeled calls, checked errors, owned results, borrows, and joined tasks. These examples are not declarations in your project and do not prescribe business values or recovery policy. Budget omissions still apply.
 
@@ -295,14 +295,14 @@ An unknown type named `let` now explains the binding forms. A direct assignment 
 
 ### Pin a compiler
 
-**Unreleased:** add `compiler: 0.23.0` to `main.yaml` to require that exact compiler. The CLI and editor report both versions when they differ. Use the reported `npx @greenpandastudios/aug-cli@VERSION` command, and configure the editor to use that installation. The pin does not download or silently switch compilers. Changing it is an explicit upgrade; check dependencies, run tests, and refresh the lock.
+Add `compiler: 1.0.0` to `main.yaml` to require that exact compiler. The CLI and editor report both versions when they differ. Use the reported `npx @greenpandastudios/aug-cli@VERSION` command, and configure the editor to use that installation. The pin does not download or silently switch compilers. Changing it is an explicit upgrade; check dependencies, run tests, and refresh the lock.
 
 ### Build progress
 
-**Unreleased:** interactive `run`, `build`, `bundle`, and `bench` commands show their current phase and elapsed time on stderr. Add `--progress` to show phases when redirecting output or using a task runner. Source resolution, checking, native artifacts, the compiler pack, lowering, object generation, linking, and execution report separately. The phase that fails is marked failed; the original diagnostic remains visible. Program stdout and JSON reports retain their usual format.
+Interactive `run`, `build`, `bundle`, and `bench` commands show their current phase and elapsed time on stderr. Add `--progress` to show phases when redirecting output or using a task runner. Source resolution, checking, native artifacts, the compiler pack, lowering, object generation, linking, and execution report separately. The phase that fails is marked failed; the original diagnostic remains visible. Program stdout and JSON reports retain their usual format.
 
 
-## Create a deployment bundle (unreleased)
+## Create a deployment bundle {#create-a-deployment-bundle-unreleased}
 
 Run `aug bundle . --out deploy` from an application project. It prepares ordinary package imports, selects the host's verified native artifacts, and compiles an optimized LLVM executable. Add `--frozen --offline` after preparing the recorded host selections to require cached inputs. The C reference backend cannot make bundles.
 
@@ -312,7 +312,7 @@ Use `aug bundle verify deploy` before deployment or after transfer. It checks th
 
 A bundle destination must be new. Compilation and verification take place in a temporary sibling directory, and a completed directory is published by rename under an August writer lock. Failed builds leave no accepted output. Choose another destination for a subsequent build; review and replace an existing deployment yourself. This command does not promise coordination with external filesystem writers or survival of arbitrary storage failures.
 
-## Starter source preferences (unreleased)
+## Starter source preferences {#starter-source-preferences-unreleased}
 
 New applications and libraries record indentation, four spaces and equals in `main.yaml`. Select another style when creating them:
 
@@ -324,11 +324,11 @@ aug package init calculations --block-style indent --assignment to
 
 The options configure `block_style`, `indentation` and `assignment`; edit those keys later and run `aug format --write` to reformat existing files. They change spelling and layout. Both block forms and both assignment forms retain the same behavior. Invalid, duplicate or missing option values fail before creating the project directory. Initialization writes source and configuration; `aug run` prepares application dependencies.
 
-## Deferred callback dependencies (unreleased)
+## Deferred callback dependencies {#deferred-callback-dependencies-unreleased}
 
 Semantic graph edges use `function-value` for a standalone function converted to a callback and `callback-call` for a call inside a closure body. Context and explanation contracts keep these in `functionValues`, separately from immediate `calls`, and include their checked dependency contracts. Reverse callers retain the edge kind so a change review can see both invocation sites and callback dependencies. A closure's later interface invocation still has an interface-dispatch boundary; the graph does not invent its runtime target.
 
-## Checked source changes (unreleased)
+## Checked source changes {#checked-source-changes-unreleased}
 
 Save a mechanical rename as a reviewable JSON plan, then apply that exact plan:
 
