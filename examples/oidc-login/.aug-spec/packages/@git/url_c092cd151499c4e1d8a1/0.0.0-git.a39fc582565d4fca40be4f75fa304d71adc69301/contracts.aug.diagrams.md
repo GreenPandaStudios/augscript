@@ -25,6 +25,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](contracts.aug#L5)
 
+Read whole Unix seconds in UTC.
+
+It returns `int`. It can call [`Clock.now`](contracts.aug.md#symbol-Clock.now). Failures can raise `TimeError`.
+
 May leave with checked errors: TimeError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-_aug_time_now"></a>
@@ -32,6 +36,12 @@ May leave with checked errors: TimeError. Interface contract; implementation sel
 ### \_aug\_time\_now
 
 [Source](contracts.aug#L6)
+
+It is private to its defining scope.
+
+It returns `int`. It can call [`Clock.now`](contracts.aug.md#symbol-Clock.now). Failures can raise `TimeError`.
+
+Native C implementation; only its declared contract is visible here.
 
 May leave with checked errors: TimeError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
@@ -41,6 +51,8 @@ May leave with checked errors: TimeError. Native implementation; only the declar
 
 [Source](contracts.aug#L8)
 
+Operating-system wall clock. It implements [`Clock`](contracts.aug.md#symbol-Clock).
+
 [Explanation](contracts.aug.md).
 
 <a id="sequence-SystemClock.now"></a>
@@ -48,6 +60,10 @@ May leave with checked errors: TimeError. Native implementation; only the declar
 ### SystemClock.now
 
 [Source](contracts.aug#L9)
+
+Read whole Unix seconds in UTC.
+
+It can call [`Clock.now`](contracts.aug.md#symbol-Clock.now). Failures can raise `TimeError`.
 
 ```mermaid
 sequenceDiagram

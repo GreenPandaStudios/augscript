@@ -6,46 +6,48 @@ hero:
     light: /brand/august-mark.svg
     dark: /brand/august-mark-dark.svg
     alt: August
-  text: The world runs on language
-  tagline: Understand a codebase from its overview to its source. Readable code, compiled explanations and diagrams, with measured native performance.
+  text: Understanding at every resolution
+  tagline: Code that reads like pseudocode. Compiled explanations and diagrams you can navigate. Native performance you can measure.
   actions:
     - theme: brand
       text: Get started
       link: /getting-started
     - theme: alt
-      text: Explore the language
-      link: /learn/
+      text: See how the views work
+      link: /guides/understand-a-project
 features:
-  - title: Move from overview to code
-    details: Follow folder data flow, module interactions and API sequences, then open the explanation or source for the detail you need.
+  - title: Understand the whole, then the part
+    details: Begin with startup and folder data flow. Follow an operation into its decisions, dependencies, results and failures.
   - title: Read it like pseudocode
-    details: Calls name their inputs. Imports and declaration headers show which dependencies the code uses.
-  - title: Compile a human-readable spec
-    details: Run aug spec to explain a module in sentences and link to its dependencies. Review the explanation with the code.
+    details: Calls name their inputs. Modules have narrow exports. The compiler infers repeated contracts and checks them.
+  - title: Compile the explanation
+    details: aug spec turns the checked program into linked prose and Mermaid diagrams. Regenerate them with every change.
   - title: Run at native speed
-    details: Compile to a native executable. The programs below compare August with C doing the same work.
+    details: LLVM compiles August to native executables. Compare complete programs with C using published sources and measurements.
 ---
 
 <!--@include: ./.vitepress/home-example.md-->
 
 <!--@include: ./.vitepress/home-diagram.md-->
 
-## Understand a codebase at the level you need
+## Understand a large codebase without reading every file
 
-August is designed for developers and coding agents working in large codebases. Whether you wrote an implementation or an agent produced it, you need to understand its dependencies, decisions and effects before changing it.
+The world runs on language. August makes the program explain itself at the level you need: the project, a folder, an operation, or an individual decision.
 
-Move through the program at several levels: **project overview → folder data flow → module interactions → API sequences → compiled explanation → source**. Each view comes from the checked program and links to the next level. Start with the overview to find the relevant folder, open its modules, follow a sequence to see which operations it calls, and open the source when you need to inspect or change an expression.
+Start with the generated overview to see startup and the data that crosses folder boundaries. Open a folder to find its public surface. Follow a sequence to see when an operation calls its dependencies, returns, fails, or cleans up. Read the neighboring specification for the full behavior in sentences. The exact call contract and source stay one link away.
 
-Generated Mermaid diagrams are being added for 1.0 and are **unreleased**. Explore the [greeting project's diagrams](examples/hello/diagrams/index.md) or follow a larger [login application's APIs](examples/oidc-login/diagrams/index.md). The [compiled-spec guide](specifications.md) explains what each view contains.
+This is the normal reading path for both developers and coding agents. It lets you review a change, locate a dependency, or understand a failure without opening every implementation. When you need to change an expression, the explanation links to that part of the source.
 
-Imports, dependency bindings and startup code remain together in `main.aug`. Tests stay beside the implementation, so the behavior and its acceptance cases are close to the code you change.
+All these views come from the checked program. The explanation describes what the implementation does; your requirements and tests establish whether that behavior is right. Native implementations and runtime interface choices remain visible boundaries.
 
-August infers return types, possible failures, and state changes from executable code. The editor shows those facts as hints. You write them explicitly where an interface needs to constrain its implementations.
+The diagram views and expanded reading workflow are being prepared for 1.0 and are **unreleased**. Try the [greeting project's overview](examples/hello/diagrams/index.md), then explore the larger [login application](examples/oidc-login/diagrams/index.md). [Understand a project](guides/understand-a-project.md) shows how to move between the views.
 
-Start with [your first project](getting-started.md), then follow [the August book](learn/index.md). Use the [task guides](guides/index.md) for packages, HTTP, tests, and deployment, and the [language reference](reference.md) when you need an exact rule. The [project gallery](examples/index.md) puts code and its actual compiled spec side by side.
+<!--@include: ./.vitepress/home-performance.md-->
 
 ## Try the public preview
 
 August 0.23.0 is available now. You need Node.js 24 and macOS 14+ on Apple Silicon or GNU/Linux x86-64/ARM64 with glibc 2.36+. August obtains its native compiler and libraries automatically; you do not install LLVM or Clang.
 
-The language is experimental, with no stable 1.0 compatibility promise yet. Cooperative tasks share a heap; worker tasks can run on multiple cores with isolated heaps. Read [supported platforms](compatibility.md), [production readiness](production-readiness.md), and the [roadmap to 1.0](roadmap.md) before choosing it for a deployment. Source and issues are on [GitHub](https://github.com/GreenPandaStudios/augscript).
+Start with [your first project](getting-started.md), then follow [the August book](learn/index.md). The [project gallery](examples/index.md) shows formatted code beside its actual compiled spec. Use the [task guides](guides/index.md) for packages, HTTP, tests, and deployment.
+
+The language is experimental, with no stable 1.0 compatibility promise yet. Read [supported platforms](compatibility.md), [production readiness](production-readiness.md), and the [roadmap to 1.0](roadmap.md) before choosing it for a deployment. Source and issues are on [GitHub](https://github.com/GreenPandaStudios/augscript).

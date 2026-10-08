@@ -74,3 +74,15 @@ test('shared ranges retain every paragraph and highlighted multi-link menus leav
   assert.match(html,/href="#specification-paragraph-1"/);assert.match(html,/href="#specification-paragraph-2"/);assert.match(html,/aria-label="Read the 2 explanations for this code"/);assert.equal(copied,view.text);
  }}finally{highlighter.dispose();}
 });
+
+test('source-linked evidence tables retain table structure and backlink to their named boundary',async()=>{
+ const {planExampleNavigation}=await import('../scripts/example-source-links.mjs');
+ const sourcePath='/project/hello.aug',artifactPath='/project/hello.aug.diagrams.md',page='docs/examples/hello/hello-diagrams.md';
+ const artifact={kind:'diagram',path:artifactPath,text:'<a id="boundary-one"></a>\n\n#### Caller to service\n\n<details>\n<summary>Evidence</summary>\n\n| Caller | Evidence |\n| --- | --- |\n| hello | [source](hello.aug#L2) |\n\n</details>\n'};
+ const plan=planExampleNavigation([artifact],new Map([[artifactPath,page]]),new Map([[sourcePath,'docs/examples/hello/hello.md']]));
+ const rendered=plan.texts.get(artifactPath);
+ assert.match(rendered,/#### Caller to service \{#boundary-one\}/);
+ assert.match(rendered,/\| --- \| --- \|\n\| hello \|/);
+ assert.doesNotMatch(rendered,/spec-paragraph|<a id=/);
+ assert.equal(plan.references.get(sourcePath)[0].paragraph,'boundary-one');
+});

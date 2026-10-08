@@ -12,7 +12,17 @@ outline: [2, 3]
 
 [CPU tensors with PyTorch](../index.md)
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 2 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
+
+## Where execution begins
+
+### Startup {#startup}
+
+::: spec-paragraph specification-paragraph-1
+It prints [`calculate`](../tensors.md#symbol-calculate). If this work raises [`TensorError`](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.2.0/contracts.md#symbol-TensorError) as `error`, it prints `error.message`. [source](../main.md#source-L5-L8)
+:::
 
 ## Data flow
 
@@ -31,22 +41,79 @@ flowchart TD
 flowchart LR
     n0["@greenpandastudios/aug-pytorch"]
     n1["tensors"]
-    n1 -->|"add(left, right) / sum(tensor) + 2 more → float / list of float + 1 more"| n0
+    n1 -->|"add(left, right) / sum(tensor) + 1 more → float / own Tensor"| n0
 ```
 
 :::
 
-::: details Data crossing these boundaries (5 contracts)
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| Startup | tensors | [calculate](../tensors.md#symbol-calculate) | float |
-| tensors | @greenpandastudios/aug-pytorch | [add](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.md#symbol-add) · left: Tensor, right: Tensor | own Tensor |
-| tensors | @greenpandastudios/aug-pytorch | [sum](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.md#symbol-sum) · tensor: Tensor | float |
-| tensors | @greenpandastudios/aug-pytorch | [tensor](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.md#symbol-tensor) · values: List\<float\> | own Tensor |
-| tensors | @greenpandastudios/aug-pytorch | [values](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.md#symbol-values) · tensor: Tensor | List\<float\> |
+| Startup | tensors | 1 | [Inputs, results and call sites](index.md#boundary-79dca6bbff59) |
+| tensors | @greenpandastudios/aug-pytorch | 4 | [Inputs, results and call sites](index.md#boundary-ab1b8e2f1416) |
+
+#### Data crossing these boundaries (5 contracts)
+
+#### Startup → tensors {#boundary-79dca6bbff59}
+
+::: details 1 operation, 1 site
+
+**[calculate](../tensors.md#symbol-calculate)**
+
+No caller-supplied inputs. Result: float.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../main.md#source-L6) · [Caller explanation](../main.md#startup) |
 
 :::
+
+#### tensors → @greenpandastudios/aug-pytorch {#boundary-ab1b8e2f1416}
+
+::: details 4 operations, 9 sites
+
+**[add](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.md#symbol-add)**
+
+Inputs: left: Tensor, right: Tensor. Result: own Tensor.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| calculate | [Call site](../tensors.md#source-L8) · [Caller explanation](../tensors.md#symbol-calculate) |
+| test calculate | [Call site](../tensors.md#source-L16) · [Caller explanation](../tensors.md#symbol-test-20-calculate) |
+
+**[sum](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.md#symbol-sum)**
+
+Inputs: tensor: Tensor. Result: float.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| calculate | [Call site](../tensors.md#source-L9) · [Caller explanation](../tensors.md#symbol-calculate) |
+| test calculate | [Call site](../tensors.md#source-L22) · [Caller explanation](../tensors.md#symbol-test-20-calculate) |
+
+**[tensor](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.md#symbol-tensor)**
+
+Inputs: values: List\<float\>. Result: own Tensor.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| calculate | [Call site](../tensors.md#source-L6) · [Caller explanation](../tensors.md#symbol-calculate) |
+| calculate | [Call site](../tensors.md#source-L7) · [Caller explanation](../tensors.md#symbol-calculate) |
+| test calculate | [Call site](../tensors.md#source-L14) · [Caller explanation](../tensors.md#symbol-test-20-calculate) |
+| test calculate | [Call site](../tensors.md#source-L15) · [Caller explanation](../tensors.md#symbol-test-20-calculate) |
+
+**[values](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.md#symbol-values)**
+
+Inputs: tensor: Tensor. Result: List\<float\>.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| test calculate | [Call site](../tensors.md#source-L17) · [Caller explanation](../tensors.md#symbol-test-20-calculate) |
+
+:::
+
 
 ## Open a module
 

@@ -17,7 +17,7 @@ A range has an invalid step or exceeds its explicit allocation limit. It impleme
 Return a new list of integers from start up to, but excluding, end.
 A step past the int64 boundary stops before producing a wrapped value.
 
-It takes labeled inputs `end`, `start`, `step`, and `limit`.
+It takes `end` as an integer, `start` as an integer (when omitted, `0`), `step` as an integer (when omitted, `1`), and `limit` as an integer (when omitted, `1000000`). Failures can raise [`RangeError`](ranges.aug.md#symbol-RangeError) (Invalid step, invalid limit, or too many elements).
 
 If `step` equals `0`, it raises a [`RangeError`](ranges.aug.md#symbol-RangeError) with `message` `"Range step must not be zero"`. If `limit` is less than `1` or `limit` is greater than `1000000`, it raises a [`RangeError`](ranges.aug.md#symbol-RangeError) with `message` `"Range limit must be from 1 to 1000000"`. It sets `values` of type `List<int>` to a list with no items. It sets `current` to `start`. [source](ranges.aug#L14-L19)
 

@@ -1,12 +1,14 @@
 # Why August exists
 
-August is a statically checked language for native applications. It is designed to help developers and coding agents understand and change large codebases. You can start with a project overview, follow data through its folders and modules, examine an API sequence, then read the compiled explanation or inspect the source. These views come from the checked program and link to each other. The diagram views are unreleased work for 1.0.
+August is a statically checked language for native applications, designed around **understanding at every resolution**. Its code reads like pseudocode; its compiler also produces connected explanations and diagrams. Developers and coding agents can work from the project down to an operation without reading every implementation. The diagram views are unreleased work for 1.0.
 
 The language's two tenets are **simplicity** and **developer scalability**. Write the code needed for the operation. Let the compiler infer repeated information. Keep the module small enough that a new reader can follow its behavior and find its dependencies.
 
 ## Understand before changing
 
-When you review an agent's implementation, you need to find the relevant module, understand its dependencies and decisions, and check the proposed behavior. August organizes that reading at several levels of detail. Use the overview to locate a responsibility, a sequence to follow possible calls, and the source to inspect or adjust the expression that matters.
+When you review an agent's implementation, begin with the generated views. The project overview explains startup and service wiring. A folder view shows its exports and the data it exchanges. An operation's sequence follows possible calls, decisions and exits; its prose supplies the detailed behavior and dependency contracts. Open the linked source when an expression needs changing or a boundary needs investigation.
+
+[Follow the greeting example](guides/understand-a-project.md) to try that reading path. The homepage shows its actual code, compiled spec and diagrams together.
 
 The generated explanation describes the current implementation. Authored requirements and tests describe what it should do. Review them together when accepting a change. [Compiled specifications](specifications.md) explains the reading workflow and the boundaries of each view.
 
@@ -22,7 +24,7 @@ Tests live beside the code they exercise. `aug spec` writes the module's explana
 
 Try August in a small application if you want to explore this way of organizing code. [The book](learn/index.md) starts with a greeting and builds toward modules, errors, state, and tests. Teams using coding agents can use the same examples to assess whether the source and specs help their own review process.
 
-August's design is intended to make code easier to change. Comparative productivity studies are still needed to measure that effect.
+The [research notes](research/understanding-at-every-resolution.md) connect this design to work on program comprehension, graph abstraction, traceability and deterministic language generation. The compiler tests check facts and links. Developer studies must separately measure whether these views improve understanding and change accuracy; comparative productivity claims need that evidence.
 
 ## Where it stands
 

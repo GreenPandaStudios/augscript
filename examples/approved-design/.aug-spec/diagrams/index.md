@@ -2,7 +2,29 @@
 
 # Project diagrams
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 6 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
+
+## Where execution begins
+
+<a id="providers"></a>
+### Providers
+
+`Console` is provided by [`SystemConsole`](../august/1.0.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared.
+
+`Application` is provided by [`ApplicationImpl`](../../domain/app.aug.md#symbol-ApplicationImpl). The same instance is shared. It requires bindings for `Console`. Include providers from [`Counters`](../../counters.aug.md#symbol-Counters).
+
+<a id="startup"></a>
+### Startup
+
+It sets `app` to the instance provided for `Application`. It calls [`app.start`](../../domain/app.aug.md#symbol-Application.start). It sets `names` to a map with `1` mapped to `"apple"`; `2` mapped to `"pear"`. If the value under `2` in `names` is null, it prints `"missing fruit"`. [source](../../main.aug#L8-L15)
+
+If the value under `2` in `names` is not null, using `name` for it prints `name`. It reads a tuple containing `3`, `"plum"` once and binds `[0]` as `code` and `[1]` as `label`. It prints the number of elements in a set containing a [`Fruit`](../../domain/models.aug.md#symbol-Fruit) with `code` and `name` from `label`, a [`Fruit`](../../domain/models.aug.md#symbol-Fruit) with `name` from `label` and `code`. Within a task and ownership scope, it sets `counter` to the instance provided for `Counter`. [source](../../main.aug#L15-L22)
+
+With temporary permission to change `counter`, it calls [`counter.increment`](../../counters.aug.md#symbol-Counter.increment). It prints [`counter.value`](../../counters.aug.md#symbol-Counter.value). On leaving this scope, join its child tasks and release its local values. It prints [`double`](../../domain/numbers.aug.md#symbol-double) with `amount` `7`. [source](../../main.aug#L18-L27)
+
+It calls [`double`](../../domain/numbers.aug.md#symbol-double) with `amount` `-1`. If this work raises [`RangeError`](../../domain/numbers.aug.md#symbol-RangeError), it prints `"negative amount rejected"`. [source](../../main.aug#L25-L27)
 
 ## Data flow
 
@@ -29,19 +51,95 @@ flowchart LR
 
 </details>
 
-<details>
-<summary>Data crossing these boundaries (6 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| domain | August libraries | [Console.write](../august/1.0.0/io/contracts.aug.md#symbol-Console.write) · value: string · interface dispatch | void |
-| Startup | counters | [Counter.increment](../../counters.aug.md#symbol-Counter.increment) · interface dispatch | void |
-| Startup | counters | [Counter.value](../../counters.aug.md#symbol-Counter.value) · interface dispatch | int |
-| Startup | domain | [Application.start](../../domain/app.aug.md#symbol-Application.start) · interface dispatch | void |
-| Startup | domain | [Fruit](../../domain/models.aug.md#symbol-Fruit) · code: int, name: string · value construction | Fruit |
-| Startup | domain | [double](../../domain/numbers.aug.md#symbol-double) · amount: int | int |
+| domain | August libraries | 1 | [Inputs, results and call sites](index.md#boundary-0619972829a9) |
+| Startup | counters | 2 | [Inputs, results and call sites](index.md#boundary-b7bfe3a049b4) |
+| Startup | domain | 3 | [Inputs, results and call sites](index.md#boundary-81d4afd188f5) |
+
+#### Data crossing these boundaries (6 contracts)
+
+<a id="boundary-0619972829a9"></a>
+
+#### domain → August libraries
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[Console.write](../august/1.0.0/io/contracts.aug.md#symbol-Console.write)** · interface dispatch
+
+Inputs: value: string. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| ApplicationImpl.start | [Call site](../../domain/app.aug#L13) · [Caller explanation](../../domain/app.aug.md#symbol-ApplicationImpl.start) |
 
 </details>
+
+<a id="boundary-b7bfe3a049b4"></a>
+
+#### Startup → counters
+
+<details>
+<summary>2 operations, 2 sites</summary>
+
+**[Counter.increment](../../counters.aug.md#symbol-Counter.increment)** · interface dispatch
+
+No caller-supplied inputs. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L21) · [Caller explanation](../../main.aug.md#startup) |
+
+**[Counter.value](../../counters.aug.md#symbol-Counter.value)** · interface dispatch
+
+No caller-supplied inputs. Result: int.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L22) · [Caller explanation](../../main.aug.md#startup) |
+
+</details>
+
+<a id="boundary-81d4afd188f5"></a>
+
+#### Startup → domain
+
+<details>
+<summary>3 operations, 5 sites</summary>
+
+**[Application.start](../../domain/app.aug.md#symbol-Application.start)** · interface dispatch
+
+No caller-supplied inputs. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L9) · [Caller explanation](../../main.aug.md#startup) |
+
+**[Fruit](../../domain/models.aug.md#symbol-Fruit)** · value construction
+
+Inputs: code: int, name: string. Result: Fruit.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L17) · [Caller explanation](../../main.aug.md#startup) |
+| Startup | [Call site](../../main.aug#L17) · [Caller explanation](../../main.aug.md#startup) |
+
+**[double](../../domain/numbers.aug.md#symbol-double)**
+
+Inputs: amount: int. Result: int.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L24) · [Caller explanation](../../main.aug.md#startup) |
+| Startup | [Call site](../../main.aug#L25) · [Caller explanation](../../main.aug.md#startup) |
+
+</details>
+
 
 ## Open a folder
 

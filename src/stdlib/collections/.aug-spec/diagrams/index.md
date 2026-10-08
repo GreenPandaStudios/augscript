@@ -2,20 +2,41 @@
 
 # Project diagrams
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 4 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
 
 ## Data flow
 
 No calls cross the source files in this view. Follow local operations in the file sequences below.
 
-<details>
-<summary>Data crossing these boundaries (1 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| workers | operations | [selected transformation](../../operations.aug.md#symbol-Transformation.apply) · value: T · compile-time target placeholder | U |
+| workers | operations | 1 | [Inputs, results and call sites](index.md#boundary-e5a472ac605d) |
+
+#### Data crossing these boundaries (1 contracts)
+
+<a id="boundary-e5a472ac605d"></a>
+
+#### workers → operations
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[selected transformation](../../operations.aug.md#symbol-Transformation.apply)** · compile-time target placeholder
+
+Inputs: value: T. Result: U.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| \_mapWorkerChunk | [Call site](../../workers.aug#L55) · [Caller explanation](../../workers.aug.md#symbol-_mapWorkerChunk) |
 
 </details>
+
 
 ## Open a module
 

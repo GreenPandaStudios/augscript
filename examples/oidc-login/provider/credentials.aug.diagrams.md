@@ -23,17 +23,23 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](credentials.aug#L4)
 
+One development account with a PBKDF2-HMAC-SHA256 verifier. Production account storage is deliberately a separate capability.
+
+It takes `username` and `password` as strings. It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)) from dependency injection.
+
+It can call [`Crypto.passwordHash`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.passwordHash), [`Crypto.decodeBase64url`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.decodeBase64url), and [`Crypto.equal`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal). Failures can raise `CryptoError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as verifyCredentials
     participant p1 as crypto: Crypto
     p0->>p0: username.length()
     p0-->>p0: length result: int
-    opt Left is false
+    opt (length result › 64) is false
     p0->>p0: password.length()
     p0-->>p0: length result 2: int
     end
-    alt username.length() › 64 or password.length() › 256
+    alt the byte length of username is greater than 64 or the<br/>byte length of password is greater than 256
     Note over p0: Return false； required cleanup runs before exit
     end
     p0->>p0: password.bytes()

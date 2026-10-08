@@ -25,6 +25,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](contracts.md#source-L3)
 :::
 
+It implements `Error`.
+
+It takes `code` as an integer, kept read-only and `message` as a string, kept read-only.
+
 Receive fields: code, message. [Explanation](contracts.md).
 
 ### GpuError.explain {#sequence-GpuError.explain}

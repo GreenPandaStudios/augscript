@@ -22,7 +22,9 @@ It checks that `scale` is at least `0` and `scale` is at most `18`. It raises a 
 Parse up to 64 ASCII characters: optional minus, integer digits, and an optional dot with 1 to 18 fractional digits.
 Leading zeroes are accepted. Plus, whitespace, exponent notation and non-ASCII digits are rejected.
 
-It takes `text` as a string. It checks that the byte length of `text` does not equal `0` and the byte length of `text` is at most `64`. It raises a `ConversionError` at the first failed check. It sets `parts` to `text.split` with `separator` `"."`. [source](decimals.aug#L19-L21)
+It takes `text` as a string. Failures can raise `ConversionError` (Invalid text, scale, or int64 coefficient. Negative zero loses its sign).
+
+It checks that the byte length of `text` does not equal `0` and the byte length of `text` is at most `64`. It raises a `ConversionError` at the first failed check. It sets `parts` to `text.split` with `separator` `"."`. [source](decimals.aug#L19-L21)
 
 It checks that the number of elements in `parts` is at most `2`. It raises a `ConversionError` at the first failed check. It sets `scale` to `0`. If the number of elements in `parts` equals `2`, it sets `whole` to the item at index `0` in `parts`. [source](decimals.aug#L22-L33)
 
@@ -66,7 +68,7 @@ It takes `value` as [`Decimal`](decimals.aug.md#symbol-Decimal).
 <a id="symbol-rescaleDecimal"></a>
 ## `rescaleDecimal` · [source](decimals.aug#L59)
 
-Change fractional scale exactly, adding or removing trailing zeroes without rounding. It takes `value` as [`Decimal`](decimals.aug.md#symbol-Decimal) and `scale` as an integer.
+Change fractional scale exactly, adding or removing trailing zeroes without rounding. It takes `value` as [`Decimal`](decimals.aug.md#symbol-Decimal) and `scale` as an integer. Failures can raise `ArithmeticError` (Precision would be discarded or an intermediate coefficient would overflow) and `ConversionError` (Invalid target scale).
 
 It checks that `scale` is at least `0` and `scale` is at most `18`. It raises a `ConversionError` at the first failed check. It sets `coefficient` to `value.coefficient`. It sets `current` to `value.scale`. [source](decimals.aug#L60-L63)
 
@@ -88,7 +90,7 @@ It takes `value` as [`Decimal`](decimals.aug.md#symbol-Decimal) and `scale` as a
 <a id="symbol-addDecimals"></a>
 ## `addDecimals` · [source](decimals.aug#L75)
 
-Add at the greater operand scale. Alignment and the sum must each fit int64. It takes `left` and `right` as [`Decimal`](decimals.aug.md#symbol-Decimal).
+Add at the greater operand scale. Alignment and the sum must each fit int64. It takes `left` and `right` as [`Decimal`](decimals.aug.md#symbol-Decimal). Failures can raise `ArithmeticError` and `ConversionError`.
 
 It sets `scale` to `left.scale`. If `scale` is less than `right.scale`, it sets `scale` to `right.scale`. It sets `alignedLeft` to [`rescaleDecimal`](decimals.aug.md#symbol-rescaleDecimal) with `value` from `left` and `scale`. It sets `alignedRight` to [`rescaleDecimal`](decimals.aug.md#symbol-rescaleDecimal) with `value` from `right` and `scale`. [source](decimals.aug#L76-L80)
 
@@ -108,7 +110,7 @@ It takes `left` and `right` as [`Decimal`](decimals.aug.md#symbol-Decimal). Fail
 <a id="symbol-subtractDecimals"></a>
 ## `subtractDecimals` · [source](decimals.aug#L84)
 
-Subtract at the greater operand scale. Alignment and the difference must each fit int64. It takes `left` and `right` as [`Decimal`](decimals.aug.md#symbol-Decimal).
+Subtract at the greater operand scale. Alignment and the difference must each fit int64. It takes `left` and `right` as [`Decimal`](decimals.aug.md#symbol-Decimal). Failures can raise `ArithmeticError` and `ConversionError`.
 
 It sets `scale` to `left.scale`. If `scale` is less than `right.scale`, it sets `scale` to `right.scale`. It sets `alignedLeft` to [`rescaleDecimal`](decimals.aug.md#symbol-rescaleDecimal) with `value` from `left` and `scale`. It sets `alignedRight` to [`rescaleDecimal`](decimals.aug.md#symbol-rescaleDecimal) with `value` from `right` and `scale`. [source](decimals.aug#L85-L89)
 
@@ -128,7 +130,9 @@ It takes `left` and `right` as [`Decimal`](decimals.aug.md#symbol-Decimal). Fail
 <a id="symbol-multiplyDecimals"></a>
 ## `multiplyDecimals` · [source](decimals.aug#L93)
 
-Multiply coefficients and add scales. Reject a scale above 18 or an int64 product overflow. It takes `left` and `right` as [`Decimal`](decimals.aug.md#symbol-Decimal). It returns a [`Decimal`](decimals.aug.md#symbol-Decimal) with `coefficient` from [`checkedMultiply`](integers.aug.md#symbol-checkedMultiply) with `left` from `left.coefficient` and `right` from `right.coefficient` and `scale` from `left.scale` plus `right.scale`. [source](decimals.aug#L94)
+Multiply coefficients and add scales. Reject a scale above 18 or an int64 product overflow. It takes `left` and `right` as [`Decimal`](decimals.aug.md#symbol-Decimal). Failures can raise `ArithmeticError` and `ConversionError`.
+
+It returns a [`Decimal`](decimals.aug.md#symbol-Decimal) with `coefficient` from [`checkedMultiply`](integers.aug.md#symbol-checkedMultiply) with `left` from `left.coefficient` and `right` from `right.coefficient` and `scale` from `left.scale` plus `right.scale`. [source](decimals.aug#L94)
 
 <details>
 <summary>Checked interface</summary>
@@ -144,7 +148,7 @@ It takes `left` and `right` as [`Decimal`](decimals.aug.md#symbol-Decimal). Fail
 <a id="symbol-divideDecimals"></a>
 ## `divideDecimals` · [source](decimals.aug#L100)
 
-Divide at an explicit scale, requiring an exact result. No rounding mode is chosen implicitly. It takes `left` and `right` as [`Decimal`](decimals.aug.md#symbol-Decimal) and `scale` as an integer.
+Divide at an explicit scale, requiring an exact result. No rounding mode is chosen implicitly. It takes `left` and `right` as [`Decimal`](decimals.aug.md#symbol-Decimal) and `scale` as an integer. Failures can raise `ArithmeticError` (Zero divisor, inexact result, or an intermediate int64 overflow) and `ConversionError` (Target scale is outside 0 to 18).
 
 It checks that `scale` is at least `0` and `scale` is at most `18`. It raises a `ConversionError` at the first failed check. It checks that `right.coefficient` does not equal `0`. It raises an `ArithmeticError` at the first failed check. [source](decimals.aug#L101-L104)
 
@@ -169,7 +173,7 @@ It takes `left` and `right` as [`Decimal`](decimals.aug.md#symbol-Decimal) and `
 Compare numeric decimal values; return -1, 0, or 1. Equal values can have different recorded scales.
 Digit comparison avoids coefficient-alignment overflow. No floating-point conversion occurs.
 
-It takes `left` and `right` as [`Decimal`](decimals.aug.md#symbol-Decimal).
+It takes `left` and `right` as [`Decimal`](decimals.aug.md#symbol-Decimal). Failures can raise `ConversionError`.
 
 If `left.coefficient` is negative and `right.coefficient` is at least `0`, it returns `-1`. If `left.coefficient` is at least `0` and `right.coefficient` is negative, it returns `1`. It sets `leftDigits` to `join` on `split` on the text `{left.coefficient}` with `separator` `"-"` with `separator` `""`. It sets `rightDigits` to `join` on `split` on the text `{right.coefficient}` with `separator` `"-"` with `separator` `""`. [source](decimals.aug#L122-L127)
 

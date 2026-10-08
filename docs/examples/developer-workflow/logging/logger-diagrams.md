@@ -33,6 +33,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](logger.md#source-L6)
 :::
 
+It takes `message` as a string (Text to write). It gets `console` ([`Console`](../dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection.
+
+It can call [`Console.write`](../dependencies/august/1.0.0/io/contracts.md#symbol-Console.write).
+
 Interface contract; implementation selected at runtime. [Explanation](logger.md).
 
 ## Called contracts

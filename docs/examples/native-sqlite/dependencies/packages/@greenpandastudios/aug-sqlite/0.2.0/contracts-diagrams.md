@@ -25,6 +25,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](contracts.md#source-L4)
 :::
 
+It implements `Error`.
+
+It takes `code` as an integer, kept read-only and `message` as a string, kept read-only.
+
 Receive fields: code, message. [Explanation](contracts.md).
 
 ### DatabaseStorage.open {#sequence-DatabaseStorage.open}
@@ -32,5 +36,9 @@ Receive fields: code, message. [Explanation](contracts.md).
 ::: spec-paragraph specification-paragraph-2
 [Source](contracts.md#source-L8)
 :::
+
+It takes `path` as a string.
+
+It returns ownership of [`Database`](bindings.md#symbol-Database). It can call [`DatabaseStorage.open`](contracts.md#symbol-DatabaseStorage.open). Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError).
 
 May leave with checked errors: SqliteError. Interface contract; implementation selected at runtime. [Explanation](contracts.md).

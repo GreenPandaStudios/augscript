@@ -9,7 +9,7 @@
 <a id="symbol-hashText"></a>
 ## `hashText` · [source](hashing.aug#L5)
 
-Hash UTF-8 text with the real Rust BLAKE3 implementation. It takes `value` as a string. It returns [`hash`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.2.0/api.aug.md#symbol-hash) with `input` from the UTF-8 bytes of `value`. [source](hashing.aug#L6)
+Hash UTF-8 text with the real Rust BLAKE3 implementation. It takes `value` as a string. Failures can raise [`HashError`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.2.0/contracts.aug.md#symbol-HashError). It returns [`hash`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.2.0/api.aug.md#symbol-hash) with `input` from the UTF-8 bytes of `value`. [source](hashing.aug#L6)
 
 <details>
 <summary>Checked interface</summary>

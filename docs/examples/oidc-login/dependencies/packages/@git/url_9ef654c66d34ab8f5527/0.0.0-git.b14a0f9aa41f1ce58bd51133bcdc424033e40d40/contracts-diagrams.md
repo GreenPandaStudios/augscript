@@ -67,6 +67,12 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](contracts.md#source-L6)
 :::
 
+Generate unpredictable bytes with the operating-system-backed GnuTLS RNG.
+
+It takes `size` as an integer.
+
+It returns `Bytes`. It can call [`Crypto.random`](contracts.md#symbol-Crypto.random). Failures can raise `CryptoError`.
+
 May leave with checked errors: CryptoError. Interface contract; implementation selected at runtime. [Explanation](contracts.md).
 
 ### Crypto.sha256 {#sequence-Crypto.sha256}
@@ -74,6 +80,12 @@ May leave with checked errors: CryptoError. Interface contract; implementation s
 ::: spec-paragraph specification-paragraph-2
 [Source](contracts.md#source-L8)
 :::
+
+Hash the complete input using SHA-256.
+
+It takes `input` as `Bytes`.
+
+It returns `Bytes`. It can call [`Crypto.sha256`](contracts.md#symbol-Crypto.sha256). Failures can raise `CryptoError`.
 
 May leave with checked errors: CryptoError. Interface contract; implementation selected at runtime. [Explanation](contracts.md).
 
@@ -83,6 +95,10 @@ May leave with checked errors: CryptoError. Interface contract; implementation s
 [Source](contracts.md#source-L10)
 :::
 
+Create a fresh 3072-bit RSA private key. Private material is opaque and scrubbed on reclamation.
+
+It returns `RsaPrivateKey`. It can call [`Crypto.generateRsa`](contracts.md#symbol-Crypto.generateRsa). Failures can raise `CryptoError`.
+
 May leave with checked errors: CryptoError. Interface contract; implementation selected at runtime. [Explanation](contracts.md).
 
 ### Crypto.publicRsa {#sequence-Crypto.publicRsa}
@@ -90,6 +106,12 @@ May leave with checked errors: CryptoError. Interface contract; implementation s
 ::: spec-paragraph specification-paragraph-4
 [Source](contracts.md#source-L12)
 :::
+
+Export the corresponding public key as an opaque immutable value.
+
+It takes `key` as `RsaPrivateKey`.
+
+It returns `RsaPublicKey`. It can call [`Crypto.publicRsa`](contracts.md#symbol-Crypto.publicRsa). Failures can raise `CryptoError`.
 
 May leave with checked errors: CryptoError. Interface contract; implementation selected at runtime. [Explanation](contracts.md).
 
@@ -99,6 +121,12 @@ May leave with checked errors: CryptoError. Interface contract; implementation s
 [Source](contracts.md#source-L14)
 :::
 
+Sign bytes using RSASSA-PKCS1-v1_5 with SHA-256 (JOSE RS256).
+
+It takes `key` as `RsaPrivateKey` and `input` as `Bytes`.
+
+It returns `Bytes`. It can call [`Crypto.signRsa`](contracts.md#symbol-Crypto.signRsa). Failures can raise `CryptoError`.
+
 May leave with checked errors: CryptoError. Interface contract; implementation selected at runtime. [Explanation](contracts.md).
 
 ### Crypto.verifyRsa {#sequence-Crypto.verifyRsa}
@@ -106,6 +134,12 @@ May leave with checked errors: CryptoError. Interface contract; implementation s
 ::: spec-paragraph specification-paragraph-6
 [Source](contracts.md#source-L16)
 :::
+
+Verify only RS256. Invalid signatures return false; invalid keys raise CryptoError.
+
+It takes `publicKey` as `RsaPublicKey` and `input` and `signature` as `Bytes`.
+
+It returns `bool`. It can call [`Crypto.verifyRsa`](contracts.md#symbol-Crypto.verifyRsa). Failures can raise `CryptoError`.
 
 May leave with checked errors: CryptoError. Interface contract; implementation selected at runtime. [Explanation](contracts.md).
 
@@ -115,6 +149,12 @@ May leave with checked errors: CryptoError. Interface contract; implementation s
 [Source](contracts.md#source-L18)
 :::
 
+Decode canonical unpadded URL-safe base64, rejecting invalid characters and unused bits.
+
+It takes `input` as a string.
+
+It returns `Bytes`. It can call [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url). Failures can raise `CryptoError`.
+
 May leave with checked errors: CryptoError. Interface contract; implementation selected at runtime. [Explanation](contracts.md).
 
 ### Crypto.equal {#sequence-Crypto.equal}
@@ -122,6 +162,12 @@ May leave with checked errors: CryptoError. Interface contract; implementation s
 ::: spec-paragraph specification-paragraph-8
 [Source](contracts.md#source-L20)
 :::
+
+Compare bytes without early exit on their contents. Length remains observable.
+
+It takes `left` and `right` as `Bytes`.
+
+It returns `bool`. It can call [`Crypto.equal`](contracts.md#symbol-Crypto.equal).
 
 Interface contract; implementation selected at runtime. [Explanation](contracts.md).
 
@@ -131,6 +177,12 @@ Interface contract; implementation selected at runtime. [Explanation](contracts.
 [Source](contracts.md#source-L22)
 :::
 
+Export unsigned big-endian modulus and exponent for an RSA JWK.
+
+It takes `publicKey` as `RsaPublicKey`.
+
+It returns `Tuple<Bytes,Bytes>`. It can call [`Crypto.exportRsa`](contracts.md#symbol-Crypto.exportRsa). Failures can raise `CryptoError`.
+
 May leave with checked errors: CryptoError. Interface contract; implementation selected at runtime. [Explanation](contracts.md).
 
 ### Crypto.importRsa {#sequence-Crypto.importRsa}
@@ -138,6 +190,12 @@ May leave with checked errors: CryptoError. Interface contract; implementation s
 ::: spec-paragraph specification-paragraph-10
 [Source](contracts.md#source-L24)
 :::
+
+Import canonical public RSA parameters. Keys must have 2048 to 8192 bits.
+
+It takes `modulus` and `exponent` as `Bytes`.
+
+It returns `RsaPublicKey`. It can call [`Crypto.importRsa`](contracts.md#symbol-Crypto.importRsa). Failures can raise `CryptoError`.
 
 May leave with checked errors: CryptoError. Interface contract; implementation selected at runtime. [Explanation](contracts.md).
 
@@ -147,6 +205,12 @@ May leave with checked errors: CryptoError. Interface contract; implementation s
 [Source](contracts.md#source-L26)
 :::
 
+PBKDF2-HMAC-SHA256, producing 32 bytes. Use a unique 16–64 byte salt; supported work factors are 100,000–2,000,000.
+
+It takes `password` and `salt` as `Bytes` and `iterations` as an integer.
+
+It returns `Bytes`. It can call [`Crypto.passwordHash`](contracts.md#symbol-Crypto.passwordHash). Failures can raise `CryptoError`.
+
 May leave with checked errors: CryptoError. Interface contract; implementation selected at runtime. [Explanation](contracts.md).
 
 ### \_aug\_crypto\_random {#sequence-_aug_crypto_random}
@@ -154,6 +218,14 @@ May leave with checked errors: CryptoError. Interface contract; implementation s
 ::: spec-paragraph specification-paragraph-12
 [Source](contracts.md#source-L28)
 :::
+
+It is private to its defining scope.
+
+It takes `size` as an integer.
+
+It returns `Bytes`. It can call [`Crypto.random`](contracts.md#symbol-Crypto.random). Failures can raise `CryptoError`.
+
+Native C implementation; only its declared contract is visible here.
 
 May leave with checked errors: CryptoError. Native implementation; only the declared contract is known. [Explanation](contracts.md).
 
@@ -163,6 +235,14 @@ May leave with checked errors: CryptoError. Native implementation; only the decl
 [Source](contracts.md#source-L29)
 :::
 
+It is private to its defining scope.
+
+It takes `input` as `Bytes`.
+
+It returns `Bytes`. It can call [`Crypto.sha256`](contracts.md#symbol-Crypto.sha256). Failures can raise `CryptoError`.
+
+Native C implementation; only its declared contract is visible here.
+
 May leave with checked errors: CryptoError. Native implementation; only the declared contract is known. [Explanation](contracts.md).
 
 ### \_aug\_crypto\_generate\_rsa {#sequence-_aug_crypto_generate_rsa}
@@ -170,6 +250,12 @@ May leave with checked errors: CryptoError. Native implementation; only the decl
 ::: spec-paragraph specification-paragraph-14
 [Source](contracts.md#source-L30)
 :::
+
+It is private to its defining scope.
+
+It returns `RsaPrivateKey`. It can call [`Crypto.generateRsa`](contracts.md#symbol-Crypto.generateRsa). Failures can raise `CryptoError`.
+
+Native C implementation; only its declared contract is visible here.
 
 May leave with checked errors: CryptoError. Native implementation; only the declared contract is known. [Explanation](contracts.md).
 
@@ -179,6 +265,14 @@ May leave with checked errors: CryptoError. Native implementation; only the decl
 [Source](contracts.md#source-L31)
 :::
 
+It is private to its defining scope.
+
+It takes `key` as `RsaPrivateKey`.
+
+It returns `RsaPublicKey`. It can call [`Crypto.publicRsa`](contracts.md#symbol-Crypto.publicRsa). Failures can raise `CryptoError`.
+
+Native C implementation; only its declared contract is visible here.
+
 May leave with checked errors: CryptoError. Native implementation; only the declared contract is known. [Explanation](contracts.md).
 
 ### \_aug\_crypto\_sign\_rsa {#sequence-_aug_crypto_sign_rsa}
@@ -186,6 +280,14 @@ May leave with checked errors: CryptoError. Native implementation; only the decl
 ::: spec-paragraph specification-paragraph-16
 [Source](contracts.md#source-L32)
 :::
+
+It is private to its defining scope.
+
+It takes `key` as `RsaPrivateKey` and `input` as `Bytes`.
+
+It returns `Bytes`. It can call [`Crypto.signRsa`](contracts.md#symbol-Crypto.signRsa). Failures can raise `CryptoError`.
+
+Native C implementation; only its declared contract is visible here.
 
 May leave with checked errors: CryptoError. Native implementation; only the declared contract is known. [Explanation](contracts.md).
 
@@ -195,6 +297,14 @@ May leave with checked errors: CryptoError. Native implementation; only the decl
 [Source](contracts.md#source-L33)
 :::
 
+It is private to its defining scope.
+
+It takes `publicKey` as `RsaPublicKey` and `input` and `signature` as `Bytes`.
+
+It returns `bool`. It can call [`Crypto.verifyRsa`](contracts.md#symbol-Crypto.verifyRsa). Failures can raise `CryptoError`.
+
+Native C implementation; only its declared contract is visible here.
+
 May leave with checked errors: CryptoError. Native implementation; only the declared contract is known. [Explanation](contracts.md).
 
 ### \_aug\_crypto\_decode\_base64url {#sequence-_aug_crypto_decode_base64url}
@@ -202,6 +312,14 @@ May leave with checked errors: CryptoError. Native implementation; only the decl
 ::: spec-paragraph specification-paragraph-18
 [Source](contracts.md#source-L34)
 :::
+
+It is private to its defining scope.
+
+It takes `input` as a string.
+
+It returns `Bytes`. It can call [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url). Failures can raise `CryptoError`.
+
+Native C implementation; only its declared contract is visible here.
 
 May leave with checked errors: CryptoError. Native implementation; only the declared contract is known. [Explanation](contracts.md).
 
@@ -211,6 +329,14 @@ May leave with checked errors: CryptoError. Native implementation; only the decl
 [Source](contracts.md#source-L35)
 :::
 
+It is private to its defining scope.
+
+It takes `left` and `right` as `Bytes`.
+
+It returns `bool`. It can call [`Crypto.equal`](contracts.md#symbol-Crypto.equal).
+
+Native C implementation; only its declared contract is visible here.
+
 Native implementation; only the declared contract is known. [Explanation](contracts.md).
 
 ### \_aug\_crypto\_export\_rsa {#sequence-_aug_crypto_export_rsa}
@@ -218,6 +344,14 @@ Native implementation; only the declared contract is known. [Explanation](contra
 ::: spec-paragraph specification-paragraph-20
 [Source](contracts.md#source-L36)
 :::
+
+It is private to its defining scope.
+
+It takes `publicKey` as `RsaPublicKey`.
+
+It returns `Tuple<Bytes,Bytes>`. It can call [`Crypto.exportRsa`](contracts.md#symbol-Crypto.exportRsa). Failures can raise `CryptoError`.
+
+Native C implementation; only its declared contract is visible here.
 
 May leave with checked errors: CryptoError. Native implementation; only the declared contract is known. [Explanation](contracts.md).
 
@@ -227,6 +361,14 @@ May leave with checked errors: CryptoError. Native implementation; only the decl
 [Source](contracts.md#source-L37)
 :::
 
+It is private to its defining scope.
+
+It takes `modulus` and `exponent` as `Bytes`.
+
+It returns `RsaPublicKey`. It can call [`Crypto.importRsa`](contracts.md#symbol-Crypto.importRsa). Failures can raise `CryptoError`.
+
+Native C implementation; only its declared contract is visible here.
+
 May leave with checked errors: CryptoError. Native implementation; only the declared contract is known. [Explanation](contracts.md).
 
 ### \_aug\_crypto\_password\_hash {#sequence-_aug_crypto_password_hash}
@@ -234,6 +376,14 @@ May leave with checked errors: CryptoError. Native implementation; only the decl
 ::: spec-paragraph specification-paragraph-22
 [Source](contracts.md#source-L38)
 :::
+
+It is private to its defining scope.
+
+It takes `password` and `salt` as `Bytes` and `iterations` as an integer.
+
+It returns `Bytes`. It can call [`Crypto.passwordHash`](contracts.md#symbol-Crypto.passwordHash). Failures can raise `CryptoError`.
+
+Native C implementation; only its declared contract is visible here.
 
 May leave with checked errors: CryptoError. Native implementation; only the declared contract is known. [Explanation](contracts.md).
 
@@ -243,6 +393,8 @@ May leave with checked errors: CryptoError. Native implementation; only the decl
 [Source](contracts.md#source-L41)
 :::
 
+GnuTLS-backed capability adapter. Its constructor performs no I/O or key generation. It implements [`Crypto`](contracts.md#symbol-Crypto).
+
 [Explanation](contracts.md).
 
 ### GnuTlsCrypto.random {#sequence-GnuTlsCrypto.random}
@@ -250,6 +402,12 @@ May leave with checked errors: CryptoError. Native implementation; only the decl
 ::: spec-paragraph specification-paragraph-24
 [Source](contracts.md#source-L42)
 :::
+
+Generate unpredictable bytes with the operating-system-backed GnuTLS RNG.
+
+It takes `size` as an integer.
+
+It can call [`Crypto.random`](contracts.md#symbol-Crypto.random). Failures can raise `CryptoError`.
 
 ```mermaid
 sequenceDiagram
@@ -271,6 +429,12 @@ sequenceDiagram
 [Source](contracts.md#source-L45)
 :::
 
+Hash the complete input using SHA-256.
+
+It takes `input` as `Bytes`.
+
+It can call [`Crypto.sha256`](contracts.md#symbol-Crypto.sha256). Failures can raise `CryptoError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as GnuTlsCrypto.sha256
@@ -290,6 +454,10 @@ sequenceDiagram
 ::: spec-paragraph specification-paragraph-26
 [Source](contracts.md#source-L48)
 :::
+
+Create a fresh 3072-bit RSA private key. Private material is opaque and scrubbed on reclamation.
+
+It can call [`Crypto.generateRsa`](contracts.md#symbol-Crypto.generateRsa). Failures can raise `CryptoError`.
 
 ```mermaid
 sequenceDiagram
@@ -311,6 +479,12 @@ sequenceDiagram
 [Source](contracts.md#source-L51)
 :::
 
+Export the corresponding public key as an opaque immutable value.
+
+It takes `key` as `RsaPrivateKey`.
+
+It can call [`Crypto.publicRsa`](contracts.md#symbol-Crypto.publicRsa). Failures can raise `CryptoError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as GnuTlsCrypto.publicRsa
@@ -330,6 +504,12 @@ sequenceDiagram
 ::: spec-paragraph specification-paragraph-28
 [Source](contracts.md#source-L54)
 :::
+
+Sign bytes using RSASSA-PKCS1-v1_5 with SHA-256 (JOSE RS256).
+
+It takes `key` as `RsaPrivateKey` and `input` as `Bytes`.
+
+It can call [`Crypto.signRsa`](contracts.md#symbol-Crypto.signRsa). Failures can raise `CryptoError`.
 
 ```mermaid
 sequenceDiagram
@@ -351,6 +531,12 @@ sequenceDiagram
 [Source](contracts.md#source-L57)
 :::
 
+Verify only RS256. Invalid signatures return false; invalid keys raise CryptoError.
+
+It takes `publicKey` as `RsaPublicKey` and `input` and `signature` as `Bytes`.
+
+It can call [`Crypto.verifyRsa`](contracts.md#symbol-Crypto.verifyRsa). Failures can raise `CryptoError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as GnuTlsCrypto.verifyRsa
@@ -370,6 +556,12 @@ sequenceDiagram
 ::: spec-paragraph specification-paragraph-30
 [Source](contracts.md#source-L60)
 :::
+
+Decode canonical unpadded URL-safe base64, rejecting invalid characters and unused bits.
+
+It takes `input` as a string.
+
+It can call [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url). Failures can raise `CryptoError`.
 
 ```mermaid
 sequenceDiagram
@@ -391,6 +583,12 @@ sequenceDiagram
 [Source](contracts.md#source-L63)
 :::
 
+Compare bytes without early exit on their contents. Length remains observable.
+
+It takes `left` and `right` as `Bytes`.
+
+It can call [`Crypto.equal`](contracts.md#symbol-Crypto.equal).
+
 ```mermaid
 sequenceDiagram
     participant p0 as GnuTlsCrypto.equal
@@ -409,6 +607,12 @@ sequenceDiagram
 ::: spec-paragraph specification-paragraph-32
 [Source](contracts.md#source-L66)
 :::
+
+Export unsigned big-endian modulus and exponent for an RSA JWK.
+
+It takes `publicKey` as `RsaPublicKey`.
+
+It can call [`Crypto.exportRsa`](contracts.md#symbol-Crypto.exportRsa). Failures can raise `CryptoError`.
 
 ```mermaid
 sequenceDiagram
@@ -430,6 +634,12 @@ sequenceDiagram
 [Source](contracts.md#source-L69)
 :::
 
+Import canonical public RSA parameters. Keys must have 2048 to 8192 bits.
+
+It takes `modulus` and `exponent` as `Bytes`.
+
+It can call [`Crypto.importRsa`](contracts.md#symbol-Crypto.importRsa). Failures can raise `CryptoError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as GnuTlsCrypto.importRsa
@@ -449,6 +659,12 @@ sequenceDiagram
 ::: spec-paragraph specification-paragraph-34
 [Source](contracts.md#source-L72)
 :::
+
+PBKDF2-HMAC-SHA256, producing 32 bytes. Use a unique 16–64 byte salt; supported work factors are 100,000–2,000,000.
+
+It takes `password` and `salt` as `Bytes` and `iterations` as an integer.
+
+It can call [`Crypto.passwordHash`](contracts.md#symbol-Crypto.passwordHash). Failures can raise `CryptoError`.
 
 ```mermaid
 sequenceDiagram

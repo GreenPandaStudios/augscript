@@ -15,6 +15,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](contracts.aug#L3)
 
+It implements `Error`.
+
+It takes `code` as an integer, kept read-only and `message` as a string, kept read-only.
+
 Receive fields: code, message. [Explanation](contracts.aug.md).
 
 <a id="sequence-TensorError.explain"></a>
@@ -22,5 +26,7 @@ Receive fields: code, message. [Explanation](contracts.aug.md).
 ### TensorError.explain
 
 [Source](contracts.aug#L5)
+
+Explain the native failure without losing its original message.
 
 Return message; required cleanup runs before exit. [Explanation](contracts.aug.md).

@@ -48,7 +48,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiMzYwNzE1ZjA1NDA4NTkxMDFhZWNhOWIyNjkxMzgzNGNkNzc2NWU1MTI2ODE2ODAzMmYxYWY1Y2EzNjg2MzY2YyIsImZvcm1hdHRlZFNoYTI1NiI6IjEzMTQ1OWE0NzhjOGNlNDAwNGFiMGFjYjg5ZGRlNzg3MzQ1MDhiMmQ2M2ZhZTVmYmU3MjlkZjMyOTg1MTQ1NzQiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDIwIiwiZmlyc3QiOjE4LCJsYXN0IjoyNSwiYmFja2xpbmtzIjpbIm1haW4tZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUwyMC1MMjkiLCJmaXJzdCI6MTgsImxhc3QiOjI2LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX1dfQ
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiMzYwNzE1ZjA1NDA4NTkxMDFhZWNhOWIyNjkxMzgzNGNkNzc2NWU1MTI2ODE2ODAzMmYxYWY1Y2EzNjg2MzY2YyIsImZvcm1hdHRlZFNoYTI1NiI6IjEzMTQ1OWE0NzhjOGNlNDAwNGFiMGFjYjg5ZGRlNzg3MzQ1MDhiMmQ2M2ZhZTVmYmU3MjlkZjMyOTg1MTQ1NzQiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDIxIiwiZmlyc3QiOjE5LCJsYXN0IjoxOSwiYmFja2xpbmtzIjpbImRpYWdyYW1zL2ZvbGRlcnMvY29tbW9uL2luZGV4Lm1kI2JvdW5kYXJ5LWRjOGJlYzQ4YjYyZSIsImRpYWdyYW1zL2luZGV4Lm1kI2JvdW5kYXJ5LTVmZjY5OWQwZjllYyJdfSx7ImlkIjoic291cmNlLUwyMC1MMjkiLCJmaXJzdCI6MTgsImxhc3QiOjI2LCJiYWNrbGlua3MiOlsiZGlhZ3JhbXMvaW5kZXgubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSIsIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19LHsiaWQiOiJzb3VyY2UtTDIwIiwiZmlyc3QiOjE4LCJsYXN0IjoyNSwiYmFja2xpbmtzIjpbIm1haW4tZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfV19
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Crypto and GnuTlsCrypto from crypto
 import Clock and SystemClock from time
@@ -77,7 +77,7 @@ catch KeyError error:
 serve home and me and logout and startLogin and loginCallback and discovery and jwks and authorize and providerLogin and token and userinfo on port 8787
 ```
 
-```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiMzYwNzE1ZjA1NDA4NTkxMDFhZWNhOWIyNjkxMzgzNGNkNzc2NWU1MTI2ODE2ODAzMmYxYWY1Y2EzNjg2MzY2YyIsImZvcm1hdHRlZFNoYTI1NiI6IjZlMTU4YzE0NDMwOGVhMDM2ODdiMTJiMjRkMDBjNjM0ZDZhMTE0MWJmM2MzMGVkNDE4ZWE3NDUwMjA3Yzc4ZDciLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDIwIiwiZmlyc3QiOjE4LCJsYXN0IjoyOCwiYmFja2xpbmtzIjpbIm1haW4tZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUwyMC1MMjkiLCJmaXJzdCI6MTgsImxhc3QiOjI5LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX1dfQ
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiMzYwNzE1ZjA1NDA4NTkxMDFhZWNhOWIyNjkxMzgzNGNkNzc2NWU1MTI2ODE2ODAzMmYxYWY1Y2EzNjg2MzY2YyIsImZvcm1hdHRlZFNoYTI1NiI6IjZlMTU4YzE0NDMwOGVhMDM2ODdiMTJiMjRkMDBjNjM0ZDZhMTE0MWJmM2MzMGVkNDE4ZWE3NDUwMjA3Yzc4ZDciLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDIxIiwiZmlyc3QiOjE5LCJsYXN0IjoxOSwiYmFja2xpbmtzIjpbImRpYWdyYW1zL2ZvbGRlcnMvY29tbW9uL2luZGV4Lm1kI2JvdW5kYXJ5LWRjOGJlYzQ4YjYyZSIsImRpYWdyYW1zL2luZGV4Lm1kI2JvdW5kYXJ5LTVmZjY5OWQwZjllYyJdfSx7ImlkIjoic291cmNlLUwyMC1MMjkiLCJmaXJzdCI6MTgsImxhc3QiOjI5LCJiYWNrbGlua3MiOlsiZGlhZ3JhbXMvaW5kZXgubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSIsIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19LHsiaWQiOiJzb3VyY2UtTDIwIiwiZmlyc3QiOjE4LCJsYXN0IjoyOCwiYmFja2xpbmtzIjpbIm1haW4tZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfV19
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Crypto and GnuTlsCrypto from crypto
 import Clock and SystemClock from time
@@ -123,7 +123,7 @@ serve home and me and logout and startLogin and loginCallback and discovery and 
 
 Listen on `127.0.0.1`. Limit request bodies to 16384 bytes and buffered responses to 1048576 bytes. Serve OpenAPI at `/openapi.json` and API docs at `/docs`.
 
-### Providers
+### Providers {#providers}
 
 `Crypto` is provided by [`GnuTlsCrypto`](dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-GnuTlsCrypto). The same instance is shared. `Clock` is provided by [`SystemClock`](dependencies/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-SystemClock). The same instance is shared.
 
@@ -141,7 +141,7 @@ Listen on `127.0.0.1`. Limit request bodies to 16384 bytes and buffered response
 
 `ExpiringStore<AccessGrant>` is provided by [`MemoryStore<AccessGrant>`](dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
 
-### Startup
+### Startup {#startup}
 
 ::: spec-paragraph specification-paragraph-1
 It tries to call [`initializeKeys`](common/keys.md#symbol-initializeKeys) using injected `Crypto` for `crypto` and `SigningKeys` for `keys`. If this work raises `CryptoError`, it prints `"Cryptographic initialization failed"`; then it calls `exit` with `status` `1`. If this work raises [`KeyError`](common/keys.md#symbol-KeyError), it prints `"Signing keys could not be initialized"`; then it calls `exit` with `status` `1`. It serves [`home`](client/endpoints.md#symbol-home), [`me`](client/endpoints.md#symbol-me), [`logout`](client/logout.md#symbol-logout), [`startLogin`](client/login.md#symbol-startLogin), [`loginCallback`](client/login.md#symbol-loginCallback), [`discovery`](provider/discovery.md#symbol-discovery), [`jwks`](provider/discovery.md#symbol-jwks), [`authorize`](provider/authorization.md#symbol-authorize), [`providerLogin`](provider/authorization.md#symbol-providerLogin), [`token`](provider/token.md#symbol-token), and [`userinfo`](provider/userinfo.md#symbol-userinfo) on port `8787`. [source](main.md#source-L20-L29)

@@ -25,6 +25,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](headers.md#source-L3)
 :::
 
+Responses containing identity data are never cached or embedded by another site.
+
+Failures can raise `HttpError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as securityHeaders
@@ -39,9 +43,9 @@ sequenceDiagram
     p0-->>p0: with result 3: Headers
     p0->>p0: with result 3.with(name=”referrer-policy”,<br/>value=”no-referrer”)
     p0-->>p0: with result 4: Headers
-    p0->>p0: with result 4.with(name=”content-security-policy”,<br/>value=”default-src 'self'； style-src 'unsafe-inline'；<br/>script-src '…
+    p0->>p0: with result 4.with(name=”content-security-policy”,<br/>value=”default-src 'self'； style-src 'unsafe-inline'；<br/>script-src 'self'； frame-ancestors 'none'； base-uri<br/>'none'； form-action 'self'”)
     p0-->>p0: with result 5: Headers
-    Note over p0: Return Headers().with(name=”cache-control”,<br/>value=”no-store”).with(name=”pragma”,<br/>value=”no-cache”).with(name=”x-cont…
+    Note over p0: Return Headers().with(name=”cache-control”,<br/>value=”no-store”).with(name=”pragma”,<br/>value=”no-cache”).with(name=”x-content-type-options”,<br/>value=”nosniff”).with(name=”referrer-policy”,<br/>value=”no-referrer”).with(name=”content-security-policy”,<br/>value=”default-src 'self'； style-src 'unsafe-inline'；<br/>script-src 'self'； frame-ancestors 'none'； base-uri<br/>'none'； form-action 'self'”)； required cleanup runs<br/>before exit
     Note over p0: May leave with checked errors: HttpError
 ```
 
@@ -50,6 +54,12 @@ sequenceDiagram
 ::: spec-paragraph specification-paragraph-2
 [Source](headers.md#source-L7)
 :::
+
+Add a checked cookie without losing duplicate Set-Cookie response fields.
+
+It takes `headers` as `Headers`, `name`, `value`, and `path` as strings, `maxAge` as an integer, and `secure` as a boolean.
+
+Failures can raise `HttpError`.
 
 ```mermaid
 sequenceDiagram
@@ -60,7 +70,7 @@ sequenceDiagram
     p1-->>p0: cookie result: Headers
     p0->>p0: cookie result.all(name=”set-cookie”)
     p0-->>p0: all result: List‹string›
-    loop For each item in cookie(name, value, path, maxAge, secure).all(name=”set-cookie”)
+    loop For each item in cookie(name, value, path, maxAge,<br/>secure).all(name=”set-cookie”)
     p0->>p0: result.with(name=”set-cookie”, value=content)
     p0-->>p0: result: Headers
     end

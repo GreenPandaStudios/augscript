@@ -2,7 +2,23 @@
 
 # Project diagrams
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 4 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
+
+## Where execution begins
+
+<a id="providers"></a>
+### Providers
+
+`Console` is provided by [`SystemConsole`](../august/1.0.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](../../logging.aug.md#symbol-ConsoleLogger). The same instance is shared.
+
+<a id="startup"></a>
+### Startup
+
+It prints [`describe`](../../app.aug.md#symbol-describe) with `label` `"value"` and `x` `6` using injected `Logger` for `logger` and `Console` for `console`. If this work raises [`ValidationError`](../../interceptors.aug.md#symbol-ValidationError), it prints `"rejected"`. It sets `greeter` to a [`Greeter`](../../app.aug.md#symbol-Greeter) with `name` `"AugScript"` using injected `Logger` for `_logger`. It prints [`greeter.greet`](../../app.aug.md#symbol-Greeter.greet) using injected `Logger` for `logger` and `Console` for `console`. [source](../../main.aug#L10-L17)
+
+It tries to call [`describe`](../../app.aug.md#symbol-describe) with `x` `-1` and `label` `"invalid"` using injected `Logger` for `logger` and `Console` for `console`. If this work raises [`ValidationError`](../../interceptors.aug.md#symbol-ValidationError), it prints `"rejected"`. [source](../../main.aug#L18-L23)
 
 ## Data flow
 
@@ -42,19 +58,105 @@ flowchart LR
 
 </details>
 
-<details>
-<summary>Data crossing these boundaries (6 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| app | August libraries | [Console.write](../august/1.0.0/io/contracts.aug.md#symbol-Console.write) · value: int · interface dispatch | void |
-| interceptors | logging | [Logger.log](../../logging.aug.md#symbol-Logger.log) · message: string · interface dispatch | void |
-| logging | August libraries | [Console.write](../august/1.0.0/io/contracts.aug.md#symbol-Console.write) · value: string · interface dispatch | void |
-| Startup | app | [Greeter](../../app.aug.md#symbol-Greeter) · name: string | Greeter |
-| Startup | app | [Greeter.greet](../../app.aug.md#symbol-Greeter.greet) | string |
-| Startup | app | [describe](../../app.aug.md#symbol-describe) · x: int, label: string | string |
+| app | August libraries | 1 | [Inputs, results and call sites](index.md#boundary-2135dd7a022c) |
+| interceptors | logging | 1 | [Inputs, results and call sites](index.md#boundary-781982b5ea6c) |
+| logging | August libraries | 1 | [Inputs, results and call sites](index.md#boundary-212f9228b2b1) |
+| Startup | app | 3 | [Inputs, results and call sites](index.md#boundary-d5066fbd498a) |
+
+#### Data crossing these boundaries (6 contracts)
+
+<a id="boundary-2135dd7a022c"></a>
+
+#### app → August libraries
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[Console.write](../august/1.0.0/io/contracts.aug.md#symbol-Console.write)** · interface dispatch
+
+Inputs: value: int. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| describe | [Call site](../../app.aug#L16) · [Caller explanation](../../app.aug.md#symbol-describe) |
 
 </details>
+
+<a id="boundary-781982b5ea6c"></a>
+
+#### interceptors → logging
+
+<details>
+<summary>1 operation, 2 sites</summary>
+
+**[Logger.log](../../logging.aug.md#symbol-Logger.log)** · interface dispatch
+
+Inputs: message: string. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Audit.around | [Call site](../../interceptors.aug#L16) · [Caller explanation](../../interceptors.aug.md#symbol-Audit.around) |
+| Audit.around | [Call site](../../interceptors.aug#L18) · [Caller explanation](../../interceptors.aug.md#symbol-Audit.around) |
+
+</details>
+
+<a id="boundary-212f9228b2b1"></a>
+
+#### logging → August libraries
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[Console.write](../august/1.0.0/io/contracts.aug.md#symbol-Console.write)** · interface dispatch
+
+Inputs: value: string. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| ConsoleLogger.log | [Call site](../../logging.aug#L11) · [Caller explanation](../../logging.aug.md#symbol-ConsoleLogger.log) |
+
+</details>
+
+<a id="boundary-d5066fbd498a"></a>
+
+#### Startup → app
+
+<details>
+<summary>3 operations, 4 sites</summary>
+
+**[Greeter](../../app.aug.md#symbol-Greeter)**
+
+Inputs: name: string. Result: Greeter.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L16) · [Caller explanation](../../main.aug.md#startup) |
+
+**[Greeter.greet](../../app.aug.md#symbol-Greeter.greet)**
+
+No caller-supplied inputs. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L17) · [Caller explanation](../../main.aug.md#startup) |
+
+**[describe](../../app.aug.md#symbol-describe)**
+
+Inputs: x: int, label: string. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L11) · [Caller explanation](../../main.aug.md#startup) |
+| Startup | [Call site](../../main.aug#L19) · [Caller explanation](../../main.aug.md#startup) |
+
+</details>
+
 
 ## Open a module
 

@@ -6,12 +6,14 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="providers"></a>
 ## Providers
 
 `Console` is provided by [`SystemConsole`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Repository<int>` is provided by [`NumberRepository`](types.aug.md#symbol-NumberRepository). The same instance is shared.
 
 `app` is provided by [`Program`](types.aug.md#symbol-Program). The same instance is shared. It requires bindings for `Repository<int>`.
 
+<a id="startup"></a>
 ## Startup
 
 It sets `program` to the instance provided for `app`. It calls [`program.start`](types.aug.md#symbol-Program.start) using injected `Console` for `console`. [source](main.aug#L9-L10)

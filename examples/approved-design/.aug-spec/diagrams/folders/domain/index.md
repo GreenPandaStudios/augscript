@@ -29,18 +29,117 @@ flowchart LR
 
 </details>
 
-<details>
-<summary>Data crossing these boundaries (5 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| app | august/io | [Console.write](../../../august/1.0.0/io/contracts.aug.md#symbol-Console.write) · value: string · interface dispatch | void |
-| app | models | [Fruit](../../../../domain/models.aug.md#symbol-Fruit) · code: int, name: string · value construction | Fruit |
-| Startup | app | [Application.start](../../../../domain/app.aug.md#symbol-Application.start) · interface dispatch | void |
-| Startup | models | [Fruit](../../../../domain/models.aug.md#symbol-Fruit) · code: int, name: string · value construction | Fruit |
-| Startup | numbers | [double](../../../../domain/numbers.aug.md#symbol-double) · amount: int | int |
+| app | august/io | 1 | [Inputs, results and call sites](index.md#boundary-0bee19dd35ce) |
+| app | models | 1 | [Inputs, results and call sites](index.md#boundary-1018226eaac9) |
+| Startup | app | 1 | [Inputs, results and call sites](index.md#boundary-924906bb7307) |
+| Startup | models | 1 | [Inputs, results and call sites](index.md#boundary-2175d99c2ab4) |
+| Startup | numbers | 1 | [Inputs, results and call sites](index.md#boundary-115db4a8485f) |
+
+#### Data crossing these boundaries (5 contracts)
+
+<a id="boundary-0bee19dd35ce"></a>
+
+#### app → august/io
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[Console.write](../../../august/1.0.0/io/contracts.aug.md#symbol-Console.write)** · interface dispatch
+
+Inputs: value: string. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| ApplicationImpl.start | [Call site](../../../../domain/app.aug#L13) · [Caller explanation](../../../../domain/app.aug.md#symbol-ApplicationImpl.start) |
 
 </details>
+
+<a id="boundary-1018226eaac9"></a>
+
+#### app → models
+
+<details>
+<summary>1 operation, 2 sites</summary>
+
+**[Fruit](../../../../domain/models.aug.md#symbol-Fruit)** · value construction
+
+Inputs: code: int, name: string. Result: Fruit.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| ApplicationImpl.start | [Call site](../../../../domain/app.aug#L11) · [Caller explanation](../../../../domain/app.aug.md#symbol-ApplicationImpl.start) |
+| ApplicationImpl.start | [Call site](../../../../domain/app.aug#L11) · [Caller explanation](../../../../domain/app.aug.md#symbol-ApplicationImpl.start) |
+
+</details>
+
+<a id="boundary-924906bb7307"></a>
+
+#### Startup → app
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[Application.start](../../../../domain/app.aug.md#symbol-Application.start)** · interface dispatch
+
+No caller-supplied inputs. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../../../main.aug#L9) · [Caller explanation](../../../../main.aug.md#startup) |
+
+</details>
+
+<a id="boundary-2175d99c2ab4"></a>
+
+#### Startup → models
+
+<details>
+<summary>1 operation, 2 sites</summary>
+
+**[Fruit](../../../../domain/models.aug.md#symbol-Fruit)** · value construction
+
+Inputs: code: int, name: string. Result: Fruit.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../../../main.aug#L17) · [Caller explanation](../../../../main.aug.md#startup) |
+| Startup | [Call site](../../../../main.aug#L17) · [Caller explanation](../../../../main.aug.md#startup) |
+
+</details>
+
+<a id="boundary-115db4a8485f"></a>
+
+#### Startup → numbers
+
+<details>
+<summary>1 operation, 2 sites</summary>
+
+**[double](../../../../domain/numbers.aug.md#symbol-double)**
+
+Inputs: amount: int. Result: int.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../../../main.aug#L24) · [Caller explanation](../../../../main.aug.md#startup) |
+| Startup | [Call site](../../../../main.aug#L25) · [Caller explanation](../../../../main.aug.md#startup) |
+
+</details>
+
+
+## What this folder exposes
+
+### Exports
+
+Export the declaration `Application` from [`app.aug`](../../../../domain/app.aug.md#symbol-Application). Export the declaration `ApplicationImpl` from [`app.aug`](../../../../domain/app.aug.md#symbol-ApplicationImpl). Export the declaration `Fruit` from [`models.aug`](../../../../domain/models.aug.md#symbol-Fruit). Export the declaration `double` from [`numbers.aug`](../../../../domain/numbers.aug.md#symbol-double).
+
+Export the declaration `RangeError` from [`numbers.aug`](../../../../domain/numbers.aug.md#symbol-RangeError).
+
 
 ## Files in this folder
 

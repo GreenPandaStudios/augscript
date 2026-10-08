@@ -71,26 +71,274 @@ flowchart LR
 
 </details>
 
-<details>
-<summary>Data crossing these boundaries (13 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| client | headers | [securityHeaders](../../../../common/headers.aug.md#symbol-securityHeaders) | Headers |
-| client | headers | [withCookie](../../../../common/headers.aug.md#symbol-withCookie) · headers: Headers, name: string, value: string, path: string, maxAge: int, secure: bool | Headers |
-| client | keys | [SigningKeys.session](../../../../common/keys.aug.md#symbol-SigningKeys.session) · interface dispatch | RsaPrivateKey |
-| client | settings | [settings](../../../../common/settings.aug.md#symbol-settings) | Settings |
-| client | views | [Page](../../../../common/views.aug.md#symbol-Page) · title: string, children: List\<Html\> | Html |
-| headers | web | [cookie](../../../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-cookie) · name: string, value: string, path: string, maxAge: int, secure: bool | Headers |
-| keys | crypto | [Crypto.generateRsa](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.generateRsa) · interface dispatch | RsaPrivateKey |
-| Startup | keys | [initializeKeys](../../../../common/keys.aug.md#symbol-initializeKeys) | void |
-| provider | headers | [securityHeaders](../../../../common/headers.aug.md#symbol-securityHeaders) | Headers |
-| provider | headers | [withCookie](../../../../common/headers.aug.md#symbol-withCookie) · headers: Headers, name: string, value: string, path: string, maxAge: int, secure: bool | Headers |
-| provider | keys | [SigningKeys.provider](../../../../common/keys.aug.md#symbol-SigningKeys.provider) · interface dispatch | RsaPrivateKey |
-| provider | settings | [settings](../../../../common/settings.aug.md#symbol-settings) | Settings |
-| provider | views | [Page](../../../../common/views.aug.md#symbol-Page) · title: string, children: List\<Html\> | Html |
+| client | headers | 2 | [Inputs, results and call sites](index.md#boundary-ca4c97f666a3) |
+| client | keys | 1 | [Inputs, results and call sites](index.md#boundary-a5eb17735da0) |
+| client | settings | 1 | [Inputs, results and call sites](index.md#boundary-1c9605e5346d) |
+| client | views | 1 | [Inputs, results and call sites](index.md#boundary-98fced9fac0c) |
+| headers | web | 1 | [Inputs, results and call sites](index.md#boundary-f33f7aa6bf99) |
+| keys | crypto | 1 | [Inputs, results and call sites](index.md#boundary-08dcb5124543) |
+| Startup | keys | 1 | [Inputs, results and call sites](index.md#boundary-dc8bec48b62e) |
+| provider | headers | 2 | [Inputs, results and call sites](index.md#boundary-b6fa3b54e48b) |
+| provider | keys | 1 | [Inputs, results and call sites](index.md#boundary-cb7cb946eb8f) |
+| provider | settings | 1 | [Inputs, results and call sites](index.md#boundary-40080323001e) |
+| provider | views | 1 | [Inputs, results and call sites](index.md#boundary-aef6c26e7efa) |
+
+#### Data crossing these boundaries (13 contracts)
+
+<a id="boundary-ca4c97f666a3"></a>
+
+#### client → headers
+
+<details>
+<summary>2 operations, 10 sites</summary>
+
+**[securityHeaders](../../../../common/headers.aug.md#symbol-securityHeaders)**
+
+No caller-supplied inputs. Result: Headers.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| home | [Call site](../../../../client/endpoints.aug#L15) · [Caller explanation](../../../../client/endpoints.aug.md#symbol-home) |
+| home | [Call site](../../../../client/endpoints.aug#L17) · [Caller explanation](../../../../client/endpoints.aug.md#symbol-home) |
+| me | [Call site](../../../../client/endpoints.aug#L22) · [Caller explanation](../../../../client/endpoints.aug.md#symbol-me) |
+| startLogin | [Call site](../../../../client/login.aug#L23) · [Caller explanation](../../../../client/login.aug.md#symbol-startLogin) |
+| loginCallback | [Call site](../../../../client/login.aug#L57) · [Caller explanation](../../../../client/login.aug.md#symbol-loginCallback) |
+| logout | [Call site](../../../../client/logout.aug#L18) · [Caller explanation](../../../../client/logout.aug.md#symbol-logout) |
+
+**[withCookie](../../../../common/headers.aug.md#symbol-withCookie)**
+
+Inputs: headers: Headers, name: string, value: string, path: string, maxAge: int, secure: bool. Result: Headers.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| startLogin | [Call site](../../../../client/login.aug#L23) · [Caller explanation](../../../../client/login.aug.md#symbol-startLogin) |
+| loginCallback | [Call site](../../../../client/login.aug#L57) · [Caller explanation](../../../../client/login.aug.md#symbol-loginCallback) |
+| loginCallback | [Call site](../../../../client/login.aug#L58) · [Caller explanation](../../../../client/login.aug.md#symbol-loginCallback) |
+| logout | [Call site](../../../../client/logout.aug#L18) · [Caller explanation](../../../../client/logout.aug.md#symbol-logout) |
 
 </details>
+
+<a id="boundary-a5eb17735da0"></a>
+
+#### client → keys
+
+<details>
+<summary>1 operation, 2 sites</summary>
+
+**[SigningKeys.session](../../../../common/keys.aug.md#symbol-SigningKeys.session)** · interface dispatch
+
+No caller-supplied inputs. Result: RsaPrivateKey.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| loginCallback | [Call site](../../../../client/login.aug#L55) · [Caller explanation](../../../../client/login.aug.md#symbol-loginCallback) |
+| authenticate | [Call site](../../../../client/session.aug#L15) · [Caller explanation](../../../../client/session.aug.md#symbol-authenticate) |
+
+</details>
+
+<a id="boundary-1c9605e5346d"></a>
+
+#### client → settings
+
+<details>
+<summary>1 operation, 7 sites</summary>
+
+**[settings](../../../../common/settings.aug.md#symbol-settings)**
+
+No caller-supplied inputs. Result: Settings.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| startLogin | [Call site](../../../../client/login.aug#L13) · [Caller explanation](../../../../client/login.aug.md#symbol-startLogin) |
+| loginCallback | [Call site](../../../../client/login.aug#L40) · [Caller explanation](../../../../client/login.aug.md#symbol-loginCallback) |
+| logout | [Call site](../../../../client/logout.aug#L11) · [Caller explanation](../../../../client/logout.aug.md#symbol-logout) |
+| discover | [Call site](../../../../client/protocol.aug#L28) · [Caller explanation](../../../../client/protocol.aug.md#symbol-discover) |
+| validateIdentity | [Call site](../../../../client/protocol.aug#L40) · [Caller explanation](../../../../client/protocol.aug.md#symbol-validateIdentity) |
+| test validateIdentity | [Call site](../../../../client/protocol.aug#L72) · [Caller explanation](../../../../client/protocol.aug.md#symbol-test%20validateIdentity) |
+| authenticate | [Call site](../../../../client/session.aug#L17) · [Caller explanation](../../../../client/session.aug.md#symbol-authenticate) |
+
+</details>
+
+<a id="boundary-98fced9fac0c"></a>
+
+#### client → views
+
+<details>
+<summary>1 operation, 2 sites</summary>
+
+**[Page](../../../../common/views.aug.md#symbol-Page)**
+
+Inputs: title: string, children: List\<Html\>. Result: Html.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| LoginPage | [Call site](../../../../client/views.aug#L7) · [Caller explanation](../../../../client/views.aug.md#symbol-LoginPage) |
+| Welcome | [Call site](../../../../client/views.aug#L14) · [Caller explanation](../../../../client/views.aug.md#symbol-Welcome) |
+
+</details>
+
+<a id="boundary-f33f7aa6bf99"></a>
+
+#### headers → web
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[cookie](../../../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-cookie)**
+
+Inputs: name: string, value: string, path: string, maxAge: int, secure: bool. Result: Headers.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| withCookie | [Call site](../../../../common/headers.aug#L9) · [Caller explanation](../../../../common/headers.aug.md#symbol-withCookie) |
+
+</details>
+
+<a id="boundary-08dcb5124543"></a>
+
+#### keys → crypto
+
+<details>
+<summary>1 operation, 2 sites</summary>
+
+**[Crypto.generateRsa](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.generateRsa)** · interface dispatch
+
+No caller-supplied inputs. Result: RsaPrivateKey.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| initializeKeys | [Call site](../../../../common/keys.aug#L36) · [Caller explanation](../../../../common/keys.aug.md#symbol-initializeKeys) |
+| initializeKeys | [Call site](../../../../common/keys.aug#L37) · [Caller explanation](../../../../common/keys.aug.md#symbol-initializeKeys) |
+
+</details>
+
+<a id="boundary-dc8bec48b62e"></a>
+
+#### Startup → keys
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[initializeKeys](../../../../common/keys.aug.md#symbol-initializeKeys)**
+
+No caller-supplied inputs. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../../../main.aug#L21) · [Caller explanation](../../../../main.aug.md#startup) |
+
+</details>
+
+<a id="boundary-b6fa3b54e48b"></a>
+
+#### provider → headers
+
+<details>
+<summary>2 operations, 14 sites</summary>
+
+**[securityHeaders](../../../../common/headers.aug.md#symbol-securityHeaders)**
+
+No caller-supplied inputs. Result: Headers.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| authorize | [Call site](../../../../provider/authorization.aug#L31) · [Caller explanation](../../../../provider/authorization.aug.md#symbol-authorize) |
+| providerLogin | [Call site](../../../../provider/authorization.aug#L39) · [Caller explanation](../../../../provider/authorization.aug.md#symbol-providerLogin) |
+| providerLogin | [Call site](../../../../provider/authorization.aug#L42) · [Caller explanation](../../../../provider/authorization.aug.md#symbol-providerLogin) |
+| providerLogin | [Call site](../../../../provider/authorization.aug#L46) · [Caller explanation](../../../../provider/authorization.aug.md#symbol-providerLogin) |
+| providerLogin | [Call site](../../../../provider/authorization.aug#L49) · [Caller explanation](../../../../provider/authorization.aug.md#symbol-providerLogin) |
+| providerLogin | [Call site](../../../../provider/authorization.aug#L51) · [Caller explanation](../../../../provider/authorization.aug.md#symbol-providerLogin) |
+| providerLogin | [Call site](../../../../provider/authorization.aug#L57) · [Caller explanation](../../../../provider/authorization.aug.md#symbol-providerLogin) |
+| providerLogin | [Call site](../../../../provider/authorization.aug#L60) · [Caller explanation](../../../../provider/authorization.aug.md#symbol-providerLogin) |
+| \_oauthError | [Call site](../../../../provider/token.aug#L9) · [Caller explanation](../../../../provider/token.aug.md#symbol-_oauthError) |
+| token | [Call site](../../../../provider/token.aug#L36) · [Caller explanation](../../../../provider/token.aug.md#symbol-token) |
+| userinfo | [Call site](../../../../provider/userinfo.aug#L23) · [Caller explanation](../../../../provider/userinfo.aug.md#symbol-userinfo) |
+| userinfo | [Call site](../../../../provider/userinfo.aug#L26) · [Caller explanation](../../../../provider/userinfo.aug.md#symbol-userinfo) |
+
+**[withCookie](../../../../common/headers.aug.md#symbol-withCookie)**
+
+Inputs: headers: Headers, name: string, value: string, path: string, maxAge: int, secure: bool. Result: Headers.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| authorize | [Call site](../../../../provider/authorization.aug#L31) · [Caller explanation](../../../../provider/authorization.aug.md#symbol-authorize) |
+| providerLogin | [Call site](../../../../provider/authorization.aug#L57) · [Caller explanation](../../../../provider/authorization.aug.md#symbol-providerLogin) |
+
+</details>
+
+<a id="boundary-cb7cb946eb8f"></a>
+
+#### provider → keys
+
+<details>
+<summary>1 operation, 2 sites</summary>
+
+**[SigningKeys.provider](../../../../common/keys.aug.md#symbol-SigningKeys.provider)** · interface dispatch
+
+No caller-supplied inputs. Result: RsaPrivateKey.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| jwks | [Call site](../../../../provider/discovery.aug#L13) · [Caller explanation](../../../../provider/discovery.aug.md#symbol-jwks) |
+| token | [Call site](../../../../provider/token.aug#L31) · [Caller explanation](../../../../provider/token.aug.md#symbol-token) |
+
+</details>
+
+<a id="boundary-40080323001e"></a>
+
+#### provider → settings
+
+<details>
+<summary>1 operation, 4 sites</summary>
+
+**[settings](../../../../common/settings.aug.md#symbol-settings)**
+
+No caller-supplied inputs. Result: Settings.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| authorize | [Call site](../../../../provider/authorization.aug#L13) · [Caller explanation](../../../../provider/authorization.aug.md#symbol-authorize) |
+| providerLogin | [Call site](../../../../provider/authorization.aug#L36) · [Caller explanation](../../../../provider/authorization.aug.md#symbol-providerLogin) |
+| discovery | [Call site](../../../../provider/discovery.aug#L8) · [Caller explanation](../../../../provider/discovery.aug.md#symbol-discovery) |
+| token | [Call site](../../../../provider/token.aug#L13) · [Caller explanation](../../../../provider/token.aug.md#symbol-token) |
+
+</details>
+
+<a id="boundary-aef6c26e7efa"></a>
+
+#### provider → views
+
+<details>
+<summary>1 operation, 2 sites</summary>
+
+**[Page](../../../../common/views.aug.md#symbol-Page)**
+
+Inputs: title: string, children: List\<Html\>. Result: Html.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| ProviderLogin | [Call site](../../../../provider/views.aug#L5) · [Caller explanation](../../../../provider/views.aug.md#symbol-ProviderLogin) |
+| ProviderFailure | [Call site](../../../../provider/views.aug#L19) · [Caller explanation](../../../../provider/views.aug.md#symbol-ProviderFailure) |
+
+</details>
+
+
+## What this folder exposes
+
+### Exports
+
+Export the declaration `Settings` from [`settings.aug`](../../../../common/settings.aug.md#symbol-Settings). Export the declaration `settings` from [`settings.aug`](../../../../common/settings.aug.md#symbol-settings). Export the declaration `SigningKeys` from [`keys.aug`](../../../../common/keys.aug.md#symbol-SigningKeys). Export the declaration `MemorySigningKeys` from [`keys.aug`](../../../../common/keys.aug.md#symbol-MemorySigningKeys).
+
+Export the declaration `initializeKeys` from [`keys.aug`](../../../../common/keys.aug.md#symbol-initializeKeys). Export the declaration `KeyError` from [`keys.aug`](../../../../common/keys.aug.md#symbol-KeyError). Export the declaration `Page` from [`views.aug`](../../../../common/views.aug.md#symbol-Page). Export the declaration `securityHeaders` from [`headers.aug`](../../../../common/headers.aug.md#symbol-securityHeaders).
+
+Export the declaration `withCookie` from [`headers.aug`](../../../../common/headers.aug.md#symbol-withCookie).
+
 
 ## Files in this folder
 

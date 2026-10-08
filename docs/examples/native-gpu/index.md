@@ -12,7 +12,7 @@ outline: [2, 3]
 
 Create Metal buffers inside isolated workers, add vectors on the GPU, and return copied results. Requires the August 0.23.0 preview, Apple Silicon, and macOS 14 or later with an available Metal GPU.
 
-Open a file to read the code beside its compiled explanation. Choose **Indentation** or **Braces** to change the code view. The choice carries across files.
+Start with the [project overview](diagrams/index.md), then open an operation’s sequence or explanation. Source stays beside its spec when you need to inspect an expression. Choose **Indentation** or **Braces** for that code view; the choice carries across files.
 
 [Explore the generated project diagrams](diagrams/index.md) to follow data between folders, then open module interactions and API sequences.
 

@@ -58,8 +58,10 @@ validate(int value) returns int unless FileError {
 
 ### `validate` · [source](operations.md#source-L2) {#symbol-validate}
 
+It takes `value` as an integer. Failures can raise `FileError`.
+
 ::: spec-paragraph specification-paragraph-1
-It takes `value` as an integer. It checks that (`value` minus ((`value` divided by `16`) times `16`)) does not equal `0`. It raises a `FileError` at the first failed check. It returns `value`. [source](operations.md#source-L3-L5)
+It checks that (`value` minus ((`value` divided by `16`) times `16`)) does not equal `0`. It raises a `FileError` at the first failed check. It returns `value`. [source](operations.md#source-L3-L5)
 :::
 
 ::: details Checked interface

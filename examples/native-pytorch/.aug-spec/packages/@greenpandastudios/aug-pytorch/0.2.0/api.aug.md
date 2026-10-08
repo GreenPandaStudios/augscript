@@ -9,7 +9,9 @@
 <a id="symbol-tensor"></a>
 ## `tensor` · [source](api.aug#L10)
 
-Copy a list of float64 values into a CPU tensor. It takes `values` as `List<float>`. Within an unsafe block, it returns [`_tensor`](api.aug.md#symbol-_tensor) with `values`. Native operations must satisfy their declared C contracts. [source](api.aug#L11-L12)
+Copy a list of float64 values into a CPU tensor. It takes `values` as `List<float>`. It returns ownership of [`Tensor`](bindings.aug.md#symbol-Tensor). Failures can raise [`TensorError`](contracts.aug.md#symbol-TensorError).
+
+Within an unsafe block, it returns [`_tensor`](api.aug.md#symbol-_tensor) with `values`. Native operations must satisfy their declared C contracts. [source](api.aug#L11-L12)
 
 <details>
 <summary>Checked interface</summary>
@@ -25,7 +27,9 @@ It takes `values` as `List<float>`. It returns ownership of [`Tensor`](bindings.
 <a id="symbol-add"></a>
 ## `add` · [source](api.aug#L14)
 
-Add tensors without changing either input. It takes `left` and `right` as [`Tensor`](bindings.aug.md#symbol-Tensor). Within an unsafe block, it returns [`_add`](api.aug.md#symbol-_add) with `left` and `right`. Native operations must satisfy their declared C contracts. [source](api.aug#L15-L16)
+Add tensors without changing either input. It takes `left` and `right` as [`Tensor`](bindings.aug.md#symbol-Tensor). It returns ownership of [`Tensor`](bindings.aug.md#symbol-Tensor). Failures can raise [`TensorError`](contracts.aug.md#symbol-TensorError).
+
+Within an unsafe block, it returns [`_add`](api.aug.md#symbol-_add) with `left` and `right`. Native operations must satisfy their declared C contracts. [source](api.aug#L15-L16)
 
 <details>
 <summary>Checked interface</summary>
@@ -41,7 +45,9 @@ It takes `left` and `right` as [`Tensor`](bindings.aug.md#symbol-Tensor). It ret
 <a id="symbol-sum"></a>
 ## `sum` · [source](api.aug#L18)
 
-Sum every element. It takes `tensor` as [`Tensor`](bindings.aug.md#symbol-Tensor). Within an unsafe block, it returns [`_sum`](api.aug.md#symbol-_sum) with `tensor`. Native operations must satisfy their declared C contracts. [source](api.aug#L19-L20)
+Sum every element. It takes `tensor` as [`Tensor`](bindings.aug.md#symbol-Tensor). Failures can raise [`TensorError`](contracts.aug.md#symbol-TensorError).
+
+Within an unsafe block, it returns [`_sum`](api.aug.md#symbol-_sum) with `tensor`. Native operations must satisfy their declared C contracts. [source](api.aug#L19-L20)
 
 <details>
 <summary>Checked interface</summary>
@@ -57,7 +63,9 @@ It takes `tensor` as [`Tensor`](bindings.aug.md#symbol-Tensor). Failures can rai
 <a id="symbol-values"></a>
 ## `values` · [source](api.aug#L22)
 
-Copy tensor values into an August list. It takes `tensor` as [`Tensor`](bindings.aug.md#symbol-Tensor). Within an unsafe block, it returns [`_values`](api.aug.md#symbol-_values) with `tensor`. Native operations must satisfy their declared C contracts. [source](api.aug#L23-L24)
+Copy tensor values into an August list. It takes `tensor` as [`Tensor`](bindings.aug.md#symbol-Tensor). Failures can raise [`TensorError`](contracts.aug.md#symbol-TensorError).
+
+Within an unsafe block, it returns [`_values`](api.aug.md#symbol-_values) with `tensor`. Native operations must satisfy their declared C contracts. [source](api.aug#L23-L24)
 
 <details>
 <summary>Checked interface</summary>
@@ -115,7 +123,7 @@ Native implementation: `@greenpandastudios/aug-pytorch@0.2.0`, `2.14.1`. Support
 <a id="symbol-_consumeAndFail"></a>
 ## `_consumeAndFail` · [source](api.aug#L29)
 
-It is private to its defining scope. It takes `value` as [`Tensor`](bindings.aug.md#symbol-Tensor) with ownership transferred. It raises a [`TensorError`](contracts.aug.md#symbol-TensorError) with `code` `99` and `message` `"expected cleanup test"`. [source](api.aug#L30)
+It is private to its defining scope. It takes `value` as [`Tensor`](bindings.aug.md#symbol-Tensor) with ownership transferred. Failures can raise [`TensorError`](contracts.aug.md#symbol-TensorError). It raises a [`TensorError`](contracts.aug.md#symbol-TensorError) with `code` `99` and `message` `"expected cleanup test"`. [source](api.aug#L30)
 
 <details>
 <summary>Checked interface</summary>
@@ -146,7 +154,7 @@ It implements [`_TensorContainer`](api.aug.md#symbol-_TensorContainer). It is pr
 <a id="symbol-_TensorHolder.total"></a>
 ### `_TensorHolder.total` · [source](api.aug#L35)
 
-It returns [`sum`](api.aug.md#symbol-sum) with `tensor` from `item`. [source](api.aug#L36)
+Failures can raise [`TensorError`](contracts.aug.md#symbol-TensorError). It returns [`sum`](api.aug.md#symbol-sum) with `tensor` from `item`. [source](api.aug#L36)
 
 <details>
 <summary>Checked interface</summary>
@@ -162,7 +170,7 @@ Failures can raise [`TensorError`](contracts.aug.md#symbol-TensorError).
 <a id="symbol-_replace"></a>
 ## `_replace` · [source](api.aug#L37)
 
-It is private to its defining scope. It takes `holder` as [`_TensorHolder`](api.aug.md#symbol-_TensorHolder) with permission to mutate it during the call and `replacement` as [`Tensor`](bindings.aug.md#symbol-Tensor) with ownership transferred. It sets `holder.item` to `replacement`. [source](api.aug#L38)
+It is private to its defining scope. It takes `holder` as [`_TensorHolder`](api.aug.md#symbol-_TensorHolder) with permission to mutate it during the call and `replacement` as [`Tensor`](bindings.aug.md#symbol-Tensor) with ownership transferred. It may change `holder`. It sets `holder.item` to `replacement`. [source](api.aug#L38)
 
 <details>
 <summary>Checked interface</summary>

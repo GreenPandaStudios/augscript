@@ -21,24 +21,183 @@ flowchart TD
     n5 -->|"asciiAt(input, index) / asciiLetter(character) + 2 more → bool / string"| n1
 ```
 
-<details>
-<summary>Data crossing these boundaries (11 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| dates | ascii | [asciiSlice](../../../../values/ascii.aug.md#symbol-asciiSlice) · input: Bytes, start: int, end: int | string |
-| durations | math | [checkedAdd](../../../../math/integers.aug.md#symbol-checkedAdd) · left: int, right: int | int |
-| durations | math | [checkedMultiply](../../../../math/integers.aug.md#symbol-checkedMultiply) · left: int, right: int | int |
-| durations | ascii | [asciiSlice](../../../../values/ascii.aug.md#symbol-asciiSlice) · input: Bytes, start: int, end: int | string |
-| paths | ascii | [asciiAt](../../../../values/ascii.aug.md#symbol-asciiAt) · input: Bytes, index: int | string |
-| paths | ascii | [asciiLetter](../../../../values/ascii.aug.md#symbol-asciiLetter) · character: string | bool |
-| paths | ascii | [asciiLower](../../../../values/ascii.aug.md#symbol-asciiLower) · text: string | string |
-| urls | ascii | [asciiAt](../../../../values/ascii.aug.md#symbol-asciiAt) · input: Bytes, index: int | string |
-| urls | ascii | [asciiLetter](../../../../values/ascii.aug.md#symbol-asciiLetter) · character: string | bool |
-| urls | ascii | [asciiLower](../../../../values/ascii.aug.md#symbol-asciiLower) · text: string | string |
-| urls | ascii | [asciiSlice](../../../../values/ascii.aug.md#symbol-asciiSlice) · input: Bytes, start: int, end: int | string |
+| dates | ascii | 1 | [Inputs, results and call sites](index.md#boundary-612f4d37bdc1) |
+| durations | math | 2 | [Inputs, results and call sites](index.md#boundary-3376c10efa50) |
+| durations | ascii | 1 | [Inputs, results and call sites](index.md#boundary-dc1662c7ddea) |
+| paths | ascii | 3 | [Inputs, results and call sites](index.md#boundary-e8f3bb0bcf49) |
+| urls | ascii | 4 | [Inputs, results and call sites](index.md#boundary-c75ad6ec6bda) |
+
+#### Data crossing these boundaries (11 contracts)
+
+<a id="boundary-612f4d37bdc1"></a>
+
+#### dates → ascii
+
+<details>
+<summary>1 operation, 5 sites</summary>
+
+**[asciiSlice](../../../../values/ascii.aug.md#symbol-asciiSlice)**
+
+Inputs: input: Bytes, start: int, end: int. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| parseCivilDate | [Call site](../../../../values/dates.aug#L33) · [Caller explanation](../../../../values/dates.aug.md#symbol-parseCivilDate) |
+| parseCivilDate | [Call site](../../../../values/dates.aug#L34) · [Caller explanation](../../../../values/dates.aug.md#symbol-parseCivilDate) |
+| parseCivilDate | [Call site](../../../../values/dates.aug#L35) · [Caller explanation](../../../../values/dates.aug.md#symbol-parseCivilDate) |
+| parseCivilDate | [Call site](../../../../values/dates.aug#L36) · [Caller explanation](../../../../values/dates.aug.md#symbol-parseCivilDate) |
+| parseCivilDate | [Call site](../../../../values/dates.aug#L36) · [Caller explanation](../../../../values/dates.aug.md#symbol-parseCivilDate) |
 
 </details>
+
+<a id="boundary-3376c10efa50"></a>
+
+#### durations → math
+
+<details>
+<summary>2 operations, 2 sites</summary>
+
+**[checkedAdd](../../../../math/integers.aug.md#symbol-checkedAdd)**
+
+Inputs: left: int, right: int. Result: int.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| addDurations | [Call site](../../../../values/durations.aug#L77) · [Caller explanation](../../../../values/durations.aug.md#symbol-addDurations) |
+
+**[checkedMultiply](../../../../math/integers.aug.md#symbol-checkedMultiply)**
+
+Inputs: left: int, right: int. Result: int.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| durationFromSeconds | [Call site](../../../../values/durations.aug#L71) · [Caller explanation](../../../../values/durations.aug.md#symbol-durationFromSeconds) |
+
+</details>
+
+<a id="boundary-dc1662c7ddea"></a>
+
+#### durations → ascii
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[asciiSlice](../../../../values/ascii.aug.md#symbol-asciiSlice)**
+
+Inputs: input: Bytes, start: int, end: int. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| parseDuration | [Call site](../../../../values/durations.aug#L27) · [Caller explanation](../../../../values/durations.aug.md#symbol-parseDuration) |
+
+</details>
+
+<a id="boundary-e8f3bb0bcf49"></a>
+
+#### paths → ascii
+
+<details>
+<summary>3 operations, 3 sites</summary>
+
+**[asciiAt](../../../../values/ascii.aug.md#symbol-asciiAt)**
+
+Inputs: input: Bytes, index: int. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| \_validatePortablePath | [Call site](../../../../values/paths.aug#L42) · [Caller explanation](../../../../values/paths.aug.md#symbol-_validatePortablePath) |
+
+**[asciiLetter](../../../../values/ascii.aug.md#symbol-asciiLetter)**
+
+Inputs: character: string. Result: bool.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| \_validatePortablePath | [Call site](../../../../values/paths.aug#L43) · [Caller explanation](../../../../values/paths.aug.md#symbol-_validatePortablePath) |
+
+**[asciiLower](../../../../values/ascii.aug.md#symbol-asciiLower)**
+
+Inputs: text: string. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| \_validatePortablePath | [Call site](../../../../values/paths.aug#L47) · [Caller explanation](../../../../values/paths.aug.md#symbol-_validatePortablePath) |
+
+</details>
+
+<a id="boundary-c75ad6ec6bda"></a>
+
+#### urls → ascii
+
+<details>
+<summary>4 operations, 11 sites</summary>
+
+**[asciiAt](../../../../values/ascii.aug.md#symbol-asciiAt)**
+
+Inputs: input: Bytes, index: int. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| \_validateHttpUrl | [Call site](../../../../values/urls.aug#L36) · [Caller explanation](../../../../values/urls.aug.md#symbol-_validateHttpUrl) |
+| \_validateHttpUrl | [Call site](../../../../values/urls.aug#L44) · [Caller explanation](../../../../values/urls.aug.md#symbol-_validateHttpUrl) |
+| \_validateHttpUrl | [Call site](../../../../values/urls.aug#L51) · [Caller explanation](../../../../values/urls.aug.md#symbol-_validateHttpUrl) |
+| \_validateHttpUrl | [Call site](../../../../values/urls.aug#L51) · [Caller explanation](../../../../values/urls.aug.md#symbol-_validateHttpUrl) |
+| \_validateAuthority | [Call site](../../../../values/urls.aug#L74) · [Caller explanation](../../../../values/urls.aug.md#symbol-_validateAuthority) |
+
+**[asciiLetter](../../../../values/ascii.aug.md#symbol-asciiLetter)**
+
+Inputs: character: string. Result: bool.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| \_validateAuthority | [Call site](../../../../values/urls.aug#L75) · [Caller explanation](../../../../values/urls.aug.md#symbol-_validateAuthority) |
+
+**[asciiLower](../../../../values/ascii.aug.md#symbol-asciiLower)**
+
+Inputs: text: string. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| \_validateHttpUrl | [Call site](../../../../values/urls.aug#L29) · [Caller explanation](../../../../values/urls.aug.md#symbol-_validateHttpUrl) |
+| \_validateHttpUrl | [Call site](../../../../values/urls.aug#L31) · [Caller explanation](../../../../values/urls.aug.md#symbol-_validateHttpUrl) |
+
+**[asciiSlice](../../../../values/ascii.aug.md#symbol-asciiSlice)**
+
+Inputs: input: Bytes, start: int, end: int. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| \_validateHttpUrl | [Call site](../../../../values/urls.aug#L29) · [Caller explanation](../../../../values/urls.aug.md#symbol-_validateHttpUrl) |
+| \_validateHttpUrl | [Call site](../../../../values/urls.aug#L31) · [Caller explanation](../../../../values/urls.aug.md#symbol-_validateHttpUrl) |
+| \_validateHttpUrl | [Call site](../../../../values/urls.aug#L40) · [Caller explanation](../../../../values/urls.aug.md#symbol-_validateHttpUrl) |
+
+</details>
+
+
+## What this folder exposes
+
+### Exports
+
+Export the declaration `CivilDate` from [`dates.aug`](../../../../values/dates.aug.md#symbol-CivilDate). Export the declaration `parseCivilDate` from [`dates.aug`](../../../../values/dates.aug.md#symbol-parseCivilDate). Export the declaration `formatCivilDate` from [`dates.aug`](../../../../values/dates.aug.md#symbol-formatCivilDate). Export the declaration `compareCivilDates` from [`dates.aug`](../../../../values/dates.aug.md#symbol-compareCivilDates).
+
+Export the declaration `Duration` from [`durations.aug`](../../../../values/durations.aug.md#symbol-Duration). Export the declaration `parseDuration` from [`durations.aug`](../../../../values/durations.aug.md#symbol-parseDuration). Export the declaration `formatDuration` from [`durations.aug`](../../../../values/durations.aug.md#symbol-formatDuration). Export the declaration `durationFromSeconds` from [`durations.aug`](../../../../values/durations.aug.md#symbol-durationFromSeconds).
+
+Export the declaration `addDurations` from [`durations.aug`](../../../../values/durations.aug.md#symbol-addDurations). Export the declaration `compareDurations` from [`durations.aug`](../../../../values/durations.aug.md#symbol-compareDurations). Export the declaration `TokenId` from [`text.aug`](../../../../values/text.aug.md#symbol-TokenId). Export the declaration `parseTokenId` from [`text.aug`](../../../../values/text.aug.md#symbol-parseTokenId).
+
+Export the declaration `formatTokenId` from [`text.aug`](../../../../values/text.aug.md#symbol-formatTokenId). Export the declaration `BoundedText` from [`text.aug`](../../../../values/text.aug.md#symbol-BoundedText). Export the declaration `parseBoundedText` from [`text.aug`](../../../../values/text.aug.md#symbol-parseBoundedText). Export the declaration `formatBoundedText` from [`text.aug`](../../../../values/text.aug.md#symbol-formatBoundedText).
+
+Export the declaration `HttpUrl` from [`urls.aug`](../../../../values/urls.aug.md#symbol-HttpUrl). Export the declaration `parseHttpUrl` from [`urls.aug`](../../../../values/urls.aug.md#symbol-parseHttpUrl). Export the declaration `formatHttpUrl` from [`urls.aug`](../../../../values/urls.aug.md#symbol-formatHttpUrl). Export the declaration `PortableRelativePath` from [`paths.aug`](../../../../values/paths.aug.md#symbol-PortableRelativePath).
+
+Export the declaration `parsePortableRelativePath` from [`paths.aug`](../../../../values/paths.aug.md#symbol-parsePortableRelativePath). Export the declaration `formatPortableRelativePath` from [`paths.aug`](../../../../values/paths.aug.md#symbol-formatPortableRelativePath). Export the declaration `joinPortablePaths` from [`paths.aug`](../../../../values/paths.aug.md#symbol-joinPortablePaths). Export the declaration `RetryPolicy` from [`retries.aug`](../../../../values/retries.aug.md#symbol-RetryPolicy).
+
+Export the declaration `retryDelay` from [`retries.aug`](../../../../values/retries.aug.md#symbol-retryDelay).
+
 
 ## Files in this folder
 

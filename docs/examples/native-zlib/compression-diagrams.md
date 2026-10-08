@@ -25,6 +25,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](compression.md#source-L5)
 :::
 
+Compress text with zlib, then restore its bytes within a fixed output limit.
+
+Failures can raise [`CompressionError`](dependencies/packages/%40greenpandastudios/aug-zlib/0.2.0/contracts.md#symbol-CompressionError).
+
 ```mermaid
 sequenceDiagram
     participant p0 as roundTrip

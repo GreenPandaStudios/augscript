@@ -15,25 +15,33 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](retries.aug#L11)
 
+Caller-selected retry delays, stored as deeply immutable data.
+Attempts are numbered from one; maxAttempts includes the initial attempt.
+
+It takes `maxAttempts` as an integer, kept read-only (Total allowed attempts, from 1 to 64) and `delays` as `immutable List<Duration>`, kept read-only (Exactly maxAttempts - 1 durations, each from 0 to 604800000 milliseconds.
+Order, duplicates and zero delays are preserved. Construction performs no operation or wait).
+
+Construction can fail with `ConversionError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as RetryPolicy constructor
 
     Note over p0: Receive fields: maxAttempts, delays
-    alt maxAttempts ‹ 1 or maxAttempts › 64
+    alt maxAttempts is less than 1 or maxAttempts is greater<br/>than 64
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     p0->>p0: delays.length()
     p0-->>p0: length result: int
-    alt delays.length() != maxAttempts - 1
+    alt the number of elements in delays does not equal<br/>(maxAttempts minus 1)
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 2: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     loop For each item in delays
-    alt delay.milliseconds ‹ 0 or delay.milliseconds › 604800000
+    alt delay.milliseconds is negative or delay.milliseconds is<br/>greater than 604800000
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 3: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -47,16 +55,23 @@ sequenceDiagram
 
 [Source](retries.aug#L26)
 
+Read the delay after a failed attempt, or null after the final allowed attempt.
+This only reads policy data: it does not retry, sleep, classify an error or choose a recovery value.
+
+It takes `policy` as [`RetryPolicy`](retries.aug.md#symbol-RetryPolicy) and `failedAttempt` as an integer.
+
+Failures can raise `ConversionError` (The attempt number is outside the policy).
+
 ```mermaid
 sequenceDiagram
     participant p0 as retryDelay
 
-    alt failedAttempt ‹ 1 or failedAttempt › policy.maxAttempts
+    alt failedAttempt is less than 1 or failedAttempt is greater<br/>than policy.maxAttempts
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
-    alt failedAttempt == policy.maxAttempts
+    alt failedAttempt equals policy.maxAttempts
     Note over p0: Return null； required cleanup runs before exit
     end
     p0->>p0: policy.delays.at(index=failedAttempt - 1)

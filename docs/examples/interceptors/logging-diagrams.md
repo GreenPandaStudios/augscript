@@ -36,6 +36,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](logging.md#source-L6)
 :::
 
+It takes `message` as a string (Text to display). It gets `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection.
+
+It can call [`Console.write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write).
+
 Interface contract; implementation selected at runtime. [Explanation](logging.md).
 
 ### ConsoleLogger constructor {#sequence-ConsoleLogger-20-constructor}
@@ -44,6 +48,8 @@ Interface contract; implementation selected at runtime. [Explanation](logging.md
 [Source](logging.md#source-L9)
 :::
 
+Console logger shared by interceptor instances and the application. It implements [`Logger`](logging.md#symbol-Logger).
+
 [Explanation](logging.md).
 
 ### ConsoleLogger.log {#sequence-ConsoleLogger.log}
@@ -51,6 +57,10 @@ Interface contract; implementation selected at runtime. [Explanation](logging.md
 ::: spec-paragraph specification-paragraph-3
 [Source](logging.md#source-L10)
 :::
+
+It takes `message` as a string. It gets `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection.
+
+It can call [`Console.write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write).
 
 ```mermaid
 sequenceDiagram

@@ -37,7 +37,7 @@ sequenceDiagram
     p0->>p1: print(value=length result)
     p0->>p0: args.length()
     p0-->>p0: length result 2: int
-    alt args.length() › 0
+    alt the number of elements in args is positive
     p0->>p0: args.get(index=0)
     p0-->>p0: get result: string
     p0->>p1: print(value=get result)

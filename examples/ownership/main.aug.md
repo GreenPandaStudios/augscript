@@ -6,6 +6,7 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="startup"></a>
 ## Startup
 
 It creates [`Counter`](counter.aug.md#symbol-Counter) with `value` `1` and stores the result in owned `counter` ([`Counter`](counter.aug.md#symbol-Counter)). It calls [`counter.increment`](counter.aug.md#symbol-Counter.increment). It prints [`counter.read`](counter.aug.md#symbol-Counter.read). [source](main.aug#L3-L5)

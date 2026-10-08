@@ -6,6 +6,7 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="startup"></a>
 ## Startup
 
 It prints [`add`](.aug-spec/packages/%40example/aug-math/0.1.0/arithmetic.aug.md#symbol-add) with `left` `20` and `right` `22`. [source](main.aug#L3)

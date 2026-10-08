@@ -9,7 +9,9 @@
 <a id="symbol-validate"></a>
 ## `validate` · [source](operations.aug#L2)
 
-It takes `value` as an integer. It checks that (`value` minus ((`value` divided by `16`) times `16`)) does not equal `0`. It raises a `FileError` at the first failed check. It returns `value`. [source](operations.aug#L3-L5)
+It takes `value` as an integer. Failures can raise `FileError`.
+
+It checks that (`value` minus ((`value` divided by `16`) times `16`)) does not equal `0`. It raises a `FileError` at the first failed check. It returns `value`. [source](operations.aug#L3-L5)
 
 <details>
 <summary>Checked interface</summary>

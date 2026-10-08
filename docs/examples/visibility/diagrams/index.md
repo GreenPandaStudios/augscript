@@ -12,7 +12,17 @@ outline: [2, 3]
 
 [Private state and helpers](../index.md)
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 2 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
+
+## Where execution begins
+
+### Startup {#startup}
+
+::: spec-paragraph specification-paragraph-1
+It sets `counter` to a [`Counter`](../counter.md#symbol-Counter) with `value` `1`. It prints [`counter.label`](../counter.md#symbol-Counter.label). With temporary permission to change `counter`, it sets `counter.value` to `2`. It prints `counter.value`. [source](../main.md#source-L3-L8)
+:::
 
 ## Data flow
 
@@ -23,14 +33,38 @@ flowchart TD
     n1 -->|"Counter(value) / Counter.label → Counter / string"| n0
 ```
 
-::: details Data crossing these boundaries (2 contracts)
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| Startup | counter | [Counter](../counter.md#symbol-Counter) · value: int | Counter |
-| Startup | counter | [Counter.label](../counter.md#symbol-Counter.label) | string |
+| Startup | counter | 2 | [Inputs, results and call sites](index.md#boundary-786068825950) |
+
+#### Data crossing these boundaries (2 contracts)
+
+#### Startup → counter {#boundary-786068825950}
+
+::: details 2 operations, 2 sites
+
+**[Counter](../counter.md#symbol-Counter)**
+
+Inputs: value: int. Result: Counter.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../main.md#source-L3) · [Caller explanation](../main.md#startup) |
+
+**[Counter.label](../counter.md#symbol-Counter.label)**
+
+No caller-supplied inputs. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../main.md#source-L4) · [Caller explanation](../main.md#startup) |
 
 :::
+
 
 ## Open a module
 

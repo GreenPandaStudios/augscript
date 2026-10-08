@@ -25,4 +25,8 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](models.md#source-L3)
 :::
 
+Immutable fruit data, with public construction labels and structural equality.
+
+It takes `code` as an integer, kept read-only and `name` as a string, kept read-only.
+
 Receive fields: code, name. [Explanation](models.md).

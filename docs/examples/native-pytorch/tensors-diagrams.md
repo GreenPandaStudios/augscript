@@ -25,6 +25,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](tensors.md#source-L5)
 :::
 
+Add two CPU tensors using LibTorch and return the sum of their elements.
+
+Failures can raise [`TensorError`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.2.0/contracts.md#symbol-TensorError).
+
 ```mermaid
 sequenceDiagram
     participant p0 as calculate

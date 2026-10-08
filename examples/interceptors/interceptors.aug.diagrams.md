@@ -25,6 +25,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](interceptors.aug#L5)
 
+Raised when a numeric input fails validation. It implements `Error`.
+
+It takes `message` as a string, kept read-only.
+
 Receive fields: message. [Explanation](interceptors.aug.md).
 
 <a id="sequence-Audit.around"></a>
@@ -32,6 +36,12 @@ Receive fields: message. [Explanation](interceptors.aug.md).
 ### Audit.around
 
 [Source](interceptors.aug#L15)
+
+Wrap a call without changing its result.
+
+It gets `console` ([`Console`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+
+It can call [`Console.write`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write).
 
 ```mermaid
 sequenceDiagram
@@ -51,11 +61,15 @@ sequenceDiagram
 
 [Source](interceptors.aug#L28)
 
+It takes `y` as an integer.
+
+Failures can raise [`ValidationError`](interceptors.aug.md#symbol-ValidationError) (when the selected value is negative).
+
 ```mermaid
 sequenceDiagram
     participant p0 as Positive.around
     participant p1 as next
-    alt y ‹ 0
+    alt y is negative
     p0->>p0: ValidationError(message=”value must be nonnegative”) ·<br/>construct value
     p0-->>p0: ValidationError result: ValidationError
     Note over p0: Raise checked failure ValidationError(message=”value<br/>must be nonnegative”)； required cleanup runs before exit
@@ -71,6 +85,8 @@ sequenceDiagram
 ### AddOne.around
 
 [Source](interceptors.aug#L38)
+
+It takes `y` as an integer.
 
 ```mermaid
 sequenceDiagram

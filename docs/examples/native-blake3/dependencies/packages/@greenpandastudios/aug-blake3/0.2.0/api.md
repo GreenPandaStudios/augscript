@@ -77,8 +77,10 @@ test hash {
 
 ### `hash` · [source](api.md#source-L6) {#symbol-hash}
 
+Return a lowercase 64-character BLAKE3 digest, computed by the Rust crate. It takes `input` as `Bytes`. Failures can raise [`HashError`](contracts.md#symbol-HashError).
+
 ::: spec-paragraph specification-paragraph-1
-Return a lowercase 64-character BLAKE3 digest, computed by the Rust crate. It takes `input` as `Bytes`. Within an unsafe block, it returns [`_hash`](api.md#symbol-_hash) with `input`. Native operations must satisfy their declared C contracts. [source](api.md#source-L7-L8)
+Within an unsafe block, it returns [`_hash`](api.md#symbol-_hash) with `input`. Native operations must satisfy their declared C contracts. [source](api.md#source-L7-L8)
 :::
 
 ::: details Checked interface

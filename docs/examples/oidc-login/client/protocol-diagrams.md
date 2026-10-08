@@ -72,13 +72,19 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](protocol.md#source-L10)
 :::
 
+Accept only a successful JSON response. Redirects remain explicit and are never followed by the transport.
+
+It takes `response` as `HttpResponse<Bytes>`.
+
+Failures can raise [`SessionError`](contracts.md#symbol-SessionError).
+
 #### Sequence 1 of 2
 
 ```mermaid
 sequenceDiagram
     participant p0 as responseJson
     participant p1 as json/contracts
-    alt response.status != 200
+    alt response.status does not equal 200
     p0->>p0: SessionError() · construct value
     p0-->>p0: SessionError result: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
@@ -92,7 +98,7 @@ sequenceDiagram
     else Match when some contentType:
     p0->>p0: contentType.startsWith(prefix=”application/json”)
     p0-->>p0: startsWith result: bool
-    alt not contentType.startsWith(prefix=”application/json”)
+    alt contentType.startsWith with prefix ”application/json”<br/>returns false
     p0->>p0: SessionError() · construct value
     p0-->>p0: SessionError result 3: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
@@ -133,6 +139,12 @@ sequenceDiagram
 [Source](protocol.md#source-L27)
 :::
 
+Discovery is fetched over HTTP. Every advertised URL is checked against the registered issuer before any credential is sent.
+
+It gets `client` ([`HttpClient`](../dependencies/packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-HttpClient)) from dependency injection.
+
+It can call [`HttpClient.request`](../dependencies/packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-HttpClient.request). Failures can raise `HttpError` and [`SessionError`](contracts.md#symbol-SessionError).
+
 ```mermaid
 sequenceDiagram
     participant p0 as discover
@@ -147,7 +159,7 @@ sequenceDiagram
     opt Try body； stops on a checked failure
     p0->>p0: json.decode‹Discovery›()
     p0-->>p0: document: Discovery
-    alt document.issuer != config.issuer or document.authorization_endpoint != config.issuer + ”/authorize” or document.token…
+    alt document.issuer does not equal config.issuer or<br/>document.authorization_endpoint does not equal the text<br/>｛config.issuer｝/authorize or document.token_endpoint<br/>does not equal the text ｛config.issuer｝/token or<br/>document.jwks_uri does not equal the text<br/>｛config.issuer｝/jwks or document.userinfo_endpoint does<br/>not equal the text ｛config.issuer｝/userinfo
     p0->>p0: SessionError() · construct value
     p0-->>p0: SessionError result: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
@@ -168,6 +180,12 @@ sequenceDiagram
 [Source](protocol.md#source-L39)
 :::
 
+Validate the signed ID token using a public key from this issuer's HTTP JWKS, then validate the registered claims and one-use nonce.
+
+It takes `token` and `nonce` as strings, `now` as an integer, and `jwks` as [`RsaJwks`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.md#symbol-RsaJwks). It gets `crypto` ([`Crypto`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto)) from dependency injection.
+
+It can call [`Crypto.equal`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.equal), [`Crypto.decodeBase64url`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.decodeBase64url), [`Crypto.importRsa`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.importRsa), and [`Crypto.verifyRsa`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.verifyRsa). Failures can raise [`SessionError`](contracts.md#symbol-SessionError).
+
 #### Sequence 1 of 3
 
 ```mermaid
@@ -179,7 +197,7 @@ sequenceDiagram
     p1-->>p0: config: Settings
     p0->>p0: jwks.keys.length()
     p0-->>p0: length result: int
-    alt jwks.keys.length() != 1
+    alt the number of elements in jwks.keys does not equal 1
     p0->>p0: SessionError() · construct value
     p0-->>p0: SessionError result: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
@@ -187,7 +205,7 @@ sequenceDiagram
     opt Try body； stops on a checked failure
     p0->>p0: jwks.keys.get(index=0)
     p0-->>p0: jwk: RsaJwk
-    alt jwk.kid != ”provider-1”
+    alt jwk.kid does not equal ”provider-1”
     p0->>p0: SessionError() · construct value
     p0-->>p0: SessionError result 2: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
@@ -198,15 +216,15 @@ sequenceDiagram
     p2-->>p0: verifyJwt result: Json
     p0->>p0: verifyJwt result.decode‹IdClaims›()
     p0-->>p0: claims: IdClaims
-    opt Left is false
+    opt (claims.iss != config.issuer or claims.aud !=<br/>config.clientId) is false
     p0->>p0: claims.sub.length()
     p0-->>p0: length result 2: int
     end
-    opt Left is false
+    opt (claims.iss != config.issuer or claims.aud !=<br/>config.clientId or length result 2 == 0) is false
     p0->>p0: claims.sub.length()
     p0-->>p0: length result 3: int
     end
-    alt claims.iss != config.issuer or claims.aud != config.clientId or claims.sub.length() == 0 or claims.sub.length() › 255
+    alt claims.iss does not equal config.issuer or claims.aud<br/>does not equal config.clientId or the byte length of<br/>claims.sub equals 0 or the byte length of claims.sub is<br/>greater than 255
     p0->>p0: SessionError() · construct value
     p0-->>p0: SessionError result 3: SessionError
     end
@@ -220,11 +238,11 @@ sequenceDiagram
     participant p0 as validateIdentity
     participant p1 as crypto: Crypto
     opt Try body； stops on a checked failure
-    alt claims.iss != config.issuer or claims.aud != config.clientId or claims.sub.length() == 0 or claims.sub.length() › 255
+    alt claims.iss does not equal config.issuer or claims.aud<br/>does not equal config.clientId or the byte length of<br/>claims.sub equals 0 or the byte length of claims.sub is<br/>greater than 255
     Note over p0: Sequence continued from the previous view
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
-    alt claims.exp ‹= now or claims.iat ‹ now - 300 or claims.iat › now + 30 or claims.exp ‹= claims.iat or claims.exp › now …
+    alt claims.exp is at most now or claims.iat is less than<br/>(now minus 300) or claims.iat is greater than (now plus<br/>30) or claims.exp is at most claims.iat or claims.exp is<br/>greater than (now plus 330)
     p0->>p0: SessionError() · construct value
     p0-->>p0: SessionError result 4: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
@@ -235,7 +253,7 @@ sequenceDiagram
     p0-->>p0: bytes result 2: Bytes
     p0->>p1: equal(left=bytes result, right=bytes result 2) ·<br/>interface dispatch
     p1-->>p0: equal result: bool
-    alt not crypto.equal(left=claims.nonce.bytes(), right=nonce.bytes())
+    alt crypto.equal with left from the UTF-8 bytes of<br/>claims.nonce and right from the UTF-8 bytes of nonce<br/>returns false
     p0->>p0: SessionError() · construct value
     p0-->>p0: SessionError result 5: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit

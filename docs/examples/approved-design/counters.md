@@ -173,7 +173,7 @@ It implements [`Counter`](counters.md#symbol-Counter). It is private to this fil
 #### `_Counter.increment` · [source](counters.md#source-L16) {#symbol-_Counter.increment}
 
 ::: spec-paragraph specification-paragraph-3
-It sets `_state` to a [`_Updated`](counters.md#symbol-_Updated) with `count` from [`_state.read`](counters.md#symbol-State.read) plus `1`. [source](counters.md#source-L17)
+It may change `self`. It sets `_state` to a [`_Updated`](counters.md#symbol-_Updated) with `count` from [`_state.read`](counters.md#symbol-State.read) plus `1`. [source](counters.md#source-L17)
 :::
 
 ::: details Checked interface

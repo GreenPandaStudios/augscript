@@ -9,7 +9,9 @@
 <a id="symbol-compress"></a>
 ## `compress` · [source](api.aug#L7)
 
-Compress bytes with the standard zlib framing. It takes `input` as `Bytes`. Within an unsafe block, it returns [`_compress`](api.aug.md#symbol-_compress) with `input`. Native operations must satisfy their declared C contracts. [source](api.aug#L8-L9)
+Compress bytes with the standard zlib framing. It takes `input` as `Bytes`. Failures can raise [`CompressionError`](contracts.aug.md#symbol-CompressionError).
+
+Within an unsafe block, it returns [`_compress`](api.aug.md#symbol-_compress) with `input`. Native operations must satisfy their declared C contracts. [source](api.aug#L8-L9)
 
 <details>
 <summary>Checked interface</summary>
@@ -25,7 +27,9 @@ It takes `input` as `Bytes`. Failures can raise [`CompressionError`](contracts.a
 <a id="symbol-decompress"></a>
 ## `decompress` · [source](api.aug#L11)
 
-Decompress at most maximumOutput bytes (maximum 256 MiB). It takes `input` as `Bytes` and `maximumOutput` as an integer. Within an unsafe block, it returns [`_decompress`](api.aug.md#symbol-_decompress) with `input` and `maximumOutput`. Native operations must satisfy their declared C contracts. [source](api.aug#L12-L13)
+Decompress at most maximumOutput bytes (maximum 256 MiB). It takes `input` as `Bytes` and `maximumOutput` as an integer. Failures can raise [`CompressionError`](contracts.aug.md#symbol-CompressionError).
+
+Within an unsafe block, it returns [`_decompress`](api.aug.md#symbol-_decompress) with `input` and `maximumOutput`. Native operations must satisfy their declared C contracts. [source](api.aug#L12-L13)
 
 <details>
 <summary>Checked interface</summary>

@@ -27,15 +27,58 @@ flowchart LR
 
 </details>
 
-<details>
-<summary>Data crossing these boundaries (2 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| calculator | logger | [Logger.log](../../../../logging/logger.aug.md#symbol-Logger.log) · message: string · interface dispatch | void |
-| console | august/io | [Console.write](../../../august/1.0.0/io/contracts.aug.md#symbol-Console.write) · value: string · interface dispatch | void |
+| calculator | logger | 1 | [Inputs, results and call sites](index.md#boundary-621b6794f8c9) |
+| console | august/io | 1 | [Inputs, results and call sites](index.md#boundary-211d6d32ce6e) |
+
+#### Data crossing these boundaries (2 contracts)
+
+<a id="boundary-621b6794f8c9"></a>
+
+#### calculator → logger
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[Logger.log](../../../../logging/logger.aug.md#symbol-Logger.log)** · interface dispatch
+
+Inputs: message: string. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Calculator.add | [Call site](../../../../calculator.aug#L17) · [Caller explanation](../../../../calculator.aug.md#symbol-Calculator.add) |
 
 </details>
+
+<a id="boundary-211d6d32ce6e"></a>
+
+#### console → august/io
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[Console.write](../../../august/1.0.0/io/contracts.aug.md#symbol-Console.write)** · interface dispatch
+
+Inputs: value: string. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| ConsoleLogger.log | [Call site](../../../../logging/console.aug#L7) · [Caller explanation](../../../../logging/console.aug.md#symbol-ConsoleLogger.log) |
+
+</details>
+
+
+## What this folder exposes
+
+### Exports
+
+Export the declaration `Logger` from [`logger.aug`](../../../../logging/logger.aug.md#symbol-Logger). Export the declaration `ConsoleLogger` from [`console.aug`](../../../../logging/console.aug.md#symbol-ConsoleLogger).
+
 
 ## Files in this folder
 

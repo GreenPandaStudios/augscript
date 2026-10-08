@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Compile startup, folder exports, operation contracts and natural decision labels into linked reading views. Grouped data-flow boundaries retain exact operations and every contributing call site; independently check that prose covers authored executable statements. The welcome page shows one checked project as code, explanation and diagrams. New application and library starters direct agents through those views before editing source.
+
 - Identify 1.0 features in bundled help and generated reference pages without retaining unreleased labels after publication.
 
 - Verify the extension's fresh compiler artifact pins against a checksum-covered assembled release catalog, while retaining the tagged compiler and platform contracts. Reject missing, changed or mismatched catalogs before publication. Give full release assembly the same 150-minute execution budget as native producers; retain every qualification gate and frozen limit.

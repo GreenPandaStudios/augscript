@@ -15,6 +15,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](forecasts.aug#L3)
 
+The JSON shape returned by the forecast endpoint. Temperatures use whole degrees.
+
+It takes `date` as a string, kept read-only, `temperatureC` and `temperatureF` as integers, kept read-only, and `summary` as a string, kept read-only.
+
 Receive fields: date, temperatureC, temperatureF, summary. [Explanation](forecasts.aug.md).
 
 <a id="sequence-weatherForecast"></a>
@@ -22,6 +26,10 @@ Receive fields: date, temperatureC, temperatureF, summary. [Explanation](forecas
 ### weatherForecast
 
 [Source](forecasts.aug#L6)
+
+`weatherForecast` handles `GET /weatherforecast`.
+
+Return five simulated forecasts. Fixed data keeps the example and its tests reproducible.
 
 ```mermaid
 sequenceDiagram
@@ -38,7 +46,7 @@ sequenceDiagram
     p0-->>p0: WeatherForecast result 4: WeatherForecast
     p0->>p0: WeatherForecast(date=”2026-01-05”, temperatureC=35,<br/>temperatureF=95, summary=”Hot”) · construct value
     p0-->>p0: WeatherForecast result 5: WeatherForecast
-    Note over p0: Return ［ WeatherForecast( date=”2026-01-01”,<br/>temperatureC=0, temperatureF=32, summary=”Freezing” ),<br/>WeatherForecast( …
+    Note over p0: Return ［ WeatherForecast( date=”2026-01-01”,<br/>temperatureC=0, temperatureF=32, summary=”Freezing” ),<br/>WeatherForecast( date=”2026-01-02”, temperatureC=10,<br/>temperatureF=50, summary=”Cool” ), WeatherForecast(<br/>date=”2026-01-03”, temperatureC=20, temperatureF=68,<br/>summary=”Mild” ), WeatherForecast( date=”2026-01-04”,<br/>temperatureC=30, temperatureF=86, summary=”Warm” ),<br/>WeatherForecast( date=”2026-01-05”, temperatureC=35,<br/>temperatureF=95, summary=”Hot” ) ］； required cleanup<br/>runs before exit
     Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
 

@@ -79,7 +79,9 @@ test('repository URL validation rejects credentials, traversal, and options', ()
 test('both application starters create agent instructions; the weather API has a checked OpenAPI shape', () => fixture(root => {
   for (const template of ['hello', 'weather']) {
     const app = join(root, template); initProject(app, template);
-    assert.match(readFileSync(join(app, 'AGENTS.md'), 'utf8'), /adjacent .aug.md specification/);
+    const instructions=readFileSync(join(app, 'AGENTS.md'), 'utf8');
+    assert.match(instructions,/\.aug-spec\/diagrams\/index\.md/);assert.match(instructions,/operation sequences/);
+    assert.match(instructions, /adjacent .aug.md specification/);assert.match(instructions,/not acceptance/);
     const result = checked(app);
     if (template === 'weather') {
       const api = generateOpenApi(result).document;

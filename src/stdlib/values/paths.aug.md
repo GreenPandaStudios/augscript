@@ -24,7 +24,7 @@ It calls [`_validatePortablePath`](paths.aug.md#symbol-_validatePortablePath) wi
 <a id="symbol-parsePortableRelativePath"></a>
 ## `parsePortableRelativePath` · [source](paths.aug#L17)
 
-Validate the same lexical profile as PortableRelativePath, preserving the original spelling. It takes `text` as a string. It returns a [`PortableRelativePath`](paths.aug.md#symbol-PortableRelativePath) with `text`. [source](paths.aug#L18)
+Validate the same lexical profile as PortableRelativePath, preserving the original spelling. It takes `text` as a string. Failures can raise `ConversionError` (Invalid or unsupported path syntax). It returns a [`PortableRelativePath`](paths.aug.md#symbol-PortableRelativePath) with `text`. [source](paths.aug#L18)
 
 <details>
 <summary>Checked interface</summary>
@@ -56,7 +56,7 @@ It takes `value` as [`PortableRelativePath`](paths.aug.md#symbol-PortableRelativ
 <a id="symbol-joinPortablePaths"></a>
 ## `joinPortablePaths` · [source](paths.aug#L27)
 
-Join two validated paths with one slash and revalidate all byte, segment and name limits. It takes `left` and `right` as [`PortableRelativePath`](paths.aug.md#symbol-PortableRelativePath). It returns a [`PortableRelativePath`](paths.aug.md#symbol-PortableRelativePath) with `text` from the text `{left.text}/{right.text}`. [source](paths.aug#L28)
+Join two validated paths with one slash and revalidate all byte, segment and name limits. It takes `left` and `right` as [`PortableRelativePath`](paths.aug.md#symbol-PortableRelativePath). Failures can raise `ConversionError` (The combined path exceeds the supported bounds). It returns a [`PortableRelativePath`](paths.aug.md#symbol-PortableRelativePath) with `text` from the text `{left.text}/{right.text}`. [source](paths.aug#L28)
 
 <details>
 <summary>Checked interface</summary>
@@ -72,7 +72,7 @@ It takes `left` and `right` as [`PortableRelativePath`](paths.aug.md#symbol-Port
 <a id="symbol-_validatePortablePath"></a>
 ## `_validatePortablePath` · [source](paths.aug#L30)
 
-It is private to its defining scope. It takes `text` as a string.
+It is private to its defining scope. It takes `text` as a string. Failures can raise `ConversionError`.
 
 It checks that `text.byteLength` does not equal `0` and `text.byteLength` is at most `1024`. It raises a `ConversionError` at the first failed check. It sets `segments` to `text.split` with `separator` `"/"`. [source](paths.aug#L31-L33)
 

@@ -28,7 +28,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiZGRkZTkxZWZhMGQyOWIxOGEwYjBjN2JiYTlhZDQ3ZmFhZDdlMzNiYzVjMDY4MmVkYTM1MjUyYTMxZTdkMDc1MyIsImZvcm1hdHRlZFNoYTI1NiI6IjJiZjJkOTM4ODhjN2YxMmM1ZGUxZjQ5YTc0NTE4YjY0YWRlNmM1MzVlYzhiMTA0YzM5M2Y1M2JjNTJmZGFlMWIiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDkiLCJmaXJzdCI6OSwibGFzdCI6OSwiYmFja2xpbmtzIjpbIm1haW4tZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUw5LUwxMCIsImZpcnN0Ijo5LCJsYXN0IjoxMCwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiZGRkZTkxZWZhMGQyOWIxOGEwYjBjN2JiYTlhZDQ3ZmFhZDdlMzNiYzVjMDY4MmVkYTM1MjUyYTMxZTdkMDc1MyIsImZvcm1hdHRlZFNoYTI1NiI6IjJiZjJkOTM4ODhjN2YxMmM1ZGUxZjQ5YTc0NTE4YjY0YWRlNmM1MzVlYzhiMTA0YzM5M2Y1M2JjNTJmZGFlMWIiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDktTDEwIiwiZmlyc3QiOjksImxhc3QiOjEwLCJiYWNrbGlua3MiOlsiZGlhZ3JhbXMvaW5kZXgubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSIsIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19LHsiaWQiOiJzb3VyY2UtTDEwIiwiZmlyc3QiOjEwLCJsYXN0IjoxMCwiYmFja2xpbmtzIjpbImRpYWdyYW1zL2luZGV4Lm1kI2JvdW5kYXJ5LTBmNmQxZDE2MWJkNCJdfSx7ImlkIjoic291cmNlLUw5IiwiZmlyc3QiOjksImxhc3QiOjksImJhY2tsaW5rcyI6WyJtYWluLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX1dfQ
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
@@ -41,7 +41,7 @@ resolve app to program
 program.start()
 ```
 
-```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiZGRkZTkxZWZhMGQyOWIxOGEwYjBjN2JiYTlhZDQ3ZmFhZDdlMzNiYzVjMDY4MmVkYTM1MjUyYTMxZTdkMDc1MyIsImZvcm1hdHRlZFNoYTI1NiI6IjJiZjJkOTM4ODhjN2YxMmM1ZGUxZjQ5YTc0NTE4YjY0YWRlNmM1MzVlYzhiMTA0YzM5M2Y1M2JjNTJmZGFlMWIiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDkiLCJmaXJzdCI6OSwibGFzdCI6OSwiYmFja2xpbmtzIjpbIm1haW4tZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUw5LUwxMCIsImZpcnN0Ijo5LCJsYXN0IjoxMCwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiZGRkZTkxZWZhMGQyOWIxOGEwYjBjN2JiYTlhZDQ3ZmFhZDdlMzNiYzVjMDY4MmVkYTM1MjUyYTMxZTdkMDc1MyIsImZvcm1hdHRlZFNoYTI1NiI6IjJiZjJkOTM4ODhjN2YxMmM1ZGUxZjQ5YTc0NTE4YjY0YWRlNmM1MzVlYzhiMTA0YzM5M2Y1M2JjNTJmZGFlMWIiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDktTDEwIiwiZmlyc3QiOjksImxhc3QiOjEwLCJiYWNrbGlua3MiOlsiZGlhZ3JhbXMvaW5kZXgubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSIsIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19LHsiaWQiOiJzb3VyY2UtTDEwIiwiZmlyc3QiOjEwLCJsYXN0IjoxMCwiYmFja2xpbmtzIjpbImRpYWdyYW1zL2luZGV4Lm1kI2JvdW5kYXJ5LTBmNmQxZDE2MWJkNCJdfSx7ImlkIjoic291cmNlLUw5IiwiZmlyc3QiOjksImxhc3QiOjksImJhY2tsaW5rcyI6WyJtYWluLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX1dfQ
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
@@ -64,13 +64,13 @@ program.start()
 
 [Interactions and sequences](main-diagrams.md)
 
-### Providers
+### Providers {#providers}
 
 `Console` is provided by [`SystemConsole`](dependencies/august/1.0.0/io/contracts.md#symbol-SystemConsole). The same instance is shared. `Repository<int>` is provided by [`NumberRepository`](types.md#symbol-NumberRepository). The same instance is shared.
 
 `app` is provided by [`Program`](types.md#symbol-Program). The same instance is shared. It requires bindings for `Repository<int>`.
 
-### Startup
+### Startup {#startup}
 
 ::: spec-paragraph specification-paragraph-1
 It sets `program` to the instance provided for `app`. It calls [`program.start`](types.md#symbol-Program.start) using injected `Console` for `console`. [source](main.md#source-L9-L10)

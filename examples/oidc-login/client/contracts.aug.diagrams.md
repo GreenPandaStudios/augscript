@@ -15,6 +15,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](contracts.aug#L3)
 
+Browser-bound client state, nonce and PKCE verifier, consumed by the callback.
+
+It takes `state`, `nonce`, and `verifier` as strings, kept read-only and `expires` as an integer, kept read-only.
+
 Receive fields: state, nonce, verifier, expires. [Explanation](contracts.aug.md).
 
 <a id="sequence-SessionClaims-20-constructor"></a>
@@ -22,6 +26,10 @@ Receive fields: state, nonce, verifier, expires. [Explanation](contracts.aug.md)
 ### SessionClaims constructor
 
 [Source](contracts.aug#L5)
+
+Sessions require their own issuer, audience, key and JWT type, plus a live registry entry.
+
+It takes `iss`, `sub`, and `aud` as strings, kept read-only, `exp` and `iat` as integers, kept read-only, and `jti`, `csrf`, and `name` as strings, kept read-only.
 
 Receive fields: iss, sub, aud, exp, iat, jti, csrf, name. [Explanation](contracts.aug.md).
 
@@ -31,6 +39,8 @@ Receive fields: iss, sub, aud, exp, iat, jti, csrf, name. [Explanation](contract
 
 [Source](contracts.aug#L6)
 
+It takes `csrf` as a string, kept read-only.
+
 Receive fields: csrf. [Explanation](contracts.aug.md).
 
 <a id="sequence-SessionError-20-constructor"></a>
@@ -38,5 +48,7 @@ Receive fields: csrf. [Explanation](contracts.aug.md).
 ### SessionError constructor
 
 [Source](contracts.aug#L7)
+
+It implements `Error`.
 
 [Explanation](contracts.aug.md).

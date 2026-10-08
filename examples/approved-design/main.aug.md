@@ -6,12 +6,14 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="providers"></a>
 ## Providers
 
 `Console` is provided by [`SystemConsole`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared.
 
 `Application` is provided by [`ApplicationImpl`](domain/app.aug.md#symbol-ApplicationImpl). The same instance is shared. It requires bindings for `Console`. Include providers from [`Counters`](counters.aug.md#symbol-Counters).
 
+<a id="startup"></a>
 ## Startup
 
 It sets `app` to the instance provided for `Application`. It calls [`app.start`](domain/app.aug.md#symbol-Application.start). It sets `names` to a map with `1` mapped to `"apple"`; `2` mapped to `"pear"`. If the value under `2` in `names` is null, it prints `"missing fruit"`. [source](main.aug#L8-L15)

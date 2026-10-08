@@ -9,7 +9,7 @@
 <a id="symbol-parse"></a>
 ## `parse` · [source](contracts.aug#L4)
 
-Parse strict UTF-8 JSON. Duplicate keys, invalid Unicode, oversized integers, and nesting beyond 64 levels raise JsonError. It takes `input` as a string.
+Parse strict UTF-8 JSON. Duplicate keys, invalid Unicode, oversized integers, and nesting beyond 64 levels raise JsonError. It takes `input` as a string. Failures can raise `JsonError`.
 
 Within an unsafe block, it returns [`_aug_json_parse`](contracts.aug.md#symbol-_aug_json_parse) with `input`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L5-L6)
 
@@ -32,7 +32,7 @@ numbers round to binary64, and nesting is bounded at 4096 levels. Invalid JSON
 or Unicode raises JsonError. Keep original legacy JSON strings for wire hashes;
 do not reserialize them. The strict parse function retains its own contract.
 
-It takes `input` as a string. Within an unsafe block, it returns [`_aug_json_parse_compatible`](contracts.aug.md#symbol-_aug_json_parse_compatible) with `input`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L14-L15)
+It takes `input` as a string. Failures can raise `JsonError`. Within an unsafe block, it returns [`_aug_json_parse_compatible`](contracts.aug.md#symbol-_aug_json_parse_compatible) with `input`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L14-L15)
 
 <details>
 <summary>Checked interface</summary>

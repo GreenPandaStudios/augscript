@@ -6,10 +6,12 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="providers"></a>
 ## Providers
 
 `Console` is provided by [`SystemConsole`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](logging.aug.md#symbol-ConsoleLogger). The same instance is shared.
 
+<a id="startup"></a>
 ## Startup
 
 It prints [`describe`](app.aug.md#symbol-describe) with `label` `"value"` and `x` `6` using injected `Logger` for `logger` and `Console` for `console`. If this work raises [`ValidationError`](interceptors.aug.md#symbol-ValidationError), it prints `"rejected"`. It sets `greeter` to a [`Greeter`](app.aug.md#symbol-Greeter) with `name` `"AugScript"` using injected `Logger` for `_logger`. It prints [`greeter.greet`](app.aug.md#symbol-Greeter.greet) using injected `Logger` for `logger` and `Console` for `console`. [source](main.aug#L10-L17)

@@ -28,6 +28,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](greeter.aug#L4)
 
+It implements [`IGreeter`](greeter.aug.md#symbol-IGreeter).
+
+It takes `x` as an integer, kept read-only. It gets `logger` ([`Logger`](logger.aug.md#symbol-Logger)), kept read-only from dependency injection.
+
 Receive fields: injected logger, x. [Explanation](greeter.aug.md).
 
 <a id="sequence-Greeter.greet"></a>
@@ -35,6 +39,10 @@ Receive fields: injected logger, x. [Explanation](greeter.aug.md).
 ### Greeter.greet
 
 [Source](greeter.aug#L5)
+
+It takes `name` as a string. It gets `console` ([`Console`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+
+It can call [`Console.write`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write).
 
 ```mermaid
 sequenceDiagram
@@ -48,6 +56,10 @@ sequenceDiagram
 ### IGreeter.greet
 
 [Source](greeter.aug#L10)
+
+It takes `name` as a string. It gets `console` ([`Console`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+
+It can call [`Console.write`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write).
 
 Interface contract; implementation selected at runtime. [Explanation](greeter.aug.md).
 

@@ -103,7 +103,9 @@ GnuTLS-backed capability adapter. Its constructor performs no I/O or key generat
 <a id="symbol-GnuTlsCrypto.random"></a>
 ### `GnuTlsCrypto.random` · [source](contracts.aug#L44)
 
-Generate unpredictable bytes with the operating-system-backed GnuTLS RNG. It takes `size` as an integer. Within an unsafe block, it returns [`_aug_crypto_random`](contracts.aug.md#symbol-_aug_crypto_random) with `size`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L45-L46)
+Generate unpredictable bytes with the operating-system-backed GnuTLS RNG. It takes `size` as an integer. It can call [`Crypto.random`](contracts.aug.md#symbol-Crypto.random). Failures can raise `CryptoError`.
+
+Within an unsafe block, it returns [`_aug_crypto_random`](contracts.aug.md#symbol-_aug_crypto_random) with `size`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L45-L46)
 
 <details>
 <summary>Checked interface</summary>
@@ -112,14 +114,16 @@ Generate unpredictable bytes with the operating-system-backed GnuTLS RNG. It tak
 random(int size) returns Bytes unless CryptoError uses Crypto.random
 ```
 
-It takes `size` as an integer. Failures can raise `CryptoError`.
+It takes `size` as an integer. It can call [`Crypto.random`](contracts.aug.md#symbol-Crypto.random). Failures can raise `CryptoError`.
 
 </details>
 
 <a id="symbol-GnuTlsCrypto.sha256"></a>
 ### `GnuTlsCrypto.sha256` · [source](contracts.aug#L47)
 
-Hash the complete input using SHA-256. It takes `input` as `Bytes`. Within an unsafe block, it returns [`_aug_crypto_sha256`](contracts.aug.md#symbol-_aug_crypto_sha256) with `input`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L48-L49)
+Hash the complete input using SHA-256. It takes `input` as `Bytes`. It can call [`Crypto.sha256`](contracts.aug.md#symbol-Crypto.sha256). Failures can raise `CryptoError`.
+
+Within an unsafe block, it returns [`_aug_crypto_sha256`](contracts.aug.md#symbol-_aug_crypto_sha256) with `input`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L48-L49)
 
 <details>
 <summary>Checked interface</summary>
@@ -128,14 +132,16 @@ Hash the complete input using SHA-256. It takes `input` as `Bytes`. Within an un
 sha256(Bytes input) returns Bytes unless CryptoError uses Crypto.sha256
 ```
 
-It takes `input` as `Bytes`. Failures can raise `CryptoError`.
+It takes `input` as `Bytes`. It can call [`Crypto.sha256`](contracts.aug.md#symbol-Crypto.sha256). Failures can raise `CryptoError`.
 
 </details>
 
 <a id="symbol-GnuTlsCrypto.generateRsa"></a>
 ### `GnuTlsCrypto.generateRsa` · [source](contracts.aug#L50)
 
-Create a fresh 3072-bit RSA private key. Private material is opaque and scrubbed on reclamation. Within an unsafe block, it returns [`_aug_crypto_generate_rsa`](contracts.aug.md#symbol-_aug_crypto_generate_rsa). Native operations must satisfy their declared C contracts. [source](contracts.aug#L51-L52)
+Create a fresh 3072-bit RSA private key. Private material is opaque and scrubbed on reclamation. It can call [`Crypto.generateRsa`](contracts.aug.md#symbol-Crypto.generateRsa). Failures can raise `CryptoError`.
+
+Within an unsafe block, it returns [`_aug_crypto_generate_rsa`](contracts.aug.md#symbol-_aug_crypto_generate_rsa). Native operations must satisfy their declared C contracts. [source](contracts.aug#L51-L52)
 
 <details>
 <summary>Checked interface</summary>
@@ -144,14 +150,16 @@ Create a fresh 3072-bit RSA private key. Private material is opaque and scrubbed
 generateRsa() returns RsaPrivateKey unless CryptoError uses Crypto.generateRsa
 ```
 
-Failures can raise `CryptoError`.
+It can call [`Crypto.generateRsa`](contracts.aug.md#symbol-Crypto.generateRsa). Failures can raise `CryptoError`.
 
 </details>
 
 <a id="symbol-GnuTlsCrypto.publicRsa"></a>
 ### `GnuTlsCrypto.publicRsa` · [source](contracts.aug#L53)
 
-Export the corresponding public key as an opaque immutable value. It takes `key` as `RsaPrivateKey`. Within an unsafe block, it returns [`_aug_crypto_public_rsa`](contracts.aug.md#symbol-_aug_crypto_public_rsa) with `key`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L54-L55)
+Export the corresponding public key as an opaque immutable value. It takes `key` as `RsaPrivateKey`. It can call [`Crypto.publicRsa`](contracts.aug.md#symbol-Crypto.publicRsa). Failures can raise `CryptoError`.
+
+Within an unsafe block, it returns [`_aug_crypto_public_rsa`](contracts.aug.md#symbol-_aug_crypto_public_rsa) with `key`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L54-L55)
 
 <details>
 <summary>Checked interface</summary>
@@ -160,14 +168,16 @@ Export the corresponding public key as an opaque immutable value. It takes `key`
 publicRsa(RsaPrivateKey key) returns RsaPublicKey unless CryptoError uses Crypto.publicRsa
 ```
 
-It takes `key` as `RsaPrivateKey`. Failures can raise `CryptoError`.
+It takes `key` as `RsaPrivateKey`. It can call [`Crypto.publicRsa`](contracts.aug.md#symbol-Crypto.publicRsa). Failures can raise `CryptoError`.
 
 </details>
 
 <a id="symbol-GnuTlsCrypto.signRsa"></a>
 ### `GnuTlsCrypto.signRsa` · [source](contracts.aug#L56)
 
-Sign bytes using RSASSA-PKCS1-v1_5 with SHA-256 (JOSE RS256). It takes `key` as `RsaPrivateKey` and `input` as `Bytes`. Within an unsafe block, it returns [`_aug_crypto_sign_rsa`](contracts.aug.md#symbol-_aug_crypto_sign_rsa) with `key` and `input`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L57-L58)
+Sign bytes using RSASSA-PKCS1-v1_5 with SHA-256 (JOSE RS256). It takes `key` as `RsaPrivateKey` and `input` as `Bytes`. It can call [`Crypto.signRsa`](contracts.aug.md#symbol-Crypto.signRsa). Failures can raise `CryptoError`.
+
+Within an unsafe block, it returns [`_aug_crypto_sign_rsa`](contracts.aug.md#symbol-_aug_crypto_sign_rsa) with `key` and `input`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L57-L58)
 
 <details>
 <summary>Checked interface</summary>
@@ -176,7 +186,7 @@ Sign bytes using RSASSA-PKCS1-v1_5 with SHA-256 (JOSE RS256). It takes `key` as 
 signRsa(RsaPrivateKey key, Bytes input) returns Bytes unless CryptoError uses Crypto.signRsa
 ```
 
-It takes `key` as `RsaPrivateKey` and `input` as `Bytes`. Failures can raise `CryptoError`.
+It takes `key` as `RsaPrivateKey` and `input` as `Bytes`. It can call [`Crypto.signRsa`](contracts.aug.md#symbol-Crypto.signRsa). Failures can raise `CryptoError`.
 
 </details>
 
@@ -185,7 +195,7 @@ It takes `key` as `RsaPrivateKey` and `input` as `Bytes`. Failures can raise `Cr
 
 Verify Ed25519 using a PEM SubjectPublicKeyInfo public key. Invalid signatures return false; invalid or wrong-algorithm keys raise CryptoError. It takes `publicKey` as a string and `input` and `signature` as `Bytes`.
 
-Within an unsafe block, it returns [`_aug_crypto_verify_ed25519`](contracts.aug.md#symbol-_aug_crypto_verify_ed25519) with `publicKey`, `input`, and `signature`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L60-L61)
+It can call [`Crypto.verifyEd25519`](contracts.aug.md#symbol-Crypto.verifyEd25519). Failures can raise `CryptoError`. Within an unsafe block, it returns [`_aug_crypto_verify_ed25519`](contracts.aug.md#symbol-_aug_crypto_verify_ed25519) with `publicKey`, `input`, and `signature`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L60-L61)
 
 <details>
 <summary>Checked interface</summary>
@@ -194,7 +204,7 @@ Within an unsafe block, it returns [`_aug_crypto_verify_ed25519`](contracts.aug.
 verifyEd25519(string publicKey, Bytes input, Bytes signature) returns bool unless CryptoError uses Crypto.verifyEd25519
 ```
 
-It takes `publicKey` as a string and `input` and `signature` as `Bytes`. Failures can raise `CryptoError`.
+It takes `publicKey` as a string and `input` and `signature` as `Bytes`. It can call [`Crypto.verifyEd25519`](contracts.aug.md#symbol-Crypto.verifyEd25519). Failures can raise `CryptoError`.
 
 </details>
 
@@ -203,7 +213,7 @@ It takes `publicKey` as a string and `input` and `signature` as `Bytes`. Failure
 
 Verify only RS256. Invalid signatures return false; invalid keys raise CryptoError. It takes `publicKey` as `RsaPublicKey` and `input` and `signature` as `Bytes`.
 
-Within an unsafe block, it returns [`_aug_crypto_verify_rsa`](contracts.aug.md#symbol-_aug_crypto_verify_rsa) with `publicKey`, `input`, and `signature`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L63-L64)
+It can call [`Crypto.verifyRsa`](contracts.aug.md#symbol-Crypto.verifyRsa). Failures can raise `CryptoError`. Within an unsafe block, it returns [`_aug_crypto_verify_rsa`](contracts.aug.md#symbol-_aug_crypto_verify_rsa) with `publicKey`, `input`, and `signature`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L63-L64)
 
 <details>
 <summary>Checked interface</summary>
@@ -212,14 +222,16 @@ Within an unsafe block, it returns [`_aug_crypto_verify_rsa`](contracts.aug.md#s
 verifyRsa(RsaPublicKey publicKey, Bytes input, Bytes signature) returns bool unless CryptoError uses Crypto.verifyRsa
 ```
 
-It takes `publicKey` as `RsaPublicKey` and `input` and `signature` as `Bytes`. Failures can raise `CryptoError`.
+It takes `publicKey` as `RsaPublicKey` and `input` and `signature` as `Bytes`. It can call [`Crypto.verifyRsa`](contracts.aug.md#symbol-Crypto.verifyRsa). Failures can raise `CryptoError`.
 
 </details>
 
 <a id="symbol-GnuTlsCrypto.decodeBase64url"></a>
 ### `GnuTlsCrypto.decodeBase64url` · [source](contracts.aug#L65)
 
-Decode canonical unpadded URL-safe base64, rejecting invalid characters and unused bits. It takes `input` as a string. Within an unsafe block, it returns [`_aug_crypto_decode_base64url`](contracts.aug.md#symbol-_aug_crypto_decode_base64url) with `input`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L66-L67)
+Decode canonical unpadded URL-safe base64, rejecting invalid characters and unused bits. It takes `input` as a string. It can call [`Crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url). Failures can raise `CryptoError`.
+
+Within an unsafe block, it returns [`_aug_crypto_decode_base64url`](contracts.aug.md#symbol-_aug_crypto_decode_base64url) with `input`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L66-L67)
 
 <details>
 <summary>Checked interface</summary>
@@ -228,14 +240,14 @@ Decode canonical unpadded URL-safe base64, rejecting invalid characters and unus
 decodeBase64url(string input) returns Bytes unless CryptoError uses Crypto.decodeBase64url
 ```
 
-It takes `input` as a string. Failures can raise `CryptoError`.
+It takes `input` as a string. It can call [`Crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url). Failures can raise `CryptoError`.
 
 </details>
 
 <a id="symbol-GnuTlsCrypto.equal"></a>
 ### `GnuTlsCrypto.equal` · [source](contracts.aug#L68)
 
-Compare bytes without early exit on their contents. Length remains observable. It takes `left` and `right` as `Bytes`.
+Compare bytes without early exit on their contents. Length remains observable. It takes `left` and `right` as `Bytes`. It can call [`Crypto.equal`](contracts.aug.md#symbol-Crypto.equal).
 
 Within an unsafe block, it returns [`_aug_crypto_equal`](contracts.aug.md#symbol-_aug_crypto_equal) with `left` and `right`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L69-L70)
 
@@ -246,14 +258,16 @@ Within an unsafe block, it returns [`_aug_crypto_equal`](contracts.aug.md#symbol
 equal(Bytes left, Bytes right) returns bool uses Crypto.equal
 ```
 
-It takes `left` and `right` as `Bytes`.
+It takes `left` and `right` as `Bytes`. It can call [`Crypto.equal`](contracts.aug.md#symbol-Crypto.equal).
 
 </details>
 
 <a id="symbol-GnuTlsCrypto.exportRsa"></a>
 ### `GnuTlsCrypto.exportRsa` · [source](contracts.aug#L71)
 
-Export unsigned big-endian modulus and exponent for an RSA JWK. It takes `publicKey` as `RsaPublicKey`. Within an unsafe block, it returns [`_aug_crypto_export_rsa`](contracts.aug.md#symbol-_aug_crypto_export_rsa) with `publicKey`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L72-L73)
+Export unsigned big-endian modulus and exponent for an RSA JWK. It takes `publicKey` as `RsaPublicKey`. It can call [`Crypto.exportRsa`](contracts.aug.md#symbol-Crypto.exportRsa). Failures can raise `CryptoError`.
+
+Within an unsafe block, it returns [`_aug_crypto_export_rsa`](contracts.aug.md#symbol-_aug_crypto_export_rsa) with `publicKey`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L72-L73)
 
 <details>
 <summary>Checked interface</summary>
@@ -262,7 +276,7 @@ Export unsigned big-endian modulus and exponent for an RSA JWK. It takes `public
 exportRsa(RsaPublicKey publicKey) returns Tuple<Bytes, Bytes> unless CryptoError uses Crypto.exportRsa
 ```
 
-It takes `publicKey` as `RsaPublicKey`. Failures can raise `CryptoError`.
+It takes `publicKey` as `RsaPublicKey`. It can call [`Crypto.exportRsa`](contracts.aug.md#symbol-Crypto.exportRsa). Failures can raise `CryptoError`.
 
 </details>
 
@@ -271,7 +285,7 @@ It takes `publicKey` as `RsaPublicKey`. Failures can raise `CryptoError`.
 
 Import canonical public RSA parameters. Keys must have 2048 to 8192 bits. It takes `modulus` and `exponent` as `Bytes`.
 
-Within an unsafe block, it returns [`_aug_crypto_import_rsa`](contracts.aug.md#symbol-_aug_crypto_import_rsa) with `modulus` and `exponent`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L75-L76)
+It can call [`Crypto.importRsa`](contracts.aug.md#symbol-Crypto.importRsa). Failures can raise `CryptoError`. Within an unsafe block, it returns [`_aug_crypto_import_rsa`](contracts.aug.md#symbol-_aug_crypto_import_rsa) with `modulus` and `exponent`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L75-L76)
 
 <details>
 <summary>Checked interface</summary>
@@ -280,7 +294,7 @@ Within an unsafe block, it returns [`_aug_crypto_import_rsa`](contracts.aug.md#s
 importRsa(Bytes modulus, Bytes exponent) returns RsaPublicKey unless CryptoError uses Crypto.importRsa
 ```
 
-It takes `modulus` and `exponent` as `Bytes`. Failures can raise `CryptoError`.
+It takes `modulus` and `exponent` as `Bytes`. It can call [`Crypto.importRsa`](contracts.aug.md#symbol-Crypto.importRsa). Failures can raise `CryptoError`.
 
 </details>
 
@@ -289,7 +303,7 @@ It takes `modulus` and `exponent` as `Bytes`. Failures can raise `CryptoError`.
 
 PBKDF2-HMAC-SHA256, producing 32 bytes. Use a unique 16–64 byte salt; supported work factors are 100,000–2,000,000. It takes `password` and `salt` as `Bytes` and `iterations` as an integer.
 
-Within an unsafe block, it returns [`_aug_crypto_password_hash`](contracts.aug.md#symbol-_aug_crypto_password_hash) with `password`, `salt`, and `iterations`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L78-L79)
+It can call [`Crypto.passwordHash`](contracts.aug.md#symbol-Crypto.passwordHash). Failures can raise `CryptoError`. Within an unsafe block, it returns [`_aug_crypto_password_hash`](contracts.aug.md#symbol-_aug_crypto_password_hash) with `password`, `salt`, and `iterations`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L78-L79)
 
 <details>
 <summary>Checked interface</summary>
@@ -298,7 +312,7 @@ Within an unsafe block, it returns [`_aug_crypto_password_hash`](contracts.aug.m
 passwordHash(Bytes password, Bytes salt, int iterations) returns Bytes unless CryptoError uses Crypto.passwordHash
 ```
 
-It takes `password` and `salt` as `Bytes` and `iterations` as an integer. Failures can raise `CryptoError`.
+It takes `password` and `salt` as `Bytes` and `iterations` as an integer. It can call [`Crypto.passwordHash`](contracts.aug.md#symbol-Crypto.passwordHash). Failures can raise `CryptoError`.
 
 </details>
 

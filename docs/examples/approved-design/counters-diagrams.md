@@ -40,6 +40,8 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](counters.md#source-L4)
 :::
 
+It returns `int`.
+
 Interface contract; implementation selected at runtime. [Explanation](counters.md).
 
 ### \_Initial constructor {#sequence-_Initial-20-constructor}
@@ -47,6 +49,8 @@ Interface contract; implementation selected at runtime. [Explanation](counters.m
 ::: spec-paragraph specification-paragraph-2
 [Source](counters.md#source-L5)
 :::
+
+It implements [`State`](counters.md#symbol-State). It is private to this file.
 
 [Explanation](counters.md).
 
@@ -64,6 +68,10 @@ Return 0; required cleanup runs before exit. [Explanation](counters.md).
 [Source](counters.md#source-L8)
 :::
 
+It implements [`State`](counters.md#symbol-State). It is private to this file.
+
+It takes `count` as an integer, kept read-only.
+
 Receive fields: count. [Explanation](counters.md).
 
 ### \_Updated.read {#sequence-_Updated.read}
@@ -80,6 +88,8 @@ Return count; required cleanup runs before exit. [Explanation](counters.md).
 [Source](counters.md#source-L13)
 :::
 
+It may change `self`.
+
 Interface contract; implementation selected at runtime. [Explanation](counters.md).
 
 ### Counter.value {#sequence-Counter.value}
@@ -87,6 +97,8 @@ Interface contract; implementation selected at runtime. [Explanation](counters.m
 ::: spec-paragraph specification-paragraph-7
 [Source](counters.md#source-L14)
 :::
+
+It returns `int`.
 
 Interface contract; implementation selected at runtime. [Explanation](counters.md).
 
@@ -96,6 +108,10 @@ Interface contract; implementation selected at runtime. [Explanation](counters.m
 [Source](counters.md#source-L15)
 :::
 
+It implements [`Counter`](counters.md#symbol-Counter). It is private to this file.
+
+The `_state` dependency is injected as [`State`](counters.md#symbol-State) and stored mutably and privately.
+
 Receive fields: injected \_state. [Explanation](counters.md).
 
 ### \_Counter.increment {#sequence-_Counter.increment}
@@ -103,6 +119,8 @@ Receive fields: injected \_state. [Explanation](counters.md).
 ::: spec-paragraph specification-paragraph-9
 [Source](counters.md#source-L16)
 :::
+
+It may change `self`.
 
 ```mermaid
 sequenceDiagram

@@ -426,7 +426,7 @@ Name a closed set of concrete immutable records. Construct an alternative with i
 composition Services: implement Logger with Adapter
 ```
 
-Collect dependency bindings in a named composition. Import and include it in main before startup statements. The composition’s file must import every interface and provider it uses. Include completion follows ordinary exports; inspect application or same-file test providers with aug graph --composition. The aug spec diagrams connect a project folder overview to nested folder data flow, module interactions, API input/result sequences, the compiled explanation and source. Sequences use import names, keep value operations local and pair each call with its returned data across bounded views.
+Collect dependency bindings in a named composition. Import and include it in main before startup statements. The composition’s file must import every interface and provider it uses. Include completion follows ordinary exports; inspect application or same-file test providers with aug graph --composition. The aug spec views connect checked startup and providers, folder exports and data flow, module interactions, operation contracts and sequences, the compiled explanation and source. Grouped boundaries retain complete contracts and separate call sites. Sequence decisions reuse prose facts, and calls pair inputs with returned data across bounded views. Grouped folder arrows do not imply one execution path.
 
 ## Compress
 

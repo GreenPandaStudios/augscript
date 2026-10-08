@@ -19,7 +19,7 @@ It checks that `year` is at least `1` and `year` is at most `9999` and `month` i
 <a id="symbol-parseCivilDate"></a>
 ## `parseCivilDate` · [source](dates.aug#L29)
 
-Parse exactly ten ASCII bytes in YYYY-MM-DD form. No whitespace or time suffix is accepted. It takes `text` as a string.
+Parse exactly ten ASCII bytes in YYYY-MM-DD form. No whitespace or time suffix is accepted. It takes `text` as a string. Failures can raise `ConversionError` (Malformed text or an invalid Gregorian date).
 
 It checks that `text.byteLength` equals `10`. It raises a `ConversionError` at the first failed check. It sets `bytes` to the UTF-8 bytes of `text`. It sets `year` to [`asciiSlice`](ascii.aug.md#symbol-asciiSlice) with `input` from `bytes`, `start` `0`, and `end` `4`. [source](dates.aug#L30-L33)
 

@@ -25,6 +25,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](settings.md#source-L3)
 :::
 
+Explicit loopback development settings. The provider accepts one registered client and its exact callback URI.
+
+It takes `baseUrl`, `issuer`, `clientId`, and `callback` as strings, kept read-only, `sessionSeconds` as an integer, kept read-only, and `secureCookies` as a boolean, kept read-only.
+
 Receive fields: baseUrl, issuer, clientId, callback, sessionSeconds, secureCookies. [Explanation](settings.md).
 
 ### settings {#sequence-settings}
@@ -37,9 +41,9 @@ Receive fields: baseUrl, issuer, clientId, callback, sessionSeconds, secureCooki
 sequenceDiagram
     participant p0 as settings
 
-    p0->>p0: Settings(baseUrl=”http://127.0.0.1:8787”,<br/>issuer=”http://127.0.0.1:8787/provider”,<br/>clientId=”august-login-app”, callb…
+    p0->>p0: Settings(baseUrl=”http://127.0.0.1:8787”,<br/>issuer=”http://127.0.0.1:8787/provider”,<br/>clientId=”august-login-app”,<br/>callback=”http://127.0.0.1:8787/login/callback”,<br/>sessionSeconds=900, secureCookies=false) · construct<br/>value
     p0-->>p0: Settings result: Settings
-    Note over p0: Return Settings(baseUrl=”http://127.0.0.1:8787”,<br/>issuer=”http://127.0.0.1:8787/provider”,<br/>clientId=”august-login-app”…
+    Note over p0: Return Settings(baseUrl=”http://127.0.0.1:8787”,<br/>issuer=”http://127.0.0.1:8787/provider”,<br/>clientId=”august-login-app”,<br/>callback=”http://127.0.0.1:8787/login/callback”,<br/>sessionSeconds=900, secureCookies=false)； required<br/>cleanup runs before exit
 ```
 
 ## Called contracts

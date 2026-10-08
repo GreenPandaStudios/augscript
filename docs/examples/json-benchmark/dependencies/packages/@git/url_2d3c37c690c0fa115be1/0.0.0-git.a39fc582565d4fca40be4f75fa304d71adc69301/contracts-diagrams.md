@@ -25,6 +25,14 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](contracts.md#source-L2)
 :::
 
+It is private to its defining scope.
+
+It takes `input` as a string.
+
+It returns `Json`. Failures can raise `JsonError`.
+
+Native C implementation; only its declared contract is visible here.
+
 May leave with checked errors: JsonError. Native implementation; only the declared contract is known. [Explanation](contracts.md).
 
 ### parse {#sequence-parse}
@@ -32,6 +40,12 @@ May leave with checked errors: JsonError. Native implementation; only the declar
 ::: spec-paragraph specification-paragraph-2
 [Source](contracts.md#source-L4)
 :::
+
+Parse strict UTF-8 JSON. Duplicate keys, invalid Unicode, oversized integers, and nesting beyond 64 levels raise JsonError.
+
+It takes `input` as a string.
+
+Failures can raise `JsonError`.
 
 ```mermaid
 sequenceDiagram

@@ -12,7 +12,17 @@ outline: [2, 3]
 
 [Compression with zlib](../index.md)
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 2 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
+
+## Where execution begins
+
+### Startup {#startup}
+
+::: spec-paragraph specification-paragraph-1
+It prints `text` on [`roundTrip`](../compression.md#symbol-roundTrip). If this work raises [`CompressionError`](../dependencies/packages/%40greenpandastudios/aug-zlib/0.2.0/contracts.md#symbol-CompressionError) as `error`, it prints `error.message`. If this work raises `ConversionError`, it prints `"Invalid UTF-8"`. [source](../main.md#source-L5-L10)
+:::
 
 ## Data flow
 
@@ -36,15 +46,53 @@ flowchart LR
 
 :::
 
-::: details Data crossing these boundaries (3 contracts)
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| compression | @greenpandastudios/aug-zlib | [compress](../dependencies/packages/%40greenpandastudios/aug-zlib/0.2.0/api.md#symbol-compress) · input: Bytes | Bytes |
-| compression | @greenpandastudios/aug-zlib | [decompress](../dependencies/packages/%40greenpandastudios/aug-zlib/0.2.0/api.md#symbol-decompress) · input: Bytes, maximumOutput: int | Bytes |
-| Startup | compression | [roundTrip](../compression.md#symbol-roundTrip) | Bytes |
+| compression | @greenpandastudios/aug-zlib | 2 | [Inputs, results and call sites](index.md#boundary-edb52c0fcadd) |
+| Startup | compression | 1 | [Inputs, results and call sites](index.md#boundary-51e19b84bedd) |
+
+#### Data crossing these boundaries (3 contracts)
+
+#### compression → @greenpandastudios/aug-zlib {#boundary-edb52c0fcadd}
+
+::: details 2 operations, 2 sites
+
+**[compress](../dependencies/packages/%40greenpandastudios/aug-zlib/0.2.0/api.md#symbol-compress)**
+
+Inputs: input: Bytes. Result: Bytes.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| roundTrip | [Call site](../compression.md#source-L7) · [Caller explanation](../compression.md#symbol-roundTrip) |
+
+**[decompress](../dependencies/packages/%40greenpandastudios/aug-zlib/0.2.0/api.md#symbol-decompress)**
+
+Inputs: input: Bytes, maximumOutput: int. Result: Bytes.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| roundTrip | [Call site](../compression.md#source-L8) · [Caller explanation](../compression.md#symbol-roundTrip) |
 
 :::
+
+#### Startup → compression {#boundary-51e19b84bedd}
+
+::: details 1 operation, 1 site
+
+**[roundTrip](../compression.md#symbol-roundTrip)**
+
+No caller-supplied inputs. Result: Bytes.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../main.md#source-L6) · [Caller explanation](../main.md#startup) |
+
+:::
+
 
 ## Open a module
 

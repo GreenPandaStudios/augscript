@@ -2,7 +2,23 @@
 
 # Project diagrams
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 5 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
+
+## Where execution begins
+
+<a id="providers"></a>
+### Providers
+
+`Console` is provided by [`SystemConsole`](../august/1.0.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](../../console.aug.md#symbol-ConsoleLogger). The same instance is shared.
+
+<a id="startup"></a>
+### Startup
+
+It sets `greeter` to a [`Greeter`](../../greeter.aug.md#symbol-Greeter) with `x` `4` using injected `Logger` for `logger`. It passes `"AugScript"` to [`greeter.greet`](../../greeter.aug.md#symbol-Greeter.greet), using injected `Console`. It sets `count` to `7`. It sets `count` to [`increment`](../../math.aug.md#symbol-increment) with `value` from `count`. [source](../../main.aug#L9-L12)
+
+It prints `count`. [source](../../main.aug#L13)
 
 ## Data flow
 
@@ -31,18 +47,95 @@ flowchart LR
 
 </details>
 
-<details>
-<summary>Data crossing these boundaries (5 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| console | August libraries | [Console.write](../august/1.0.0/io/contracts.aug.md#symbol-Console.write) · value: string · interface dispatch | void |
-| greeter | logger | [Logger.log](../../logger.aug.md#symbol-Logger.log) · message: string · interface dispatch | void |
-| Startup | greeter | [Greeter](../../greeter.aug.md#symbol-Greeter) · x: int | Greeter |
-| Startup | greeter | [Greeter.greet](../../greeter.aug.md#symbol-Greeter.greet) · name: string | void |
-| Startup | math | [increment](../../math.aug.md#symbol-increment) · value: int | int |
+| console | August libraries | 1 | [Inputs, results and call sites](index.md#boundary-6806815e2275) |
+| greeter | logger | 1 | [Inputs, results and call sites](index.md#boundary-e2b6a7888245) |
+| Startup | greeter | 2 | [Inputs, results and call sites](index.md#boundary-757c9f22a16b) |
+| Startup | math | 1 | [Inputs, results and call sites](index.md#boundary-8237cebea893) |
+
+#### Data crossing these boundaries (5 contracts)
+
+<a id="boundary-6806815e2275"></a>
+
+#### console → August libraries
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[Console.write](../august/1.0.0/io/contracts.aug.md#symbol-Console.write)** · interface dispatch
+
+Inputs: value: string. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| ConsoleLogger.log | [Call site](../../console.aug#L6) · [Caller explanation](../../console.aug.md#symbol-ConsoleLogger.log) |
 
 </details>
+
+<a id="boundary-e2b6a7888245"></a>
+
+#### greeter → logger
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[Logger.log](../../logger.aug.md#symbol-Logger.log)** · interface dispatch
+
+Inputs: message: string. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Greeter.greet | [Call site](../../greeter.aug#L6) · [Caller explanation](../../greeter.aug.md#symbol-Greeter.greet) |
+
+</details>
+
+<a id="boundary-757c9f22a16b"></a>
+
+#### Startup → greeter
+
+<details>
+<summary>2 operations, 2 sites</summary>
+
+**[Greeter](../../greeter.aug.md#symbol-Greeter)**
+
+Inputs: x: int. Result: Greeter.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L9) · [Caller explanation](../../main.aug.md#startup) |
+
+**[Greeter.greet](../../greeter.aug.md#symbol-Greeter.greet)**
+
+Inputs: name: string. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L10) · [Caller explanation](../../main.aug.md#startup) |
+
+</details>
+
+<a id="boundary-8237cebea893"></a>
+
+#### Startup → math
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[increment](../../math.aug.md#symbol-increment)**
+
+Inputs: value: int. Result: int.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L12) · [Caller explanation](../../main.aug.md#startup) |
+
+</details>
+
 
 ## Open a module
 

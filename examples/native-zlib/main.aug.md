@@ -6,6 +6,7 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="startup"></a>
 ## Startup
 
 It prints `text` on [`roundTrip`](compression.aug.md#symbol-roundTrip). If this work raises [`CompressionError`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.2.0/contracts.aug.md#symbol-CompressionError) as `error`, it prints `error.message`. If this work raises `ConversionError`, it prints `"Invalid UTF-8"`. [source](main.aug#L5-L10)

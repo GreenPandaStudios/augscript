@@ -67,7 +67,7 @@ test add {
 ### `add` · [source](arithmetic.md#source-L3) {#symbol-add}
 
 ::: spec-paragraph specification-paragraph-1
-Add two integers. It takes `left` and `right` as integers. It returns `left` plus `right`. [source](arithmetic.md#source-L4)
+Add two integers. It takes `left` and `right` as integers. It returns `int` — Their sum. It returns `left` plus `right`. [source](arithmetic.md#source-L4)
 :::
 
 ::: details Checked interface

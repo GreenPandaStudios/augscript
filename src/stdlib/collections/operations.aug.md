@@ -149,7 +149,7 @@ Return a stably sorted copy. Equal values keep their input order; values remains
 Bottom-up merging uses O(n log n) comparisons and O(n) additional elements per merge pass; retained allocation depends on collection by the runtime.
 Checked indexed reads retain IndexError in the contract; internal indices stay within the snapshot.
 
-It takes `values` as `List<T>` and `comparator` as [`Comparator<T>`](operations.aug.md#symbol-Comparator).
+It takes `values` as `List<T>` and `comparator` as [`Comparator<T>`](operations.aug.md#symbol-Comparator). Failures can raise `IndexError`.
 
 It sets `ordered` of type `List<T>` to a list with no items. For each `value` in a snapshot of `values`, with temporary permission to change `ordered`, it appends `value` to `ordered`. After the loop, it sets `length` to the number of elements in `ordered`. It sets `width` to `1`. [source](operations.aug#L72-L77)
 
@@ -223,7 +223,7 @@ It takes `left` and `right` as strings.
 <a id="symbol-sortIntegers"></a>
 ## `sortIntegers` · [source](operations.aug#L134)
 
-Return a stable ascending copy of integer values. It takes `values` as `List<int>`. It returns [`sort`](operations.aug.md#symbol-sort) with `values` and `comparator` from an [`IntegerOrder`](operations.aug.md#symbol-IntegerOrder). [source](operations.aug#L135)
+Return a stable ascending copy of integer values. It takes `values` as `List<int>`. Failures can raise `IndexError`. It returns [`sort`](operations.aug.md#symbol-sort) with `values` and `comparator` from an [`IntegerOrder`](operations.aug.md#symbol-IntegerOrder). [source](operations.aug#L135)
 
 <details>
 <summary>Checked interface</summary>
@@ -239,7 +239,7 @@ It takes `values` as `List<int>`. Failures can raise `IndexError`.
 <a id="symbol-sortText"></a>
 ## `sortText` · [source](operations.aug#L138)
 
-Return a stable ordinal copy of text values. It takes `values` as `List<string>`. It returns [`sort`](operations.aug.md#symbol-sort) with `values` and `comparator` from a [`TextOrder`](operations.aug.md#symbol-TextOrder). [source](operations.aug#L139)
+Return a stable ordinal copy of text values. It takes `values` as `List<string>`. Failures can raise `IndexError`. It returns [`sort`](operations.aug.md#symbol-sort) with `values` and `comparator` from a [`TextOrder`](operations.aug.md#symbol-TextOrder). [source](operations.aug#L139)
 
 <details>
 <summary>Checked interface</summary>

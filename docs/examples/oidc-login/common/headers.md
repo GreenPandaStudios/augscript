@@ -48,7 +48,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiYmUxZDRjNjdjMzI4NTcxMWJiOTkxNjY1NzNiZGY4NWY4NzQ5MWMwNWQwMjc1YzMxZmIwZmI5MzQ3YTE1MTM4NSIsImZvcm1hdHRlZFNoYTI1NiI6IjNjZWM2NTlhOGM3YTVhYmM5ZGQ3YWY5YjgzMTA5ZjYzNjE2NmI0MmE2OTkxZThjYjY3OWIyNWNmOTNhZmY1MWQiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMiLCJmaXJzdCI6MywibGFzdCI6MTYsImJhY2tsaW5rcyI6WyJoZWFkZXJzLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiLCIjc3ltYm9sLXNlY3VyaXR5SGVhZGVycyJdfSx7ImlkIjoic291cmNlLUw3IiwiZmlyc3QiOjE4LCJsYXN0IjoyMiwiYmFja2xpbmtzIjpbImhlYWRlcnMtZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMiIsIiNzeW1ib2wtd2l0aENvb2tpZSJdfSx7ImlkIjoic291cmNlLUw0IiwiZmlyc3QiOjQsImxhc3QiOjE2LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MOC1MMTEiLCJmaXJzdCI6MTksImxhc3QiOjIyLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX1dfQ
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiYmUxZDRjNjdjMzI4NTcxMWJiOTkxNjY1NzNiZGY4NWY4NzQ5MWMwNWQwMjc1YzMxZmIwZmI5MzQ3YTE1MTM4NSIsImZvcm1hdHRlZFNoYTI1NiI6IjNjZWM2NTlhOGM3YTVhYmM5ZGQ3YWY5YjgzMTA5ZjYzNjE2NmI0MmE2OTkxZThjYjY3OWIyNWNmOTNhZmY1MWQiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDkiLCJmaXJzdCI6MjAsImxhc3QiOjIxLCJiYWNrbGlua3MiOlsiLi4vZGlhZ3JhbXMvZm9sZGVycy9jb21tb24vaW5kZXgubWQjYm91bmRhcnktZjMzZjdhYTZiZjk5IiwiLi4vZGlhZ3JhbXMvaW5kZXgubWQjYm91bmRhcnktMDYxZDY0NDY4NjA3Il19LHsiaWQiOiJzb3VyY2UtTDMiLCJmaXJzdCI6MywibGFzdCI6MTYsImJhY2tsaW5rcyI6WyJoZWFkZXJzLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiLCIjc3ltYm9sLXNlY3VyaXR5SGVhZGVycyJdfSx7ImlkIjoic291cmNlLUw3IiwiZmlyc3QiOjE4LCJsYXN0IjoyMiwiYmFja2xpbmtzIjpbImhlYWRlcnMtZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMiIsIiNzeW1ib2wtd2l0aENvb2tpZSJdfSx7ImlkIjoic291cmNlLUw0IiwiZmlyc3QiOjQsImxhc3QiOjE2LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MOC1MMTEiLCJmaXJzdCI6MTksImxhc3QiOjIyLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX1dfQ
 // aug-spec: "headers.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Responses containing identity data are never cached or embedded by another site. */
 securityHeaders():
@@ -74,7 +74,7 @@ withCookie(Headers headers, string name, string value, string path, int maxAge, 
 import cookie from web
 ```
 
-```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiYmUxZDRjNjdjMzI4NTcxMWJiOTkxNjY1NzNiZGY4NWY4NzQ5MWMwNWQwMjc1YzMxZmIwZmI5MzQ3YTE1MTM4NSIsImZvcm1hdHRlZFNoYTI1NiI6ImJmNjFiYmZiODYzMjUzZjZiMDJlYmY4OTYxYjAwM2RmZDhkZDA1NDAwYzUxMGJlYjE4NTI0ZjZlZGVkOWM3NjEiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMiLCJmaXJzdCI6MywibGFzdCI6MTcsImJhY2tsaW5rcyI6WyJoZWFkZXJzLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiLCIjc3ltYm9sLXNlY3VyaXR5SGVhZGVycyJdfSx7ImlkIjoic291cmNlLUw3IiwiZmlyc3QiOjE5LCJsYXN0IjoyNSwiYmFja2xpbmtzIjpbImhlYWRlcnMtZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMiIsIiNzeW1ib2wtd2l0aENvb2tpZSJdfSx7ImlkIjoic291cmNlLUw0IiwiZmlyc3QiOjQsImxhc3QiOjE2LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MOC1MMTEiLCJmaXJzdCI6MjAsImxhc3QiOjI0LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX1dfQ
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiYmUxZDRjNjdjMzI4NTcxMWJiOTkxNjY1NzNiZGY4NWY4NzQ5MWMwNWQwMjc1YzMxZmIwZmI5MzQ3YTE1MTM4NSIsImZvcm1hdHRlZFNoYTI1NiI6ImJmNjFiYmZiODYzMjUzZjZiMDJlYmY4OTYxYjAwM2RmZDhkZDA1NDAwYzUxMGJlYjE4NTI0ZjZlZGVkOWM3NjEiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDkiLCJmaXJzdCI6MjEsImxhc3QiOjIzLCJiYWNrbGlua3MiOlsiLi4vZGlhZ3JhbXMvZm9sZGVycy9jb21tb24vaW5kZXgubWQjYm91bmRhcnktZjMzZjdhYTZiZjk5IiwiLi4vZGlhZ3JhbXMvaW5kZXgubWQjYm91bmRhcnktMDYxZDY0NDY4NjA3Il19LHsiaWQiOiJzb3VyY2UtTDMiLCJmaXJzdCI6MywibGFzdCI6MTcsImJhY2tsaW5rcyI6WyJoZWFkZXJzLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiLCIjc3ltYm9sLXNlY3VyaXR5SGVhZGVycyJdfSx7ImlkIjoic291cmNlLUw3IiwiZmlyc3QiOjE5LCJsYXN0IjoyNSwiYmFja2xpbmtzIjpbImhlYWRlcnMtZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMiIsIiNzeW1ib2wtd2l0aENvb2tpZSJdfSx7ImlkIjoic291cmNlLUw0IiwiZmlyc3QiOjQsImxhc3QiOjE2LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MOC1MMTEiLCJmaXJzdCI6MjAsImxhc3QiOjI0LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX1dfQ
 // aug-spec: "headers.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Responses containing identity data are never cached or embedded by another site. */
 securityHeaders() {
@@ -116,7 +116,7 @@ import cookie from web
 ### `securityHeaders` · [source](headers.md#source-L3) {#symbol-securityHeaders}
 
 ::: spec-paragraph specification-paragraph-1
-Responses containing identity data are never cached or embedded by another site. It returns headers starting with a `Headers` and adding these fields in order: `"cache-control"` to `"no-store"`, `"pragma"` to `"no-cache"`, `"x-content-type-options"` to `"nosniff"`, `"referrer-policy"` to `"no-referrer"`, and `"content-security-policy"` to `"default-src 'self'; style-src 'unsafe-inline'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"`. [source](headers.md#source-L4)
+Responses containing identity data are never cached or embedded by another site. Failures can raise `HttpError`. It returns headers starting with a `Headers` and adding these fields in order: `"cache-control"` to `"no-store"`, `"pragma"` to `"no-cache"`, `"x-content-type-options"` to `"nosniff"`, `"referrer-policy"` to `"no-referrer"`, and `"content-security-policy"` to `"default-src 'self'; style-src 'unsafe-inline'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"`. [source](headers.md#source-L4)
 :::
 
 ::: details Checked interface
@@ -131,7 +131,7 @@ Failures can raise `HttpError`.
 
 ### `withCookie` · [source](headers.md#source-L7) {#symbol-withCookie}
 
-Add a checked cookie without losing duplicate Set-Cookie response fields. It takes labeled inputs `headers`, `name`, `value`, `path`, `maxAge`, and `secure`.
+Add a checked cookie without losing duplicate Set-Cookie response fields. It takes `headers` as `Headers`, `name`, `value`, and `path` as strings, `maxAge` as an integer, and `secure` as a boolean. Failures can raise `HttpError`.
 
 ::: spec-paragraph specification-paragraph-2
 It sets `result` to `headers`. For each `content` in a snapshot of `all` on [`cookie`](../dependencies/packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-cookie) with `name`, `value`, `path`, `maxAge`, and `secure` with `name` `"set-cookie"`, it sets `result` to `result` with the header `"set-cookie"` set to `content`. After the loop, it returns `result`. [source](headers.md#source-L8-L11)

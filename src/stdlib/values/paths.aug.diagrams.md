@@ -31,6 +31,13 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](paths.aug#L10)
 
+Lexical portable relative path. This value grants no filesystem access or containment guarantee.
+
+It takes `text` as a string, kept read-only (1 to 1024 ASCII bytes in 1 to 64 slash-separated segments of 1 to 255 bytes.
+Segments use letters, digits, period, underscore or hyphen. Empty/dot/dot-dot segments, trailing periods and Windows device basenames are rejected).
+
+Construction can fail with `ConversionError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as PortableRelativePath constructor
@@ -44,6 +51,12 @@ sequenceDiagram
 ### parsePortableRelativePath
 
 [Source](paths.aug#L17)
+
+Validate the same lexical profile as PortableRelativePath, preserving the original spelling.
+
+It takes `text` as a string.
+
+Failures can raise `ConversionError` (Invalid or unsupported path syntax).
 
 ```mermaid
 sequenceDiagram
@@ -61,6 +74,10 @@ sequenceDiagram
 
 [Source](paths.aug#L21)
 
+Return the original slash-separated relative path without accessing a filesystem.
+
+It takes `value` as [`PortableRelativePath`](paths.aug.md#symbol-PortableRelativePath).
+
 Return value.text; required cleanup runs before exit. [Explanation](paths.aug.md).
 
 <a id="sequence-joinPortablePaths"></a>
@@ -68,6 +85,12 @@ Return value.text; required cleanup runs before exit. [Explanation](paths.aug.md
 ### joinPortablePaths
 
 [Source](paths.aug#L27)
+
+Join two validated paths with one slash and revalidate all byte, segment and name limits.
+
+It takes `left` and `right` as [`PortableRelativePath`](paths.aug.md#symbol-PortableRelativePath).
+
+Failures can raise `ConversionError` (The combined path exceeds the supported bounds).
 
 ```mermaid
 sequenceDiagram
@@ -85,6 +108,12 @@ sequenceDiagram
 
 [Source](paths.aug#L30)
 
+It is private to its defining scope.
+
+It takes `text` as a string.
+
+Failures can raise `ConversionError`.
+
 #### Sequence 1 of 3
 
 ```mermaid
@@ -93,11 +122,11 @@ sequenceDiagram
 
     p0->>p0: text.byteLength()
     p0-->>p0: byteLength result: int
-    opt Left is false
+    opt (byteLength result == 0) is false
     p0->>p0: text.byteLength()
     p0-->>p0: byteLength result 2: int
     end
-    alt text.byteLength() == 0 or text.byteLength() › 1024
+    alt text.byteLength equals 0 or text.byteLength is greater<br/>than 1024
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -106,7 +135,7 @@ sequenceDiagram
     p0-->>p0: segments: List‹string›
     p0->>p0: segments.length()
     p0-->>p0: length result: int
-    alt segments.length() › 64
+    alt the number of elements in segments is greater than 64
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 2: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -114,15 +143,15 @@ sequenceDiagram
     loop For each item in segments
     p0->>p0: segment.byteLength()
     p0-->>p0: byteLength result 3: int
-    opt Left is false
+    opt (byteLength result 3 == 0) is false
     p0->>p0: segment.byteLength()
     p0-->>p0: byteLength result 4: int
     end
-    opt Left is false
+    opt (byteLength result 3 == 0 or byteLength result 4 › 255<br/>or segment == ”.” or segment == ”..”) is false
     p0->>p0: segment.endsWith(suffix=”.”)
     p0-->>p0: endsWith result: bool
     end
-    alt segment.byteLength() == 0 or segment.byteLength() › 255 or segment == ”.” or segment == ”..” or segment.endsWith(suff…
+    alt segment.byteLength equals 0 or segment.byteLength is<br/>greater than 255 or segment equals ”.” or segment equals<br/>”..” or segment.endsWith with suffix ”.”
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 3: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -148,11 +177,11 @@ sequenceDiagram
     p1-->>p0: character: string
     p0->>p1: asciiLetter(character=character)
     p1-->>p0: asciiLetter result: bool
-    opt Left is true
+    opt (not asciiLetter result) is true
     p0->>p0: character.isDecimal()
     p0-->>p0: isDecimal result: bool
     end
-    alt not asciiLetter(character) and not character.isDecimal() and character != ”.” and character != ”_” and character != ”-”
+    alt asciiLetter with character returns false and<br/>character.isDecimal returns false and character does not<br/>equal ”.” and character does not equal ”_” and character<br/>does not equal ”-”
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 4: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -180,7 +209,7 @@ sequenceDiagram
 
     loop For each item in segments
     opt Try body； stops on a checked failure
-    alt _reserved(basename)
+    alt _reserved with basename returns true
     Note over p0: Sequence continued from the previous view
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 5: ConversionError
@@ -201,6 +230,10 @@ sequenceDiagram
 ### \_reserved
 
 [Source](paths.aug#L53)
+
+It is private to its defining scope.
+
+It takes `basename` as a string.
 
 Return basename == "con" or basename == "prn" or basename == "aux" or basename == "nul" or basename == "com1" or basename == "com2" or basename == "com3" or basename == "com4" or basename == "com5" or basename == "com6" or basename == "com7" or basename == "com8" or basename == "com9" or basename == "lpt1" or basename == "lpt2" or basename == "lpt3" or basename == "lpt4" or basename == "lpt5" or basename == "lpt6" or basename == "lpt7" or basename == "lpt8" or basename == "lpt9"; required cleanup runs before exit. [Explanation](paths.aug.md).
 

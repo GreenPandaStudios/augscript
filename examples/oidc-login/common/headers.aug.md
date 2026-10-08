@@ -9,7 +9,7 @@
 <a id="symbol-securityHeaders"></a>
 ## `securityHeaders` · [source](headers.aug#L3)
 
-Responses containing identity data are never cached or embedded by another site. It returns headers starting with a `Headers` and adding these fields in order: `"cache-control"` to `"no-store"`, `"pragma"` to `"no-cache"`, `"x-content-type-options"` to `"nosniff"`, `"referrer-policy"` to `"no-referrer"`, and `"content-security-policy"` to `"default-src 'self'; style-src 'unsafe-inline'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"`. [source](headers.aug#L4)
+Responses containing identity data are never cached or embedded by another site. Failures can raise `HttpError`. It returns headers starting with a `Headers` and adding these fields in order: `"cache-control"` to `"no-store"`, `"pragma"` to `"no-cache"`, `"x-content-type-options"` to `"nosniff"`, `"referrer-policy"` to `"no-referrer"`, and `"content-security-policy"` to `"default-src 'self'; style-src 'unsafe-inline'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"`. [source](headers.aug#L4)
 
 <details>
 <summary>Checked interface</summary>
@@ -25,7 +25,7 @@ Failures can raise `HttpError`.
 <a id="symbol-withCookie"></a>
 ## `withCookie` · [source](headers.aug#L7)
 
-Add a checked cookie without losing duplicate Set-Cookie response fields. It takes labeled inputs `headers`, `name`, `value`, `path`, `maxAge`, and `secure`.
+Add a checked cookie without losing duplicate Set-Cookie response fields. It takes `headers` as `Headers`, `name`, `value`, and `path` as strings, `maxAge` as an integer, and `secure` as a boolean. Failures can raise `HttpError`.
 
 It sets `result` to `headers`. For each `content` in a snapshot of `all` on [`cookie`](../.aug-spec/packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-cookie) with `name`, `value`, `path`, `maxAge`, and `secure` with `name` `"set-cookie"`, it sets `result` to `result` with the header `"set-cookie"` set to `content`. After the loop, it returns `result`. [source](headers.aug#L8-L11)
 

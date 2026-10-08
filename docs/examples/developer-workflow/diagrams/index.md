@@ -12,7 +12,29 @@ outline: [2, 3]
 
 [A small tested application](../index.md)
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 5 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
+
+## Where execution begins
+
+### Providers {#providers}
+
+`Console` is provided by [`SystemConsole`](../dependencies/august/1.0.0/io/contracts.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](../logging/console.md#symbol-ConsoleLogger). The same instance is shared.
+
+### Startup {#startup}
+
+::: spec-paragraph specification-paragraph-1
+It sets `numbers` of type `List<int>` to a list containing `1`, `2`. It sets `pair` of type `Tuple<int,string>` to a tuple containing `1`, `"apple"`. It sets `unique` of type `Set<int>` to a set containing `1`, `2`, `1`. It sets `fruit` of type `Map<int,string>` to a map with `1` mapped to `"apples"`; `2` mapped to `"pears"`. [source](../main.md#source-L7-L26)
+:::
+
+::: spec-paragraph specification-paragraph-2
+It sets `calculator` to a [`Calculator`](../calculator.md#symbol-Calculator) using injected `Logger` for `_logger`. It prints [`calculator.add`](../calculator.md#symbol-Calculator.add) with `right` from the item at index `1` in `numbers` and `left` from the item at index `0` in `numbers` using injected `Console` for `console`. It prints `pair.get` with `index` `1`. It prints the number of elements in `unique`. [source](../main.md#source-L12-L15)
+:::
+
+::: spec-paragraph specification-paragraph-3
+It prints the value under `2` in `fruit`. It prints [`load`](../calculator.md#symbol-load) with `fail` `true`. If this work raises `FileError`, it prints `"load failed as expected"`. If this work raises `IndexError`, it prints `"unexpected index failure"`. [source](../main.md#source-L16-L25)
+:::
 
 ## Data flow
 
@@ -38,17 +60,76 @@ flowchart LR
 
 :::
 
-::: details Data crossing these boundaries (5 contracts)
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| calculator | logging | [Logger.log](../logging/logger.md#symbol-Logger.log) · message: string · interface dispatch | void |
-| logging | August libraries | [Console.write](../dependencies/august/1.0.0/io/contracts.md#symbol-Console.write) · value: string · interface dispatch | void |
-| Startup | calculator | [Calculator](../calculator.md#symbol-Calculator) | Calculator |
-| Startup | calculator | [Calculator.add](../calculator.md#symbol-Calculator.add) · left: int, right: int | int |
-| Startup | calculator | [load](../calculator.md#symbol-load) · fail: bool | string |
+| calculator | logging | 1 | [Inputs, results and call sites](index.md#boundary-691dd47f54a7) |
+| logging | August libraries | 1 | [Inputs, results and call sites](index.md#boundary-f143c6ffe035) |
+| Startup | calculator | 3 | [Inputs, results and call sites](index.md#boundary-1ef56d68045c) |
+
+#### Data crossing these boundaries (5 contracts)
+
+#### calculator → logging {#boundary-691dd47f54a7}
+
+::: details 1 operation, 1 site
+
+**[Logger.log](../logging/logger.md#symbol-Logger.log)** · interface dispatch
+
+Inputs: message: string. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Calculator.add | [Call site](../calculator.md#source-L17) · [Caller explanation](../calculator.md#symbol-Calculator.add) |
 
 :::
+
+#### logging → August libraries {#boundary-f143c6ffe035}
+
+::: details 1 operation, 1 site
+
+**[Console.write](../dependencies/august/1.0.0/io/contracts.md#symbol-Console.write)** · interface dispatch
+
+Inputs: value: string. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| ConsoleLogger.log | [Call site](../logging/console.md#source-L7) · [Caller explanation](../logging/console.md#symbol-ConsoleLogger.log) |
+
+:::
+
+#### Startup → calculator {#boundary-1ef56d68045c}
+
+::: details 3 operations, 3 sites
+
+**[Calculator](../calculator.md#symbol-Calculator)**
+
+No caller-supplied inputs. Result: Calculator.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../main.md#source-L12) · [Caller explanation](../main.md#startup) |
+
+**[Calculator.add](../calculator.md#symbol-Calculator.add)**
+
+Inputs: left: int, right: int. Result: int.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../main.md#source-L13) · [Caller explanation](../main.md#startup) |
+
+**[load](../calculator.md#symbol-load)**
+
+Inputs: fail: bool. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../main.md#source-L18) · [Caller explanation](../main.md#startup) |
+
+:::
+
 
 ## Open a folder
 

@@ -27,6 +27,8 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](keys.aug#L4)
 
+It implements `Error`.
+
 [Explanation](keys.aug.md).
 
 <a id="sequence-SigningKeys.configure"></a>
@@ -34,6 +36,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ### SigningKeys.configure
 
 [Source](keys.aug#L8)
+
+It takes `provider` and `session` as `RsaPrivateKey`.
+
+It can call [`SigningKeys.configure`](keys.aug.md#symbol-SigningKeys.configure). Failures can raise [`KeyError`](keys.aug.md#symbol-KeyError).
 
 May leave with checked errors: KeyError. Interface contract; implementation selected at runtime. [Explanation](keys.aug.md).
 
@@ -43,6 +49,8 @@ May leave with checked errors: KeyError. Interface contract; implementation sele
 
 [Source](keys.aug#L9)
 
+It returns `RsaPrivateKey`. It can call [`SigningKeys.provider`](keys.aug.md#symbol-SigningKeys.provider). Failures can raise [`KeyError`](keys.aug.md#symbol-KeyError).
+
 May leave with checked errors: KeyError. Interface contract; implementation selected at runtime. [Explanation](keys.aug.md).
 
 <a id="sequence-SigningKeys.session"></a>
@@ -51,6 +59,8 @@ May leave with checked errors: KeyError. Interface contract; implementation sele
 
 [Source](keys.aug#L10)
 
+It returns `RsaPrivateKey`. It can call [`SigningKeys.session`](keys.aug.md#symbol-SigningKeys.session). Failures can raise [`KeyError`](keys.aug.md#symbol-KeyError).
+
 May leave with checked errors: KeyError. Interface contract; implementation selected at runtime. [Explanation](keys.aug.md).
 
 <a id="sequence-MemorySigningKeys-20-constructor"></a>
@@ -58,6 +68,10 @@ May leave with checked errors: KeyError. Interface contract; implementation sele
 ### MemorySigningKeys constructor
 
 [Source](keys.aug#L12)
+
+It implements [`SigningKeys`](keys.aug.md#symbol-SigningKeys).
+
+The read-only, private field `_keys` has type `Shared<Map<string,RsaPrivateKey>>` and starts as a `Shared` with `value` from an empty map from `string` to `RsaPrivateKey`.
 
 ```mermaid
 sequenceDiagram
@@ -75,6 +89,10 @@ sequenceDiagram
 
 [Source](keys.aug#L14)
 
+It takes `provider` and `session` as `RsaPrivateKey`.
+
+It can call [`SigningKeys.configure`](keys.aug.md#symbol-SigningKeys.configure). Failures can raise [`KeyError`](keys.aug.md#symbol-KeyError).
+
 ```mermaid
 sequenceDiagram
     participant p0 as MemorySigningKeys.configure
@@ -83,7 +101,7 @@ sequenceDiagram
     Note over p0: Enter lock scope
     p0->>p0: keys.length()
     p0-->>p0: length result: int
-    alt keys.length() != 0
+    alt the number of elements in keys does not equal 0
     p0->>p0: KeyError() · construct value
     p0-->>p0: KeyError result: KeyError
     Note over p0: Raise checked failure KeyError()； required cleanup runs<br/>before exit
@@ -100,6 +118,8 @@ sequenceDiagram
 ### MemorySigningKeys.provider
 
 [Source](keys.aug#L20)
+
+It can call [`SigningKeys.provider`](keys.aug.md#symbol-SigningKeys.provider). Failures can raise [`KeyError`](keys.aug.md#symbol-KeyError).
 
 ```mermaid
 sequenceDiagram
@@ -127,6 +147,8 @@ sequenceDiagram
 
 [Source](keys.aug#L27)
 
+It can call [`SigningKeys.session`](keys.aug.md#symbol-SigningKeys.session). Failures can raise [`KeyError`](keys.aug.md#symbol-KeyError).
+
 ```mermaid
 sequenceDiagram
     participant p0 as MemorySigningKeys.session
@@ -152,6 +174,10 @@ sequenceDiagram
 ### initializeKeys
 
 [Source](keys.aug#L35)
+
+It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)) and `keys` ([`SigningKeys`](keys.aug.md#symbol-SigningKeys)) from dependency injection.
+
+It can call [`Crypto.generateRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.generateRsa) and [`SigningKeys.configure`](keys.aug.md#symbol-SigningKeys.configure). Failures can raise `CryptoError` and [`KeyError`](keys.aug.md#symbol-KeyError).
 
 ```mermaid
 sequenceDiagram

@@ -12,7 +12,10 @@
 Transform copied data on isolated worker heaps, preserving input order.
 Supply a directly named concrete pure function with one value input; callbacks and behavior objects are not worker inputs.
 
-It takes labeled inputs `values`, `concurrency`, `chunkSize`, and `transformation`.
+It takes `values` as `List<T>`, `concurrency` and `chunkSize` as integers, and `transformation` as [`Transformation<T,U>`](operations.aug.md#symbol-Transformation).
+
+Failures can raise `ConcurrencyError` (The shared pool cannot admit a job or copy its inputs), `ConversionError` (Invalid bounds, checked before any worker starts, including for an empty input), and `IndexError` (Checked snapshot reads retain this error; indices stay within the snapshot.
+Admission or cancellation joins already admitted jobs before leaving the current wave).
 
 It sets `length` to the number of elements in `values`. It checks that `concurrency` is at least `1` and `concurrency` is at most `64` and `chunkSize` is at least `1` and `chunkSize` is at most `65536` and `length` is at most `1048576`. It raises a `ConversionError` at the first failed check. It sets `snapshot` of type `List<T>` to a list with no items. [source](workers.aug#L16-L19)
 

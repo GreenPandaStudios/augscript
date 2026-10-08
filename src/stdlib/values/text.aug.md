@@ -22,7 +22,9 @@ It checks that `text` is a URL-safe ASCII token with `1` to `128` characters. It
 <a id="symbol-parseTokenId"></a>
 ## `parseTokenId` · [source](text.aug#L12)
 
-Validate an identifier without normalizing it. Raises ConversionError for the same inputs as TokenId. It takes `text` as a string. It returns a [`TokenId`](text.aug.md#symbol-TokenId) with `text`. [source](text.aug#L13)
+Validate an identifier without normalizing it. Raises ConversionError for the same inputs as TokenId. It takes `text` as a string. Failures can raise `ConversionError`.
+
+It returns a [`TokenId`](text.aug.md#symbol-TokenId) with `text`. [source](text.aug#L13)
 
 <details>
 <summary>Checked interface</summary>
@@ -64,7 +66,7 @@ It checks that `minBytes` is at least `0` and `minBytes` is at most `maxBytes` a
 <a id="symbol-parseBoundedText"></a>
 ## `parseBoundedText` · [source](text.aug#L35)
 
-Validate original UTF-8 text and inclusive byte bounds without normalization. It takes `text` as a string and `minBytes` and `maxBytes` as integers. It returns a [`BoundedText`](text.aug.md#symbol-BoundedText) with `text`, `minBytes`, and `maxBytes`. [source](text.aug#L36)
+Validate original UTF-8 text and inclusive byte bounds without normalization. It takes `text` as a string and `minBytes` and `maxBytes` as integers. Failures can raise `ConversionError` (Invalid bounds, length or UTF-8). It returns a [`BoundedText`](text.aug.md#symbol-BoundedText) with `text`, `minBytes`, and `maxBytes`. [source](text.aug#L36)
 
 <details>
 <summary>Checked interface</summary>

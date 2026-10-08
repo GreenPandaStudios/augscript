@@ -56,7 +56,7 @@ parse(string input) returns Json unless JsonError {
 
 ### `parse` · [source](contracts.md#source-L4) {#symbol-parse}
 
-Parse strict UTF-8 JSON. Duplicate keys, invalid Unicode, oversized integers, and nesting beyond 64 levels raise JsonError. It takes `input` as a string.
+Parse strict UTF-8 JSON. Duplicate keys, invalid Unicode, oversized integers, and nesting beyond 64 levels raise JsonError. It takes `input` as a string. Failures can raise `JsonError`.
 
 ::: spec-paragraph specification-paragraph-1
 Within an unsafe block, it returns [`_aug_json_parse`](contracts.md#symbol-_aug_json_parse) with `input`. Native operations must satisfy their declared C contracts. [source](contracts.md#source-L5-L6)

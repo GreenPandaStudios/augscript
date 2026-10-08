@@ -15,6 +15,14 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](contracts.aug#L2)
 
+It is private to its defining scope.
+
+It takes `input` as a string.
+
+It returns `Json`. Failures can raise `JsonError`.
+
+Native C implementation; only its declared contract is visible here.
+
 May leave with checked errors: JsonError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-parse"></a>
@@ -22,6 +30,12 @@ May leave with checked errors: JsonError. Native implementation; only the declar
 ### parse
 
 [Source](contracts.aug#L4)
+
+Parse strict UTF-8 JSON. Duplicate keys, invalid Unicode, oversized integers, and nesting beyond 64 levels raise JsonError.
+
+It takes `input` as a string.
+
+Failures can raise `JsonError`.
 
 ```mermaid
 sequenceDiagram
@@ -43,6 +57,14 @@ sequenceDiagram
 
 [Source](contracts.aug#L8)
 
+It is private to its defining scope.
+
+It takes `input` as a string.
+
+It returns `Json`. Failures can raise `JsonError`.
+
+Native C implementation; only its declared contract is visible here.
+
 May leave with checked errors: JsonError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-parseCompatible"></a>
@@ -50,6 +72,15 @@ May leave with checked errors: JsonError. Native implementation; only the declar
 ### parseCompatible
 
 [Source](contracts.aug#L13)
+
+Parse an existing JavaScript-style envelope: duplicate keys use their last value,
+numbers round to binary64, and nesting is bounded at 4096 levels. Invalid JSON
+or Unicode raises JsonError. Keep original legacy JSON strings for wire hashes;
+do not reserialize them. The strict parse function retains its own contract.
+
+It takes `input` as a string.
+
+Failures can raise `JsonError`.
 
 ```mermaid
 sequenceDiagram

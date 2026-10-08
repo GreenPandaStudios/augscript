@@ -9,7 +9,9 @@
 <a id="symbol-asciiSlice"></a>
 ## `asciiSlice` · [source](ascii.aug#L3)
 
-Internal bounded byte slice; retain a single ConversionError parsing boundary. It takes `input` as `Bytes` and `start` and `end` as integers. It tries to return `text` on `input.slice` with `start` and `end`. If this work raises `IndexError`, it raises a `ConversionError`. [source](ascii.aug#L4-L7)
+Internal bounded byte slice; retain a single ConversionError parsing boundary. It takes `input` as `Bytes` and `start` and `end` as integers. Failures can raise `ConversionError`.
+
+It tries to return `text` on `input.slice` with `start` and `end`. If this work raises `IndexError`, it raises a `ConversionError`. [source](ascii.aug#L4-L7)
 
 <details>
 <summary>Checked interface</summary>
@@ -25,7 +27,9 @@ It takes `input` as `Bytes` and `start` and `end` as integers. Failures can rais
 <a id="symbol-asciiAt"></a>
 ## `asciiAt` · [source](ascii.aug#L10)
 
-Internal single-byte read. Multibyte UTF-8 fragments are rejected. It takes `input` as `Bytes` and `index` as an integer. It returns [`asciiSlice`](ascii.aug.md#symbol-asciiSlice) with `input`, `start` from `index`, and `end` from `index` plus `1`. [source](ascii.aug#L11)
+Internal single-byte read. Multibyte UTF-8 fragments are rejected. It takes `input` as `Bytes` and `index` as an integer. Failures can raise `ConversionError`.
+
+It returns [`asciiSlice`](ascii.aug.md#symbol-asciiSlice) with `input`, `start` from `index`, and `end` from `index` plus `1`. [source](ascii.aug#L11)
 
 <details>
 <summary>Checked interface</summary>
@@ -57,7 +61,7 @@ It takes `character` as a string.
 <a id="symbol-asciiLower"></a>
 ## `asciiLower` · [source](ascii.aug#L21)
 
-Internal case folding for already validated ASCII components only. It takes `text` as a string.
+Internal case folding for already validated ASCII components only. It takes `text` as a string. Failures can raise `ConversionError`.
 
 It sets `result` to `text`. It sets `upper` to the UTF-8 bytes of `"ABCDEFGHIJKLMNOPQRSTUVWXYZ"`. It sets `lower` to the UTF-8 bytes of `"abcdefghijklmnopqrstuvwxyz"`. It sets `index` to `0`. [source](ascii.aug#L22-L25)
 

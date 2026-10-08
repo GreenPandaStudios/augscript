@@ -2,7 +2,9 @@
 
 # Project diagrams
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 8 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
 
 ## Data flow
 
@@ -33,24 +35,164 @@ flowchart LR
 
 </details>
 
-<details>
-<summary>Data crossing these boundaries (11 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| dates | ascii | [asciiSlice](../../ascii.aug.md#symbol-asciiSlice) · input: Bytes, start: int, end: int | string |
-| durations | August libraries | [checkedAdd](../august/1.0.0/math/integers.aug.md#symbol-checkedAdd) · left: int, right: int | int |
-| durations | August libraries | [checkedMultiply](../august/1.0.0/math/integers.aug.md#symbol-checkedMultiply) · left: int, right: int | int |
-| durations | ascii | [asciiSlice](../../ascii.aug.md#symbol-asciiSlice) · input: Bytes, start: int, end: int | string |
-| paths | ascii | [asciiAt](../../ascii.aug.md#symbol-asciiAt) · input: Bytes, index: int | string |
-| paths | ascii | [asciiLetter](../../ascii.aug.md#symbol-asciiLetter) · character: string | bool |
-| paths | ascii | [asciiLower](../../ascii.aug.md#symbol-asciiLower) · text: string | string |
-| urls | ascii | [asciiAt](../../ascii.aug.md#symbol-asciiAt) · input: Bytes, index: int | string |
-| urls | ascii | [asciiLetter](../../ascii.aug.md#symbol-asciiLetter) · character: string | bool |
-| urls | ascii | [asciiLower](../../ascii.aug.md#symbol-asciiLower) · text: string | string |
-| urls | ascii | [asciiSlice](../../ascii.aug.md#symbol-asciiSlice) · input: Bytes, start: int, end: int | string |
+| dates | ascii | 1 | [Inputs, results and call sites](index.md#boundary-a0877bb71fcf) |
+| durations | August libraries | 2 | [Inputs, results and call sites](index.md#boundary-c3aac1964f3d) |
+| durations | ascii | 1 | [Inputs, results and call sites](index.md#boundary-233d35ffddb5) |
+| paths | ascii | 3 | [Inputs, results and call sites](index.md#boundary-185a75c42b4f) |
+| urls | ascii | 4 | [Inputs, results and call sites](index.md#boundary-b812aafc0421) |
+
+#### Data crossing these boundaries (11 contracts)
+
+<a id="boundary-a0877bb71fcf"></a>
+
+#### dates → ascii
+
+<details>
+<summary>1 operation, 5 sites</summary>
+
+**[asciiSlice](../../ascii.aug.md#symbol-asciiSlice)**
+
+Inputs: input: Bytes, start: int, end: int. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| parseCivilDate | [Call site](../../dates.aug#L33) · [Caller explanation](../../dates.aug.md#symbol-parseCivilDate) |
+| parseCivilDate | [Call site](../../dates.aug#L34) · [Caller explanation](../../dates.aug.md#symbol-parseCivilDate) |
+| parseCivilDate | [Call site](../../dates.aug#L35) · [Caller explanation](../../dates.aug.md#symbol-parseCivilDate) |
+| parseCivilDate | [Call site](../../dates.aug#L36) · [Caller explanation](../../dates.aug.md#symbol-parseCivilDate) |
+| parseCivilDate | [Call site](../../dates.aug#L36) · [Caller explanation](../../dates.aug.md#symbol-parseCivilDate) |
 
 </details>
+
+<a id="boundary-c3aac1964f3d"></a>
+
+#### durations → August libraries
+
+<details>
+<summary>2 operations, 2 sites</summary>
+
+**[checkedAdd](../august/1.0.0/math/integers.aug.md#symbol-checkedAdd)**
+
+Inputs: left: int, right: int. Result: int.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| addDurations | [Call site](../../durations.aug#L77) · [Caller explanation](../../durations.aug.md#symbol-addDurations) |
+
+**[checkedMultiply](../august/1.0.0/math/integers.aug.md#symbol-checkedMultiply)**
+
+Inputs: left: int, right: int. Result: int.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| durationFromSeconds | [Call site](../../durations.aug#L71) · [Caller explanation](../../durations.aug.md#symbol-durationFromSeconds) |
+
+</details>
+
+<a id="boundary-233d35ffddb5"></a>
+
+#### durations → ascii
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[asciiSlice](../../ascii.aug.md#symbol-asciiSlice)**
+
+Inputs: input: Bytes, start: int, end: int. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| parseDuration | [Call site](../../durations.aug#L27) · [Caller explanation](../../durations.aug.md#symbol-parseDuration) |
+
+</details>
+
+<a id="boundary-185a75c42b4f"></a>
+
+#### paths → ascii
+
+<details>
+<summary>3 operations, 3 sites</summary>
+
+**[asciiAt](../../ascii.aug.md#symbol-asciiAt)**
+
+Inputs: input: Bytes, index: int. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| \_validatePortablePath | [Call site](../../paths.aug#L42) · [Caller explanation](../../paths.aug.md#symbol-_validatePortablePath) |
+
+**[asciiLetter](../../ascii.aug.md#symbol-asciiLetter)**
+
+Inputs: character: string. Result: bool.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| \_validatePortablePath | [Call site](../../paths.aug#L43) · [Caller explanation](../../paths.aug.md#symbol-_validatePortablePath) |
+
+**[asciiLower](../../ascii.aug.md#symbol-asciiLower)**
+
+Inputs: text: string. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| \_validatePortablePath | [Call site](../../paths.aug#L47) · [Caller explanation](../../paths.aug.md#symbol-_validatePortablePath) |
+
+</details>
+
+<a id="boundary-b812aafc0421"></a>
+
+#### urls → ascii
+
+<details>
+<summary>4 operations, 11 sites</summary>
+
+**[asciiAt](../../ascii.aug.md#symbol-asciiAt)**
+
+Inputs: input: Bytes, index: int. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| \_validateHttpUrl | [Call site](../../urls.aug#L36) · [Caller explanation](../../urls.aug.md#symbol-_validateHttpUrl) |
+| \_validateHttpUrl | [Call site](../../urls.aug#L44) · [Caller explanation](../../urls.aug.md#symbol-_validateHttpUrl) |
+| \_validateHttpUrl | [Call site](../../urls.aug#L51) · [Caller explanation](../../urls.aug.md#symbol-_validateHttpUrl) |
+| \_validateHttpUrl | [Call site](../../urls.aug#L51) · [Caller explanation](../../urls.aug.md#symbol-_validateHttpUrl) |
+| \_validateAuthority | [Call site](../../urls.aug#L74) · [Caller explanation](../../urls.aug.md#symbol-_validateAuthority) |
+
+**[asciiLetter](../../ascii.aug.md#symbol-asciiLetter)**
+
+Inputs: character: string. Result: bool.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| \_validateAuthority | [Call site](../../urls.aug#L75) · [Caller explanation](../../urls.aug.md#symbol-_validateAuthority) |
+
+**[asciiLower](../../ascii.aug.md#symbol-asciiLower)**
+
+Inputs: text: string. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| \_validateHttpUrl | [Call site](../../urls.aug#L29) · [Caller explanation](../../urls.aug.md#symbol-_validateHttpUrl) |
+| \_validateHttpUrl | [Call site](../../urls.aug#L31) · [Caller explanation](../../urls.aug.md#symbol-_validateHttpUrl) |
+
+**[asciiSlice](../../ascii.aug.md#symbol-asciiSlice)**
+
+Inputs: input: Bytes, start: int, end: int. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| \_validateHttpUrl | [Call site](../../urls.aug#L29) · [Caller explanation](../../urls.aug.md#symbol-_validateHttpUrl) |
+| \_validateHttpUrl | [Call site](../../urls.aug#L31) · [Caller explanation](../../urls.aug.md#symbol-_validateHttpUrl) |
+| \_validateHttpUrl | [Call site](../../urls.aug#L40) · [Caller explanation](../../urls.aug.md#symbol-_validateHttpUrl) |
+
+</details>
+
 
 ## Open a module
 

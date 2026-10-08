@@ -30,6 +30,8 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](types.aug#L4)
 
+It returns `T`.
+
 Interface contract; implementation selected at runtime. [Explanation](types.aug.md).
 
 <a id="sequence-NumberRepository-20-constructor"></a>
@@ -37,6 +39,8 @@ Interface contract; implementation selected at runtime. [Explanation](types.aug.
 ### NumberRepository constructor
 
 [Source](types.aug#L6)
+
+It implements [`Repository<int>`](types.aug.md#symbol-Repository).
 
 [Explanation](types.aug.md).
 
@@ -54,6 +58,10 @@ Return 7; required cleanup runs before exit. [Explanation](types.aug.md).
 
 [Source](types.aug#L11)
 
+It implements [`IProgram`](types.aug.md#symbol-IProgram).
+
+The `repository` dependency is injected as [`Repository<int>`](types.aug.md#symbol-Repository) and stored read-only.
+
 Receive fields: injected repository. [Explanation](types.aug.md).
 
 <a id="sequence-Program.start"></a>
@@ -61,6 +69,10 @@ Receive fields: injected repository. [Explanation](types.aug.md).
 ### Program.start
 
 [Source](types.aug#L12)
+
+It gets `console` ([`Console`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+
+It can call [`Console.write`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write).
 
 ```mermaid
 sequenceDiagram
@@ -77,6 +89,10 @@ sequenceDiagram
 ### IProgram.start
 
 [Source](types.aug#L17)
+
+It gets `console` ([`Console`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+
+It can call [`Console.write`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write).
 
 Interface contract; implementation selected at runtime. [Explanation](types.aug.md).
 

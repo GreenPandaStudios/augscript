@@ -5,9 +5,10 @@ import {loadProject} from '../src/project.ts';
 import {checkProject} from '../src/checker.ts';
 import {generateSpecs} from '../src/spec.ts';
 import {formatFile} from '../src/formatter.ts';
+import {rebaseReading} from '../src/spec-reading.ts';
 
 /** The front-page explanation and measurements come from the checked program. */
-export function homepageExample(root) {
+export function homepageBenchmark(root) {
   const directory=join(root,'benchmarks/greetings');
   const checked=checkProject(loadProject(directory));
   assert.deepEqual(checked.diagnostics.filter(issue=>issue.severity!=='warning'),[]);
@@ -89,4 +90,34 @@ The [performance reports](performance.md) compare more programs: integer loops, 
 
 [Read the source and spec](examples/greetings-benchmark/main.md) · [Inspect every sample and the environment](greeting-results.json)
 `;
+}
+
+/** A single checked project supplies the welcome code, prose and diagrams. */
+export function homepageExample(root,pages) {
+  const directory=join(root,'examples/hello'),checked=checkProject(loadProject(directory));
+  assert.deepEqual(checked.diagnostics.filter(issue=>issue.severity!=='warning'),[]);
+  const file=checked.project.files.get(join(directory,'app/greeter.aug'));
+  const source=style=>formatFile({...checked.project,config:{...checked.project.config,block_style:style,indentation:'spaces',assignment:'equals'}},file)
+    .replace(/^\/\/ aug-spec:.*\n/,'').replace(/\/\*\*[\s\S]*?\*\/\s*/g,'').trim();
+  const page='docs/examples/hello/app/greeter.md',text=pages.get(page);
+  assert.ok(text,'Missing checked welcome example');
+  const begin=text.indexOf('### `Greeter`'),end=text.indexOf('### `IGreeter`',begin);
+  assert.ok(begin>=0&&end>begin,'Missing greeting specification');
+  const spec=rebaseReading(text.slice(begin,end).trim(),join(root,page),join(root,'docs/index.md'))
+    .replace(/::: spec-paragraph [^\n]+\n([\s\S]*?)\n:::/g,'$1');
+  return '[homepage-generated]: #\n\n## This is August\n\nA greeting is small enough to read in full. The same compiler that checks this code also writes its explanation and diagrams.\n\n'+
+    '::::: example-compare\n:::: example-code\n### Readable code\n\nThis component belongs to the [complete greeting project](examples/hello/index.md). Its logger comes from the application’s bindings.\n\n::: code-group\n\n'+
+    '```aug [Indentation]\n'+source('indent')+'\n```\n\n```aug [Braces]\n'+source('braces')+'\n```\n\n:::\n::::\n\n:::: example-spec\n### Its compiled specification\n\n**This text is generated from that component by `aug spec`.** The compiler follows the calls and links the dependency contracts. Author comments supply the description of its purpose.\n\n'+spec+
+    '\n\n[Read the full explanation](examples/hello/app/greeter.md#specification)\n::::\n:::::\n\nThe application resolves `Greeter` and calls `greet(name="AugScript")`. The configured logger prints:\n\n```text\nHello, AugScript!\n```\n';
+}
+
+export function homepageDiagrams(root,pages) {
+  const project=pages.get('docs/examples/hello/diagrams/index.md'),operation=pages.get('docs/examples/hello/app/greeter-diagrams.md');
+  const overview=project?.match(/```mermaid\n[\s\S]*?\n```/)?.[0];
+  const sequence=operation?.slice(operation.indexOf('### Greeter.greet')).match(/```mermaid\n[\s\S]*?\n```/)?.[0];
+  assert.ok(overview&&sequence,'Missing checked welcome diagrams');
+  return '## The same program, at two resolutions\n\n### Where the greeting goes\n\n'+overview+
+    '\n\nThis is the greeting project’s folder view. Startup calls the application; the application calls the logger. Each connection opens its exact inputs and call sites in the [project overview](examples/hello/diagrams/index.md).\n\n### What one operation does\n\n'+sequence+
+    '\n\nThis is the generated sequence for `Greeter.greet`. It passes the greeting to the `Logger` contract. The application chooses `ConsoleLogger` in its [startup specification](examples/hello/main.md#specification). Interface dispatch remains visible; the diagram does not guess which instance a caller will use.\n\n'+
+    '[Open this operation](examples/hello/app/greeter-diagrams.md#sequence-Greeter.greet) · [Follow its logger](examples/hello/logging/console-diagrams.md#sequence-ConsoleLogger.log) · [Learn to navigate the views](guides/understand-a-project.md)\n';
 }

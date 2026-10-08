@@ -15,6 +15,13 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](text.aug#L6)
 
+Case-sensitive application identifier: 1 to 128 ASCII letters, digits, hyphen, period, underscore or tilde.
+This is the RFC 3986 unreserved character set. The original spelling is retained.
+
+It takes `text` as a string, kept read-only.
+
+Construction can fail with `ConversionError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as TokenId constructor
@@ -22,7 +29,7 @@ sequenceDiagram
     Note over p0: Receive fields: text
     p0->>p0: text.isToken(min=1, max=128)
     p0-->>p0: isToken result: bool
-    alt not text.isToken(min=1, max=128)
+    alt text is not a URL-safe ASCII token with 1 to 128<br/>characters
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -34,6 +41,12 @@ sequenceDiagram
 ### parseTokenId
 
 [Source](text.aug#L12)
+
+Validate an identifier without normalizing it. Raises ConversionError for the same inputs as TokenId.
+
+It takes `text` as a string.
+
+Failures can raise `ConversionError`.
 
 ```mermaid
 sequenceDiagram
@@ -51,6 +64,10 @@ sequenceDiagram
 
 [Source](text.aug#L16)
 
+Return the original identifier text.
+
+It takes `value` as [`TokenId`](text.aug.md#symbol-TokenId).
+
 Return value.text; required cleanup runs before exit. [Explanation](text.aug.md).
 
 <a id="sequence-BoundedText-20-constructor"></a>
@@ -59,23 +76,29 @@ Return value.text; required cleanup runs before exit. [Explanation](text.aug.md)
 
 [Source](text.aug#L24)
 
+Valid UTF-8 text with inclusive byte bounds. Preserve combining sequences and embedded NUL.
+
+It takes `text` as a string, kept read-only, `minBytes` as an integer, kept read-only (Minimum UTF-8 storage bytes, including zero), and `maxBytes` as an integer, kept read-only (Maximum storage bytes; require minBytes <= maxBytes <= 1048576).
+
+Construction can fail with `ConversionError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as BoundedText constructor
 
     Note over p0: Receive fields: text, minBytes, maxBytes
-    alt minBytes ‹ 0 or minBytes › maxBytes or maxBytes › 1048576
+    alt minBytes is negative or minBytes is greater than<br/>maxBytes or maxBytes is greater than 1048576
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     p0->>p0: text.byteLength()
     p0-->>p0: byteLength result: int
-    opt Left is false
+    opt (byteLength result ‹ minBytes) is false
     p0->>p0: text.byteLength()
     p0-->>p0: byteLength result 2: int
     end
-    alt text.byteLength() ‹ minBytes or text.byteLength() › maxBytes
+    alt text.byteLength is less than minBytes or text.byteLength<br/>is greater than maxBytes
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 2: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -89,6 +112,12 @@ sequenceDiagram
 ### parseBoundedText
 
 [Source](text.aug#L35)
+
+Validate original UTF-8 text and inclusive byte bounds without normalization.
+
+It takes `text` as a string and `minBytes` and `maxBytes` as integers.
+
+Failures can raise `ConversionError` (Invalid bounds, length or UTF-8).
 
 ```mermaid
 sequenceDiagram
@@ -105,6 +134,10 @@ sequenceDiagram
 ### formatBoundedText
 
 [Source](text.aug#L39)
+
+Return the original text, including embedded NUL and combining sequences.
+
+It takes `value` as [`BoundedText`](text.aug.md#symbol-BoundedText).
 
 Return value.text; required cleanup runs before exit. [Explanation](text.aug.md).
 

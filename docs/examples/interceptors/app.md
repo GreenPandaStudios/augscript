@@ -30,7 +30,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiOTYzNDU3YTM1NWYyYmVhOWUwZTc1NmVhMDM5MjgwNmU4NDVhNTRlNmFiZTQwOTU5MjFlZTgzZWNjMjA2MGY3YyIsImZvcm1hdHRlZFNoYTI1NiI6ImFkM2I0OWIzMjgzZDM4NDAxNDc2MjliMWJjZjIyZWZmMWI5MDJkZGEyNTIzNDk0ZDlhZTAxNTU2NGE3NjBhNzYiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDE1IiwiZmlyc3QiOjE1LCJsYXN0IjoxNywiYmFja2xpbmtzIjpbImFwcC1kaWFncmFtcy5tZCNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIiwiI3N5bWJvbC1kZXNjcmliZSJdfSx7ImlkIjoic291cmNlLUwyMCIsImZpcnN0IjoxOSwibGFzdCI6MTksImJhY2tsaW5rcyI6WyJhcHAtZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMiIsIiNzeW1ib2wtSUdyZWV0ZXIuZ3JlZXQiXX0seyJpZCI6InNvdXJjZS1MMjMiLCJmaXJzdCI6MjEsImxhc3QiOjI1LCJiYWNrbGlua3MiOlsiYXBwLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTMiLCIjc3ltYm9sLUdyZWV0ZXIiXX0seyJpZCI6InNvdXJjZS1MMjYiLCJmaXJzdCI6MjQsImxhc3QiOjI1LCJiYWNrbGlua3MiOlsiYXBwLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTQiLCIjc3ltYm9sLUdyZWV0ZXIuZ3JlZXQiXX0seyJpZCI6InNvdXJjZS1MMTYtTDE3IiwiZmlyc3QiOjE2LCJsYXN0IjoxNywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19LHsiaWQiOiJzb3VyY2UtTDE5IiwiZmlyc3QiOjE4LCJsYXN0IjoxOSwiYmFja2xpbmtzIjpbIiNzeW1ib2wtSUdyZWV0ZXIiXX0seyJpZCI6InNvdXJjZS1MMjciLCJmaXJzdCI6MjUsImxhc3QiOjI1LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX1dfQ
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiOTYzNDU3YTM1NWYyYmVhOWUwZTc1NmVhMDM5MjgwNmU4NDVhNTRlNmFiZTQwOTU5MjFlZTgzZWNjMjA2MGY3YyIsImZvcm1hdHRlZFNoYTI1NiI6ImFkM2I0OWIzMjgzZDM4NDAxNDc2MjliMWJjZjIyZWZmMWI5MDJkZGEyNTIzNDk0ZDlhZTAxNTU2NGE3NjBhNzYiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDE2IiwiZmlyc3QiOjE2LCJsYXN0IjoxNiwiYmFja2xpbmtzIjpbImRpYWdyYW1zL2luZGV4Lm1kI2JvdW5kYXJ5LTIxMzVkZDdhMDIyYyJdfSx7ImlkIjoic291cmNlLUwxNSIsImZpcnN0IjoxNSwibGFzdCI6MTcsImJhY2tsaW5rcyI6WyJhcHAtZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSIsIiNzeW1ib2wtZGVzY3JpYmUiXX0seyJpZCI6InNvdXJjZS1MMjAiLCJmaXJzdCI6MTksImxhc3QiOjE5LCJiYWNrbGlua3MiOlsiYXBwLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiLCIjc3ltYm9sLUlHcmVldGVyLmdyZWV0Il19LHsiaWQiOiJzb3VyY2UtTDIzIiwiZmlyc3QiOjIxLCJsYXN0IjoyNSwiYmFja2xpbmtzIjpbImFwcC1kaWFncmFtcy5tZCNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0zIiwiI3N5bWJvbC1HcmVldGVyIl19LHsiaWQiOiJzb3VyY2UtTDI2IiwiZmlyc3QiOjI0LCJsYXN0IjoyNSwiYmFja2xpbmtzIjpbImFwcC1kaWFncmFtcy5tZCNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC00IiwiI3N5bWJvbC1HcmVldGVyLmdyZWV0Il19LHsiaWQiOiJzb3VyY2UtTDE2LUwxNyIsImZpcnN0IjoxNiwibGFzdCI6MTcsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUwxOSIsImZpcnN0IjoxOCwibGFzdCI6MTksImJhY2tsaW5rcyI6WyIjc3ltYm9sLUlHcmVldGVyIl19LHsiaWQiOiJzb3VyY2UtTDI3IiwiZmlyc3QiOjI1LCJsYXN0IjoyNSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19XX0
 // aug-spec: "app.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 import Logger from logging
@@ -58,7 +58,7 @@ Greeter(resolve Logger logger to _logger, string name) implements IGreeter:
         return "Hello, " + name + "!"
 ```
 
-```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiOTYzNDU3YTM1NWYyYmVhOWUwZTc1NmVhMDM5MjgwNmU4NDVhNTRlNmFiZTQwOTU5MjFlZTgzZWNjMjA2MGY3YyIsImZvcm1hdHRlZFNoYTI1NiI6ImY1OTVlODg2M2MwMGI4OTUwM2Q1MzE2NTE3ZDIxYjFjZDNmNTExMTBhNmRmMGY4NDE5NzU1OTNlMjlhODA2ODMiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDE1IiwiZmlyc3QiOjE1LCJsYXN0IjoxOCwiYmFja2xpbmtzIjpbImFwcC1kaWFncmFtcy5tZCNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIiwiI3N5bWJvbC1kZXNjcmliZSJdfSx7ImlkIjoic291cmNlLUwyMCIsImZpcnN0IjoyMCwibGFzdCI6MjAsImJhY2tsaW5rcyI6WyJhcHAtZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMiIsIiNzeW1ib2wtSUdyZWV0ZXIuZ3JlZXQiXX0seyJpZCI6InNvdXJjZS1MMjMiLCJmaXJzdCI6MjMsImxhc3QiOjI5LCJiYWNrbGlua3MiOlsiYXBwLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTMiLCIjc3ltYm9sLUdyZWV0ZXIiXX0seyJpZCI6InNvdXJjZS1MMjYiLCJmaXJzdCI6MjYsImxhc3QiOjI4LCJiYWNrbGlua3MiOlsiYXBwLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTQiLCIjc3ltYm9sLUdyZWV0ZXIuZ3JlZXQiXX0seyJpZCI6InNvdXJjZS1MMTYtTDE3IiwiZmlyc3QiOjE2LCJsYXN0IjoxNywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19LHsiaWQiOiJzb3VyY2UtTDE5IiwiZmlyc3QiOjE5LCJsYXN0IjoyMSwiYmFja2xpbmtzIjpbIiNzeW1ib2wtSUdyZWV0ZXIiXX0seyJpZCI6InNvdXJjZS1MMjciLCJmaXJzdCI6MjcsImxhc3QiOjI3LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX1dfQ
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiOTYzNDU3YTM1NWYyYmVhOWUwZTc1NmVhMDM5MjgwNmU4NDVhNTRlNmFiZTQwOTU5MjFlZTgzZWNjMjA2MGY3YyIsImZvcm1hdHRlZFNoYTI1NiI6ImY1OTVlODg2M2MwMGI4OTUwM2Q1MzE2NTE3ZDIxYjFjZDNmNTExMTBhNmRmMGY4NDE5NzU1OTNlMjlhODA2ODMiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDE2IiwiZmlyc3QiOjE2LCJsYXN0IjoxNiwiYmFja2xpbmtzIjpbImRpYWdyYW1zL2luZGV4Lm1kI2JvdW5kYXJ5LTIxMzVkZDdhMDIyYyJdfSx7ImlkIjoic291cmNlLUwxNSIsImZpcnN0IjoxNSwibGFzdCI6MTgsImJhY2tsaW5rcyI6WyJhcHAtZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSIsIiNzeW1ib2wtZGVzY3JpYmUiXX0seyJpZCI6InNvdXJjZS1MMjAiLCJmaXJzdCI6MjAsImxhc3QiOjIwLCJiYWNrbGlua3MiOlsiYXBwLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiLCIjc3ltYm9sLUlHcmVldGVyLmdyZWV0Il19LHsiaWQiOiJzb3VyY2UtTDIzIiwiZmlyc3QiOjIzLCJsYXN0IjoyOSwiYmFja2xpbmtzIjpbImFwcC1kaWFncmFtcy5tZCNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0zIiwiI3N5bWJvbC1HcmVldGVyIl19LHsiaWQiOiJzb3VyY2UtTDI2IiwiZmlyc3QiOjI2LCJsYXN0IjoyOCwiYmFja2xpbmtzIjpbImFwcC1kaWFncmFtcy5tZCNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC00IiwiI3N5bWJvbC1HcmVldGVyLmdyZWV0Il19LHsiaWQiOiJzb3VyY2UtTDE2LUwxNyIsImZpcnN0IjoxNiwibGFzdCI6MTcsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUwxOSIsImZpcnN0IjoxOSwibGFzdCI6MjEsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUlHcmVldGVyIl19LHsiaWQiOiJzb3VyY2UtTDI3IiwiZmlyc3QiOjI3LCJsYXN0IjoyNywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19XX0
 // aug-spec: "app.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 import Logger from logging
@@ -102,7 +102,9 @@ Greeter(resolve Logger logger to _logger, string name) implements IGreeter {
 
 ### `describe` · [source](app.md#source-L15) {#symbol-describe}
 
-Prints a number and returns its label. It takes labeled inputs `x` and `label`. It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection.
+Prints a number and returns its label. It takes `x` as an integer and `label` as a string. It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection.
+
+It can call [`Console.write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write). Failures can raise `ValidationError`.
 
 Layers run in the declared order. Call [`Audit.around`](interceptors.md#symbol-Audit.around). Call [`Positive.around`](interceptors.md#symbol-Positive.around). Map `x` to `y`. Call [`AddOne.around`](interceptors.md#symbol-AddOne.around). Map `x` to `y`.
 
@@ -116,7 +118,7 @@ It passes `x` to [`console.write`](dependencies/august/1.0.0/io/contracts.md#sym
 describe(resolve Logger logger, resolve Console console, int x, string label) returns string unless ValidationError uses Console.write
 ```
 
-It takes `x` as an integer (the numeric input, validated and incremented by the chain) and `label` as a string (Text forwarded through each layer unchanged). It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection. Failures can raise `ValidationError`.
+It takes `x` as an integer (the numeric input, validated and incremented by the chain) and `label` as a string (Text forwarded through each layer unchanged). It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection. It can call [`Console.write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write). Failures can raise `ValidationError`.
 
 :::
 
@@ -132,10 +134,10 @@ Construction stores its inputs; startup is visible in the greet call. It impleme
 
 #### `Greeter.greet` · [source](app.md#source-L26) {#symbol-Greeter.greet}
 
-Method annotations wrap each method invocation separately. It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection. Layers run in the declared order. Call [`Audit.around`](interceptors.md#symbol-Audit.around).
+Method annotations wrap each method invocation separately. It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection. It can call [`Console.write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write).
 
 ::: spec-paragraph specification-paragraph-2
-It returns the text `Hello, {name}!`. [source](app.md#source-L27)
+Layers run in the declared order. Call [`Audit.around`](interceptors.md#symbol-Audit.around). It returns the text `Hello, {name}!`. [source](app.md#source-L27)
 :::
 
 ::: details Checked interface
@@ -144,7 +146,7 @@ It returns the text `Hello, {name}!`. [source](app.md#source-L27)
 greet(resolve Logger logger, resolve Console console) returns string uses Console.write
 ```
 
-It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection.
+It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection. It can call [`Console.write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write).
 
 :::
 

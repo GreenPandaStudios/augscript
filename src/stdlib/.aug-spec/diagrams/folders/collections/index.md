@@ -8,14 +8,48 @@ This view opens the collections folder one level deeper. Each arrow shows the ca
 
 No calls cross the source files in this view. Follow local operations in the file sequences below.
 
-<details>
-<summary>Data crossing these boundaries (1 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| workers | operations | [selected transformation](../../../../collections/operations.aug.md#symbol-Transformation.apply) · value: T · compile-time target placeholder | U |
+| workers | operations | 1 | [Inputs, results and call sites](index.md#boundary-dd5c9847872c) |
+
+#### Data crossing these boundaries (1 contracts)
+
+<a id="boundary-dd5c9847872c"></a>
+
+#### workers → operations
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[selected transformation](../../../../collections/operations.aug.md#symbol-Transformation.apply)** · compile-time target placeholder
+
+Inputs: value: T. Result: U.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| \_mapWorkerChunk | [Call site](../../../../collections/workers.aug#L55) · [Caller explanation](../../../../collections/workers.aug.md#symbol-_mapWorkerChunk) |
 
 </details>
+
+
+## What this folder exposes
+
+### Exports
+
+Export the declaration `range` from [`ranges.aug`](../../../../collections/ranges.aug.md#symbol-range). Export the declaration `RangeError` from [`ranges.aug`](../../../../collections/ranges.aug.md#symbol-RangeError). Export the declaration `Predicate` from [`operations.aug`](../../../../collections/operations.aug.md#symbol-Predicate). Export the declaration `Transformation` from [`operations.aug`](../../../../collections/operations.aug.md#symbol-Transformation).
+
+Export the declaration `Aggregator` from [`operations.aug`](../../../../collections/operations.aug.md#symbol-Aggregator). Export the declaration `Comparator` from [`operations.aug`](../../../../collections/operations.aug.md#symbol-Comparator). Export the declaration `filter` from [`operations.aug`](../../../../collections/operations.aug.md#symbol-filter). Export the declaration `transform` from [`operations.aug`](../../../../collections/operations.aug.md#symbol-transform).
+
+Export the declaration `aggregate` from [`operations.aug`](../../../../collections/operations.aug.md#symbol-aggregate). Export the declaration `remove` from [`operations.aug`](../../../../collections/operations.aug.md#symbol-remove). Export the declaration `find` from [`operations.aug`](../../../../collections/operations.aug.md#symbol-find). Export the declaration `sort` from [`operations.aug`](../../../../collections/operations.aug.md#symbol-sort).
+
+Export the declaration `IntegerOrder` from [`operations.aug`](../../../../collections/operations.aug.md#symbol-IntegerOrder). Export the declaration `TextOrder` from [`operations.aug`](../../../../collections/operations.aug.md#symbol-TextOrder). Export the declaration `sortIntegers` from [`operations.aug`](../../../../collections/operations.aug.md#symbol-sortIntegers). Export the declaration `sortText` from [`operations.aug`](../../../../collections/operations.aug.md#symbol-sortText).
+
+Export the declaration `mapWorkers` from [`workers.aug`](../../../../collections/workers.aug.md#symbol-mapWorkers).
+
 
 ## Files in this folder
 

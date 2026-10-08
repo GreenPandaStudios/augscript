@@ -22,7 +22,7 @@ function fixture(body){const root=mkdtempSync(join(tmpdir(),'aug-spec-view-'));t
  writeFileSync(join(root,'main.aug'),'import charge from prices\nprint(value=charge())\n');
  writeFileSync(join(root,'prices.aug'),source);return body(root);
 }finally{rmSync(root,{recursive:true,force:true});}}
-test('the short spec keeps behavior visible and complete checked inputs in expandable detail',()=>fixture(root=>{
+test('the spec makes complete input contracts visible beside behavior',()=>fixture(root=>{
  const checked=checkProject(loadProject(root));assert.deepEqual(checked.diagnostics,[]);
  const text=generateSpecs(checked).find(output=>output.path===join(root,'prices.aug.md')).text;
  assert.match(text,/<details>\n<summary>Checked interface<\/summary>/);
@@ -30,8 +30,8 @@ test('the short spec keeps behavior visible and complete checked inputs in expan
  assert.match(details,/charge\(int price = 7, int quantity = 3, optional string note = null, bool enabled = true\) returns int/);
  assert.match(details,/when omitted/);
  const visible=text.replace(/<details>[\s\S]*?<\/details>/g,'');
- assert.match(visible,/Calculate the total charge/);assert.match(visible,/It takes labeled inputs `price`, `quantity`, `note`, and `enabled`/);
- assert.doesNotMatch(visible,/when omitted/);assert.match(visible,/If not \(`enabled`\)/);
+ assert.match(visible,/Calculate the total charge/);assert.match(visible,/price.*integer.*when omitted, `7`/);assert.match(visible,/quantity.*integer.*when omitted, `3`/);
+ assert.match(visible,/note.*optional string.*when omitted, null/);assert.match(visible,/enabled.*boolean.*when omitted, `true`/);assert.match(visible,/If not \(`enabled`\)/);
  assert.match(visible,/`price` times `quantity`/);assert.match(visible,/`note` is null/);
 }));
 test('every behavior paragraph links to its source span and carries the source digest after pointers',()=>fixture(root=>{

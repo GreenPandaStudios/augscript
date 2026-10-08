@@ -24,7 +24,7 @@ The native standard-output adapter. Construction performs no output. It implemen
 <a id="symbol-SystemConsole.write"></a>
 ### `SystemConsole.write` · [source](contracts.aug#L9)
 
-Write one line of text. It takes `value` as `T`. It prints `value`. [source](contracts.aug#L10)
+Write one line of text. It takes `value` as `T`. It can call [`Console.write`](contracts.aug.md#symbol-Console.write). It prints `value`. [source](contracts.aug#L10)
 
 <details>
 <summary>Checked interface</summary>
@@ -33,7 +33,7 @@ Write one line of text. It takes `value` as `T`. It prints `value`. [source](con
 write<T>(T value) returns void uses Console.write
 ```
 
-The type parameters are `T`. It takes `value` as `T` (Text to display).
+The type parameters are `T`. It takes `value` as `T` (Text to display). It can call [`Console.write`](contracts.aug.md#symbol-Console.write).
 
 </details>
 
@@ -67,7 +67,9 @@ Native filesystem adapter. Construction opens no files. It implements [`FileRead
 <a id="symbol-LocalFiles.read"></a>
 ### `LocalFiles.read` · [source](contracts.aug#L24)
 
-Read text. It takes `path` as a string. It returns `read_file` with `path`. [source](contracts.aug#L25)
+Read text. It takes `path` as a string. It can call [`FileReader.read`](contracts.aug.md#symbol-FileReader.read). Failures can raise `FileError` (The file could not be read).
+
+It returns `read_file` with `path`. [source](contracts.aug#L25)
 
 <details>
 <summary>Checked interface</summary>
@@ -76,14 +78,16 @@ Read text. It takes `path` as a string. It returns `read_file` with `path`. [sou
 read(string path) returns string unless FileError uses FileReader.read
 ```
 
-It takes `path` as a string (File path). Failures can raise `FileError` (The file could not be read).
+It takes `path` as a string (File path). It can call [`FileReader.read`](contracts.aug.md#symbol-FileReader.read). Failures can raise `FileError` (The file could not be read).
 
 </details>
 
 <a id="symbol-LocalFiles.write"></a>
 ### `LocalFiles.write` · [source](contracts.aug#L26)
 
-Write text. It takes `path` and `content` as strings. It calls `write_file` with `path` and `content`. [source](contracts.aug#L27)
+Write text. It takes `path` and `content` as strings. It can call [`FileWriter.write`](contracts.aug.md#symbol-FileWriter.write). Failures can raise `FileError` (Writing failed).
+
+It calls `write_file` with `path` and `content`. [source](contracts.aug#L27)
 
 <details>
 <summary>Checked interface</summary>
@@ -92,7 +96,7 @@ Write text. It takes `path` and `content` as strings. It calls `write_file` with
 write(string path, string content) returns void unless FileError uses FileWriter.write
 ```
 
-It takes `path` as a string (File path) and `content` as a string (Text). Failures can raise `FileError` (Writing failed).
+It takes `path` as a string (File path) and `content` as a string (Text). It can call [`FileWriter.write`](contracts.aug.md#symbol-FileWriter.write). Failures can raise `FileError` (Writing failed).
 
 </details>
 
@@ -114,7 +118,7 @@ Native command-line arguments. It implements [`Arguments`](contracts.aug.md#symb
 <a id="symbol-ProcessArguments.read"></a>
 ### `ProcessArguments.read` · [source](contracts.aug#L35)
 
-It returns `arguments`. [source](contracts.aug#L36)
+It can call [`Arguments.read`](contracts.aug.md#symbol-Arguments.read). It returns `arguments`. [source](contracts.aug#L36)
 
 <details>
 <summary>Checked interface</summary>
@@ -122,6 +126,8 @@ It returns `arguments`. [source](contracts.aug#L36)
 ```text
 read() returns List<string> uses Arguments.read
 ```
+
+It can call [`Arguments.read`](contracts.aug.md#symbol-Arguments.read).
 
 </details>
 

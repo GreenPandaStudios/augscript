@@ -267,8 +267,10 @@ test tensor {
 
 ### `tensor` · [source](api.md#source-L10) {#symbol-tensor}
 
+Copy a list of float64 values into a CPU tensor. It takes `values` as `List<float>`. It returns ownership of [`Tensor`](bindings.md#symbol-Tensor). Failures can raise [`TensorError`](contracts.md#symbol-TensorError).
+
 ::: spec-paragraph specification-paragraph-1
-Copy a list of float64 values into a CPU tensor. It takes `values` as `List<float>`. Within an unsafe block, it returns [`_tensor`](api.md#symbol-_tensor) with `values`. Native operations must satisfy their declared C contracts. [source](api.md#source-L11-L12)
+Within an unsafe block, it returns [`_tensor`](api.md#symbol-_tensor) with `values`. Native operations must satisfy their declared C contracts. [source](api.md#source-L11-L12)
 :::
 
 ::: details Checked interface
@@ -283,8 +285,10 @@ It takes `values` as `List<float>`. It returns ownership of [`Tensor`](bindings.
 
 ### `add` · [source](api.md#source-L14) {#symbol-add}
 
+Add tensors without changing either input. It takes `left` and `right` as [`Tensor`](bindings.md#symbol-Tensor). It returns ownership of [`Tensor`](bindings.md#symbol-Tensor). Failures can raise [`TensorError`](contracts.md#symbol-TensorError).
+
 ::: spec-paragraph specification-paragraph-2
-Add tensors without changing either input. It takes `left` and `right` as [`Tensor`](bindings.md#symbol-Tensor). Within an unsafe block, it returns [`_add`](api.md#symbol-_add) with `left` and `right`. Native operations must satisfy their declared C contracts. [source](api.md#source-L15-L16)
+Within an unsafe block, it returns [`_add`](api.md#symbol-_add) with `left` and `right`. Native operations must satisfy their declared C contracts. [source](api.md#source-L15-L16)
 :::
 
 ::: details Checked interface
@@ -299,8 +303,10 @@ It takes `left` and `right` as [`Tensor`](bindings.md#symbol-Tensor). It returns
 
 ### `sum` · [source](api.md#source-L18) {#symbol-sum}
 
+Sum every element. It takes `tensor` as [`Tensor`](bindings.md#symbol-Tensor). Failures can raise [`TensorError`](contracts.md#symbol-TensorError).
+
 ::: spec-paragraph specification-paragraph-3
-Sum every element. It takes `tensor` as [`Tensor`](bindings.md#symbol-Tensor). Within an unsafe block, it returns [`_sum`](api.md#symbol-_sum) with `tensor`. Native operations must satisfy their declared C contracts. [source](api.md#source-L19-L20)
+Within an unsafe block, it returns [`_sum`](api.md#symbol-_sum) with `tensor`. Native operations must satisfy their declared C contracts. [source](api.md#source-L19-L20)
 :::
 
 ::: details Checked interface
@@ -315,8 +321,10 @@ It takes `tensor` as [`Tensor`](bindings.md#symbol-Tensor). Failures can raise [
 
 ### `values` · [source](api.md#source-L22) {#symbol-values}
 
+Copy tensor values into an August list. It takes `tensor` as [`Tensor`](bindings.md#symbol-Tensor). Failures can raise [`TensorError`](contracts.md#symbol-TensorError).
+
 ::: spec-paragraph specification-paragraph-4
-Copy tensor values into an August list. It takes `tensor` as [`Tensor`](bindings.md#symbol-Tensor). Within an unsafe block, it returns [`_values`](api.md#symbol-_values) with `tensor`. Native operations must satisfy their declared C contracts. [source](api.md#source-L23-L24)
+Within an unsafe block, it returns [`_values`](api.md#symbol-_values) with `tensor`. Native operations must satisfy their declared C contracts. [source](api.md#source-L23-L24)
 :::
 
 ::: details Checked interface
@@ -368,7 +376,7 @@ Native implementation: `@greenpandastudios/aug-pytorch@0.2.0`, `2.14.1`. Support
 ### `_consumeAndFail` · [source](api.md#source-L29) {#symbol-_consumeAndFail}
 
 ::: spec-paragraph specification-paragraph-5
-It is private to its defining scope. It takes `value` as [`Tensor`](bindings.md#symbol-Tensor) with ownership transferred. It raises a [`TensorError`](contracts.md#symbol-TensorError) with `code` `99` and `message` `"expected cleanup test"`. [source](api.md#source-L30)
+It is private to its defining scope. It takes `value` as [`Tensor`](bindings.md#symbol-Tensor) with ownership transferred. Failures can raise [`TensorError`](contracts.md#symbol-TensorError). It raises a [`TensorError`](contracts.md#symbol-TensorError) with `code` `99` and `message` `"expected cleanup test"`. [source](api.md#source-L30)
 :::
 
 ::: details Checked interface
@@ -396,7 +404,7 @@ It implements [`_TensorContainer`](api.md#symbol-_TensorContainer). It is privat
 #### `_TensorHolder.total` · [source](api.md#source-L35) {#symbol-_TensorHolder.total}
 
 ::: spec-paragraph specification-paragraph-6
-It returns [`sum`](api.md#symbol-sum) with `tensor` from `item`. [source](api.md#source-L36)
+Failures can raise [`TensorError`](contracts.md#symbol-TensorError). It returns [`sum`](api.md#symbol-sum) with `tensor` from `item`. [source](api.md#source-L36)
 :::
 
 ::: details Checked interface
@@ -412,7 +420,7 @@ Failures can raise [`TensorError`](contracts.md#symbol-TensorError).
 ### `_replace` · [source](api.md#source-L37) {#symbol-_replace}
 
 ::: spec-paragraph specification-paragraph-7
-It is private to its defining scope. It takes `holder` as [`_TensorHolder`](api.md#symbol-_TensorHolder) with permission to mutate it during the call and `replacement` as [`Tensor`](bindings.md#symbol-Tensor) with ownership transferred. It sets `holder.item` to `replacement`. [source](api.md#source-L38)
+It is private to its defining scope. It takes `holder` as [`_TensorHolder`](api.md#symbol-_TensorHolder) with permission to mutate it during the call and `replacement` as [`Tensor`](bindings.md#symbol-Tensor) with ownership transferred. It may change `holder`. It sets `holder.item` to `replacement`. [source](api.md#source-L38)
 :::
 
 ::: details Checked interface

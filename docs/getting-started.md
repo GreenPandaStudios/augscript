@@ -90,7 +90,7 @@ aug spec . --check
 
 Open `main.aug.md` and `greeting.aug.md`. They describe the import, call, greeting behavior, and test. Their dependency links lead to the used declarations. The compiler generates this text offline. The same source produces the same explanation.
 
-The unreleased compiler also creates `.aug-spec/diagrams/index.md` and adjacent `.aug.diagrams.md` pages. Start with the project overview, then follow module interactions and operation sequences to the explanation and source. [Explore the greeting example](examples/hello/diagrams/index.md).
+The unreleased compiler also creates `.aug-spec/diagrams/index.md` and adjacent `.aug.diagrams.md` pages. Start with the project overview, then follow module interactions and operation sequences to the explanation and source. Its generated `AGENTS.md` teaches coding agents to follow that same path before editing. [Explore the greeting example](examples/hello/diagrams/index.md).
 
 After an edit, regenerate before committing the explanation. `--check` reports stale files and does not write them. [Compiled specifications](specifications.md) explains the full workflow and its limits.
 

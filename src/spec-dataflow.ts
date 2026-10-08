@@ -1,15 +1,17 @@
 import {workerMapTemplate} from './worker-mapping.ts';
 import {basename,dirname,join,relative} from 'node:path';
-import {type Expr,type MethodDecl,type SourceFile,type Span} from './ast.ts';
+import {isStatement,type Expr,type MethodDecl,type SourceFile,type Span} from './ast.ts';
 import type {CheckedProject} from './checker.ts';
 import {semanticSourcePath,type SemanticGraph} from './symbols.ts';
 import {tyName} from './types.ts';
 import {callableResult} from './contracts.ts';
+import {readingTestTitle} from './spec-reading.ts';
 
 export interface FlowNode {id:string;label:string;category?:'local'|'package'|'entry'}
 export interface FlowEdge {from:string;to:string;label:string;reply?:boolean;deferred?:boolean}
 export interface FolderView {folder:string;path:string;files:SourceFile[]}
-export interface DataFlowView {nodes:FlowNode[];edges:FlowEdge[];contracts:{from:string;to:string;operation:string;inputs:string;result:string;boundary:string;target:string}[]}
+export interface DataFlowContract {from:string;to:string;operation:string;inputs:string;result:string;boundary:string;target:string;evidence:{caller:string;location:Span;role:'call'|'test'|'entry';context?:{name:string;anchor?:string}}[]}
+export interface DataFlowView {nodes:FlowNode[];edges:FlowEdge[];contracts:DataFlowContract[]}
 const compare=(a:string,b:string)=>a<b?-1:a>b?1:0;
 const site=(span:Span)=>span.file+':'+span.start+':'+span.end;
 const implementation=(file:SourceFile)=>basename(file.path)!=='export.aug'&&file.items.some(item=>item.kind!=='import'&&item.kind!=='export');
@@ -33,6 +35,18 @@ export function diagramFolders(root:string,files:SourceFile[]):FolderView[]{
 export function dataFlowView(checked:CheckedProject,graph:SemanticGraph,files:SourceFile[],root:string,folder=''):DataFlowView{
   const symbols=new Map(graph.symbols.map(symbol=>[symbol.id,symbol])),own=new Map(files.map(file=>[semanticSourcePath(checked,file.path),relative(root,file.path).replaceAll('\\','/')]));
   const packageNames=new Map([...checked.project.packages.roots].sort(([a],[b])=>compare(a,b)).map(([name,scope])=>['package/'+scope.name+'@'+scope.version,/^url_[0-9a-f]{20}$/.test(name)?scope.name:name]));
+  const callerContext=(caller:string,location:Span):Pick<DataFlowContract['evidence'][number],'role'|'context'>=>{
+    if(!caller.startsWith('module:'))return {role:'call'};
+    const file=[...checked.project.files.values()].find(file=>semanticSourcePath(checked,file.path)===location.file);
+    const contains=(span:Span)=>span.start<=location.start&&span.end>=location.end;
+    const suite=file?.items.find(item=>item.kind==='test'&&contains(item.span));
+    if(suite?.kind==='test'){
+      const name=readingTestTitle(suite);
+      return {role:'test',context:{name,anchor:'symbol-'+name}};
+    }
+    if(file?.items.some(item=>isStatement(item)&&contains(item.span)))return {role:'call',context:{name:'Startup',anchor:'startup'}};
+    return {role:'call',context:{name:'Module context'}};
+  };
   const calls=new Map<string,Extract<Expr,{kind:'call'}>>(),copies=new Map<string,Extract<Expr,{kind:'recordCopy'}>>(),actions=new Set([...checked.actions.keys()].map(expr=>site({...expr.span,file:semanticSourcePath(checked,expr.span.file)})));
   const declarations=new Map<string,MethodDecl>();
   for(const def of checked.project.definitions.values()){if(def.node.kind==='function')declarations.set(def.id,def.node);if('methods' in def.node)for(const method of def.node.methods)declarations.set(def.id+'/method/'+method.name,method);}
@@ -81,7 +95,7 @@ export function dataFlowView(checked:CheckedProject,graph:SemanticGraph,files:So
     const boundary=mapping?'isolated worker transformation':template?'compile-time target placeholder':constructor?.kind==='class'&&(constructor.record||constructor.implements.some(type=>type.name==='Error'))?'value construction':actions.has(site(edge.location))?'deferred HTTP action':edge.kind==='callback-call'?'deferred callback':resolved?.dispatch==='interface'?'interface dispatch':resolved?.node.kind==='function'&&resolved.node.externC?'native boundary':edge.kind==='forward'?'forwarded contract':'';
     if(template)operation='selected transformation';
     if(boundary==='deferred HTTP action'&&declaration?.endpoint)operation='on submission: '+declaration.endpoint.method+' '+declaration.endpoint.path;
-    add(from);add(to);contracts.push({from,to,operation,inputs,result,boundary,target:target.id});
+    add(from);add(to);contracts.push({from,to,operation,inputs,result,boundary,target:target.id,evidence:[{caller:edge.from,location:edge.location,...callerContext(edge.from,edge.location)}]});
   }
   // HTTP entry points are declared external inputs. They are not inferred from
   // ordinary local function calls or from an assumed request ordering.
@@ -90,12 +104,12 @@ export function dataFlowView(checked:CheckedProject,graph:SemanticGraph,files:So
     const to=group(source),from='HTTP requests';add(from);add(to);
     const inputs=node.params.filter(param=>!param.injected).map(param=>(param.label??param.name)+': '+(checked.parameterTypes.get(param)?tyName(checked.parameterTypes.get(param)!):param.type.name)+(param.source?' from '+param.source.kind:'')).join(', ');
     const target=[...checked.project.definitions.values()].find(def=>def.node===node)!.id;
-    contracts.push({from,to,operation:node.endpoint.method+' '+node.endpoint.path,inputs,result:tyName(callableResult(checked,node)),boundary:node.endpoint.streams?'HTTP stream':'HTTP endpoint',target});
+    contracts.push({from,to,operation:node.endpoint.method+' '+node.endpoint.path,inputs,result:tyName(callableResult(checked,node)),boundary:node.endpoint.streams?'HTTP stream':'HTTP endpoint',target,evidence:[{caller:'HTTP requests',location:{...node.span,file:source},role:'entry',context:{name:'HTTP requests',anchor:'symbol-'+node.name}}]});
   }
   // Keep the complete operation contracts in the table. The overview has at most
   // one request and one result arrow per pair of logical units.
   const pairs=new Map<string,DataFlowView['contracts']>();
-  for(const contract of contracts.filter(contract=>contract.boundary!=='value construction'&&contract.boundary!=='compile-time target placeholder')){const key=contract.from+'\0'+contract.to;const list=pairs.get(key)??[];list.push(contract);pairs.set(key,list);}
+  for(const contract of contracts.filter(contract=>contract.evidence.some(item=>item.role!=='test')&&contract.boundary!=='value construction'&&contract.boundary!=='compile-time target placeholder')){const key=contract.from+'\0'+contract.to;const list=pairs.get(key)??[];list.push(contract);pairs.set(key,list);}
   const dataLabel=(type:string)=>type.replace(/HttpResponse<([^<>]+)>/g,'$1 response').replace(/List<([^<>]+)>/g,'list of $1').replaceAll('<','‹').replaceAll('>','›');
   const summary=(items:string[])=>{const values=[...new Set(items)].sort(compare);return values.slice(0,2).join(' / ')+(values.length>2?' + '+(values.length-2)+' more':'');};
   for(const entries of pairs.values()){
@@ -105,5 +119,12 @@ export function dataFlowView(checked:CheckedProject,graph:SemanticGraph,files:So
     const results=entries.filter(entry=>entry.result!=='void'&&!entry.boundary.startsWith('deferred'));
     if(results.length)edges.push({from:first.to,to:first.from,label:summary(results.map(entry=>dataLabel(entry.result))),reply:true});
   }
-  return {nodes:[...nodes.values()].sort((a,b)=>compare(a.id,b.id)),edges,contracts:[...new Map(contracts.map(contract=>[JSON.stringify(contract),contract])).values()].sort((a,b)=>compare(a.from,b.from)||compare(a.to,b.to)||compare(a.operation,b.operation)||compare(a.inputs,b.inputs))};
+  const merged=new Map<string,DataFlowContract>();
+  for(const contract of contracts){
+    const {evidence,...surface}=contract,key=JSON.stringify(surface),previous=merged.get(key);
+    if(previous)previous.evidence.push(...evidence);else merged.set(key,{...surface,evidence:[...evidence]});
+  }
+  for(const contract of merged.values())contract.evidence=[...new Map(contract.evidence.map(item=>[item.caller+'\0'+site(item.location),item])).values()]
+    .sort((a,b)=>compare(a.location.file,b.location.file)||a.location.start-b.location.start||compare(a.caller,b.caller));
+  return {nodes:[...nodes.values()].sort((a,b)=>compare(a.id,b.id)),edges,contracts:[...merged.values()].sort((a,b)=>compare(a.from,b.from)||compare(a.to,b.to)||compare(a.operation,b.operation)||compare(a.inputs,b.inputs))};
 }

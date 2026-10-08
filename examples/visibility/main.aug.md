@@ -6,6 +6,7 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="startup"></a>
 ## Startup
 
 It sets `counter` to a [`Counter`](counter.aug.md#symbol-Counter) with `value` `1`. It prints [`counter.label`](counter.aug.md#symbol-Counter.label). With temporary permission to change `counter`, it sets `counter.value` to `2`. It prints `counter.value`. [source](main.aug#L3-L8)

@@ -9,7 +9,7 @@
 <a id="symbol-add"></a>
 ## `add` · [source](arithmetic.aug#L3)
 
-Add two integers. It takes `left` and `right` as integers. It returns `left` plus `right`. [source](arithmetic.aug#L4)
+Add two integers. It takes `left` and `right` as integers. It returns `int` — Their sum. It returns `left` plus `right`. [source](arithmetic.aug#L4)
 
 <details>
 <summary>Checked interface</summary>

@@ -23,21 +23,27 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](dates.aug#L10)
 
+Gregorian calendar date, including dates before the historical calendar cutover.
+
+It takes `year` as an integer, kept read-only (Year from 1 to 9999), `month` as an integer, kept read-only (Month from 1 to 12), and `day` as an integer, kept read-only (Day from 1 to the actual month's length).
+
+Construction can fail with `ConversionError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as CivilDate constructor
 
     Note over p0: Receive fields: year, month, day
-    alt year ‹ 1 or year › 9999 or month ‹ 1 or month › 12
+    alt year is less than 1 or year is greater than 9999 or<br/>month is less than 1 or month is greater than 12
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
-    opt Left is false
+    opt (day ‹ 1) is false
     p0->>p0: _daysInMonth(year=year, month=month)
     p0-->>p0: _daysInMonth result: int
     end
-    alt day ‹ 1 or day › _daysInMonth(year, month)
+    alt day is less than 1 or day is greater than _daysInMonth<br/>with year and month
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 2: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -50,17 +56,21 @@ sequenceDiagram
 
 [Source](dates.aug#L17)
 
+It is private to its defining scope.
+
+It takes `year` and `month` as integers.
+
 ```mermaid
 sequenceDiagram
     participant p0 as _daysInMonth
 
-    alt month == 2
-    alt year % 400 == 0 or (year % 4 == 0 and year % 100 != 0
+    alt month equals 2
+    alt (year remainder after division by 400) equals 0 or<br/>((year remainder after division by 4) equals 0 and (year<br/>remainder after division by 100) does not equal 0)
     Note over p0: Return 29； required cleanup runs before exit
     end
     Note over p0: Return 28； required cleanup runs before exit
     end
-    alt month == 4 or month == 6 or month == 9 or month == 11
+    alt month equals 4 or month equals 6 or month equals 9 or<br/>month equals 11
     Note over p0: Return 30； required cleanup runs before exit
     end
     Note over p0: Return 31； required cleanup runs before exit
@@ -72,6 +82,12 @@ sequenceDiagram
 
 [Source](dates.aug#L29)
 
+Parse exactly ten ASCII bytes in YYYY-MM-DD form. No whitespace or time suffix is accepted.
+
+It takes `text` as a string.
+
+Failures can raise `ConversionError` (Malformed text or an invalid Gregorian date).
+
 #### Sequence 1 of 2
 
 ```mermaid
@@ -80,7 +96,7 @@ sequenceDiagram
     participant p1 as august/values/ascii
     p0->>p0: text.byteLength()
     p0-->>p0: byteLength result: int
-    alt text.byteLength() != 10
+    alt text.byteLength does not equal 10
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -95,18 +111,18 @@ sequenceDiagram
     p1-->>p0: day: string
     p0->>p1: asciiSlice(input=bytes, start=4, end=5)
     p1-->>p0: asciiSlice result 4: string
-    opt Left is false
+    opt (asciiSlice result 4 != ”-”) is false
     p0->>p1: asciiSlice(input=bytes, start=7, end=8)
     p1-->>p0: asciiSlice result 5: string
     end
-    alt asciiSlice(input=bytes, start=4, end=5) != ”-” or asciiSlice(input=bytes, start=7, end=8) != ”-”
+    alt asciiSlice with input from bytes, start 4, and end 5<br/>does not equal ”-” or asciiSlice with input from bytes,<br/>start 7, and end 8 does not equal ”-”
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 2: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     p0->>p0: year.isDecimal()
     p0-->>p0: isDecimal result: bool
-    opt Left is false
+    opt (not isDecimal result) is false
     p0->>p0: month.isDecimal()
     p0-->>p0: isDecimal result 2: bool
     end
@@ -118,12 +134,12 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as parseCivilDate
 
-    opt Left is false
+    opt (not isDecimal result or not isDecimal result 2) is<br/>false
     Note over p0: Sequence continued from the previous view
     p0->>p0: day.isDecimal()
     p0-->>p0: isDecimal result 3: bool
     end
-    alt not year.isDecimal() or not month.isDecimal() or not day.isDecimal()
+    alt year.isDecimal returns false or month.isDecimal returns<br/>false or day.isDecimal returns false
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 3: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -136,7 +152,7 @@ sequenceDiagram
     p0-->>p0: parseInteger result 3: int
     p0->>p0: CivilDate(year=parseInteger result, month=parseInteger<br/>result 2, day=parseInteger result 3) · construct value
     p0-->>p0: CivilDate result: CivilDate
-    Note over p0: Return CivilDate(year=year.parseInteger(),<br/>month=month.parseInteger(), day=day.parseInteger())；<br/>required cleanup runs…
+    Note over p0: Return CivilDate(year=year.parseInteger(),<br/>month=month.parseInteger(), day=day.parseInteger())；<br/>required cleanup runs before exit
     Note over p0: May leave with checked errors: ConversionError
 ```
 
@@ -145,6 +161,10 @@ sequenceDiagram
 ### formatCivilDate
 
 [Source](dates.aug#L43)
+
+Format a validated calendar date as YYYY-MM-DD, padding each field with zeroes.
+
+It takes `value` as [`CivilDate`](dates.aug.md#symbol-CivilDate).
 
 ```mermaid
 sequenceDiagram
@@ -156,7 +176,7 @@ sequenceDiagram
     p0-->>p0: _pad result 2: string
     p0->>p0: _pad(value=value.day, width=2)
     p0-->>p0: _pad result 3: string
-    Note over p0: Return _pad(value=value.year, width=4) + ”-” +<br/>_pad(value=value.month, width=2) + ”-” +<br/>_pad(value=value.day, width=2…
+    Note over p0: Return _pad(value=value.year, width=4) + ”-” +<br/>_pad(value=value.month, width=2) + ”-” +<br/>_pad(value=value.day, width=2)； required cleanup runs<br/>before exit
 ```
 
 <a id="sequence-_pad"></a>
@@ -164,6 +184,10 @@ sequenceDiagram
 ### \_pad
 
 [Source](dates.aug#L46)
+
+It is private to its defining scope.
+
+It takes `value` and `width` as integers.
 
 ```mermaid
 sequenceDiagram
@@ -184,26 +208,30 @@ sequenceDiagram
 
 [Source](dates.aug#L53)
 
+Compare calendar fields chronologically; return -1, 0 or 1 without arithmetic overflow.
+
+It takes `left` and `right` as [`CivilDate`](dates.aug.md#symbol-CivilDate).
+
 ```mermaid
 sequenceDiagram
     participant p0 as compareCivilDates
 
-    alt left.year ‹ right.year
+    alt left.year is less than right.year
     Note over p0: Return -1； required cleanup runs before exit
     end
-    alt left.year › right.year
+    alt left.year is greater than right.year
     Note over p0: Return 1； required cleanup runs before exit
     end
-    alt left.month ‹ right.month
+    alt left.month is less than right.month
     Note over p0: Return -1； required cleanup runs before exit
     end
-    alt left.month › right.month
+    alt left.month is greater than right.month
     Note over p0: Return 1； required cleanup runs before exit
     end
-    alt left.day ‹ right.day
+    alt left.day is less than right.day
     Note over p0: Return -1； required cleanup runs before exit
     end
-    alt left.day › right.day
+    alt left.day is greater than right.day
     Note over p0: Return 1； required cleanup runs before exit
     end
     Note over p0: Return 0； required cleanup runs before exit

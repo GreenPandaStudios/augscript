@@ -28,6 +28,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](greeter.aug#L8)
 
+Welcomes a user through the configured logger. It implements [`IGreeter`](greeter.aug.md#symbol-IGreeter).
+
+The `logger` dependency is injected as [`Logger`](../logging/logger.aug.md#symbol-Logger) and stored read-only (the application logger, injected when resolved).
+
 Receive fields: injected logger. [Explanation](greeter.aug.md).
 
 <a id="sequence-Greeter.greet"></a>
@@ -35,6 +39,12 @@ Receive fields: injected logger. [Explanation](greeter.aug.md).
 ### Greeter.greet
 
 [Source](greeter.aug#L13)
+
+Prints a personalized greeting.
+
+It takes `name` as a string. It gets `console` ([`Console`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+
+It can call [`Console.write`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write).
 
 ```mermaid
 sequenceDiagram
@@ -48,6 +58,12 @@ sequenceDiagram
 ### IGreeter.greet
 
 [Source](greeter.aug#L22)
+
+Prints a personalized greeting.
+
+It takes `name` as a string (the user to welcome). It gets `console` ([`Console`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+
+It can call [`Console.write`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write).
 
 Interface contract; implementation selected at runtime. [Explanation](greeter.aug.md).
 

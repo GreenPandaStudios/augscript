@@ -6,6 +6,7 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="startup"></a>
 ## Startup
 
 It prints [`calculate`](tensors.aug.md#symbol-calculate). If this work raises [`TensorError`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/contracts.aug.md#symbol-TensorError) as `error`, it prints `error.message`. [source](main.aug#L5-L8)

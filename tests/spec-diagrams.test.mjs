@@ -1,3 +1,4 @@
+import {discoverTests,checkUnitTests,mergeTestAnalysis} from '../src/testing.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,rmSync,existsSync} from 'node:fs';
@@ -53,7 +54,7 @@ Consumer(Reader reader) implements Reader { read() returns int { return reader.r
  await validMermaid(outputs);
  assert.ok(outputs.some(output=>output.path===join(root,'.aug-spec/diagrams/index.md')));
  const page=outputs.find(output=>output.path===join(root,'app/api.aug.diagrams.md')).text;
- assert.match(page,/GET.*\/value/);assert.match(page,/sequenceDiagram/);assert.match(page,/alt.*value › 0/);
+ assert.match(page,/GET.*\/value/);assert.match(page,/sequenceDiagram/);assert.match(page,/alt.*value is positive/);
  const calls=outputs.find(output=>output.path===join(root,'app/service.aug.diagrams.md')).text;
  const sequence=calls.slice(calls.indexOf('### compute'),calls.indexOf('### increment'));
  assert.ok(sequence.indexOf(': increment')<sequence.indexOf(': twice'),'arguments evaluate before their enclosing call');
@@ -124,7 +125,7 @@ run() unless ConcurrencyError and Failure {
 },async(root,checked)=>{
  const output=diagrams(checked).find(output=>output.path===join(root,'work.aug.diagrams.md'));
  await validMermaid([output]);
- for(const text of ['Try body','Catch Failure','Always','While value','start asynchronously','isolated heap','Wait for task','Left is true','Raise checked failure'])assert.ok(output.text.includes(text),text);
+ for(const text of ['Try body','Catch Failure','Always','While value','start asynchronously','isolated heap','Wait for task','(false) is true','Raise checked failure'])assert.ok(output.text.includes(text),text);
 }));
 test('native boundaries and forwarding never invent implementation bodies',()=>project({
  'main.aug':'import delegated from relay\nprint(value=delegated(value=1))\n',
@@ -321,8 +322,8 @@ test('synthetic worker edges retain the selected function contract rather than t
  'rules.aug':'double(int value) returns int { return value * 2 }\n',
 },async(root,checked)=>{
  const output=diagrams(checked).find(item=>item.path===join(root,'.aug-spec/diagrams/index.md'));await validMermaid([output]);
- const row=output.text.split('\n').find(line=>line.includes('[double]'));
- assert.match(row,/value: int/);assert.match(row,/isolated worker transformation/);assert.match(row,/\| int \|$/);
+ const row=output.text.split('**[double]')[1]?.split('</details>')[0];
+ assert.ok(row);assert.match(row,/value: int/);assert.match(row,/isolated worker transformation/);assert.match(row,/Result: int\./);
  assert.doesNotMatch(row,/concurrency|chunkSize|transformation:/);assert.doesNotMatch(output.text,/double\(values/);
 }));
 test('record copies expose copied fields and a data result without inventing a service boundary',()=>project({
@@ -330,8 +331,8 @@ test('record copies expose copied fields and a data result without inventing a s
  'rules.aug':'record Row(int value)\n',
 },async(root,checked)=>{
  const output=diagrams(checked).find(item=>item.path===join(root,'.aug-spec/diagrams/index.md'));await validMermaid([output]);
- const rows=output.text.split('\n').filter(line=>line.includes('[Row]'));assert.ok(rows.length);
- for(const row of rows){assert.match(row,/value: int/);assert.match(row,/value construction/);assert.match(row,/\| Row \|$/);}
+ const rows=output.text.split('**[Row]').slice(1);assert.ok(rows.length);
+ for(const row of rows){assert.match(row,/value: int/);assert.match(row,/value construction/);assert.match(row,/Result: Row\./);}
  assert.doesNotMatch(output.text,/declared result|flowchart/);
 }));
 
@@ -345,7 +346,7 @@ test('long sequence messages wrap without breaking participant or control-flow l
  assert.match(startup,/: execute\(sql=”CREATE TABLE users \(name TEXT NOT NULL\)”,<br\/>parameters=”August”\)/);
  assert.match(startup,/participant p\d+ as database\n/);assert.match(startup,/-->>p0: rows: int/);
  const implementation=pages.find(page=>page.path===join(root,'database.aug.diagrams.md')).text;
- assert.match(implementation,/alt sql == ””\n/);
+ assert.match(implementation,/alt sql equals ””\n/);
 }));
 
 
@@ -370,8 +371,8 @@ test('short-circuit frames contain conditional calls and omit pure comparison no
 },async(root,checked)=>{
  const page=diagrams(checked).find(item=>item.path===join(root,'rules.aug.diagrams.md'));await validMermaid([page]);
  const sequence=page.text.split('### check\n')[1];
- assert.match(sequence,/alt value ‹ 0 or value › 10/);assert.doesNotMatch(sequence,/opt Left is false/);
- assert.match(sequence,/opt Left is true\n\s+p0->>p\d+: flag\(\)/);
+ assert.match(sequence,/alt value is negative or value is greater than 10/);assert.doesNotMatch(sequence,/opt Left is false/);
+ assert.match(sequence,/opt \(value == 3\) is true\n\s+p0->>p\d+: flag\(\)/);
 }));
 
 
@@ -430,7 +431,7 @@ if state > 0 {} else { print(value=state) }
  assert.doesNotMatch(page,/Set index =/);
  assert.match(page,/loop While index ‹ 4\n\s+Note over p0: Set state to state \* 3 \+ index/);
  assert.match(page,/Note over p0: Set index to index \+ 1/);
- assert.match(page,/alt state › 0\n\s+Note over p0: No operations in this branch\n\s+else otherwise/);
+ assert.match(page,/alt state is positive\n\s+Note over p0: No operations in this branch\n\s+else otherwise/);
  for(const diagram of page.matchAll(/```mermaid\n([\s\S]*?)\n```/g))assert.doesNotMatch(diagram[1],/\n\s*(?:loop|alt|opt) [^\n]+\n\s*(?:end|else)/);
  await validMermaid(diagrams(checked));
 }));
@@ -500,4 +501,104 @@ test('opening a branch at a split keeps all rendered steps inside the budget',()
  }
  assert.doesNotMatch(chunks[0][1],/alt true/);
  await validMermaid(outputs);
+}));
+
+test('a reader can recover checked failures, validation order and returned data without opening source',()=>project({
+ 'main.aug':'import normalize from policy\ntry { print(value=normalize(value=3).normalized) } catch Error error { pass }\n',
+ 'policy.aug':`record Receipt(int original, int normalized)
+BadInput() implements Error {}
+normalize(int value) returns Receipt unless BadInput {
+    if value < 0 { throw BadInput() }
+    adjusted = double(value)
+    return Receipt(original=value, normalized=adjusted)
+}
+double(int value) returns int { return value * 2 }
+`,
+},async(root,checked)=>{
+ const outputs=generateSpecs(checked),spec=outputs.find(page=>page.path===join(root,'policy.aug.md')).text;
+ const operation=spec.split('## `normalize`')[1].split('## `double`')[0],visible=operation.split('<details>')[0];
+ assert.match(visible,/Failures can raise .*BadInput/);assert.match(visible,/value.*is at least.*0/);
+ assert.ok(visible.indexOf('BadInput')<visible.indexOf('double'),'failure contract and guard precede the calculation');
+ assert.match(visible,/original.*value/);assert.match(visible,/normalized.*adjusted/);
+ const sequence=outputs.find(page=>page.path===join(root,'policy.aug.diagrams.md')).text.split('### normalize\n')[1].split('### double\n')[0];
+ assert.match(sequence,/Failures can raise .*BadInput/);assert.match(sequence,/alt value is negative/);
+ assert.ok(sequence.indexOf('Raise checked failure')<sequence.indexOf(': double'));
+ assert.match(sequence,/adjusted: int/);assert.match(sequence,/original=value, normalized=adjusted/);
+ await validMermaid(outputs.filter(page=>page.kind==='diagram'));
+}));
+
+test('grouped boundaries retain separate witnesses for repeated identical calls',()=>project({
+ 'main.aug':'import touch from service\ntouch(value=7)\ntouch(value=7)\ntouch(value=7)\n',
+ 'service.aug':'touch(int value) { pass }\n',
+},(root,checked)=>{
+ const page=diagrams(checked).find(page=>page.path===join(root,'.aug-spec/diagrams/index.md')).text;
+ assert.match(page,/1 operation, 3 sites/);
+ const evidence=[...page.matchAll(/\[Call site\]\(([^)]*)\)/g)].map(match=>match[1]);
+ assert.equal(evidence.length,3);assert.equal(new Set(evidence).size,3);
+ assert.match(page,/grouped arrow records calls/);
+}));
+
+test('folder aggregation does not turn disconnected methods into one request journey',()=>project({
+ 'main.aug':'import entry from intake\nentry()\n',
+ 'intake/export.aug':'export entry from entry\n',
+ 'intake/entry.aug':'import receive and unrelated from services\nentry() { receive() }\n',
+ 'services/export.aug':'export receive from operations\nexport unrelated from operations\n',
+ 'services/operations.aug':'import store from storage\nreceive() { pass }\nunrelated() { store() }\n',
+ 'storage/export.aug':'export store from values\n',
+ 'storage/values.aug':'store() { pass }\n',
+},(root,checked)=>{
+ const pages=diagrams(checked),overview=pages.find(page=>page.path===join(root,'.aug-spec/diagrams/index.md')).text;
+ assert.match(overview,/connected arrows need not belong to the same execution path/);
+ assert.match(overview,/receive/);assert.match(overview,/unrelated/);assert.match(overview,/store/);
+ const entry=pages.find(page=>page.path===join(root,'intake/entry.aug.diagrams.md')).text;
+ assert.match(entry,/: receive/);assert.doesNotMatch(entry,/: store/);
+ const receive=pages.find(page=>page.path===join(root,'services/operations.aug.diagrams.md')).text.split('### receive\n')[1].split('### unrelated\n')[0];
+ assert.doesNotMatch(receive,/: store/);
+}));
+
+test('project startup and folder public surfaces are available at their reading levels',()=>project({
+ ...files,
+ 'app/private.aug':'_hidden() returns int { return 0 }\n',
+},(root,checked)=>{
+ const pages=diagrams(checked),overview=pages.find(page=>page.path===join(root,'.aug-spec/diagrams/index.md')).text;
+ assert.match(overview,/Where execution begins/);assert.match(overview,/It prints .*readValue/);
+ const folder=pages.find(page=>page.path===join(root,'.aug-spec/diagrams/folders/app/index.md')).text;
+ assert.match(folder,/What this folder exposes/);assert.match(folder,/Export the declaration .*readValue/);
+ const surface=folder.split('## What this folder exposes')[1].split('## Files in this folder')[0];
+ assert.doesNotMatch(surface,/_hidden/);
+}));
+
+test('detailed messages and guards retain text beyond the overview label budget',()=>project({
+ 'main.aug':'import check from rules\ncheck(value=1, label="'+('a meaningful input '.repeat(10))+'FINAL_INPUT")\n',
+ 'rules.aug':'check(int value, string label) returns string { if '+Array.from({length:12},(_,index)=>'value != '+index).join(' and ')+' { return label } return "" }\n',
+},async(root,checked)=>{
+ const pages=diagrams(checked);await validMermaid(pages);
+ const startup=pages.find(page=>page.path===join(root,'main.aug.diagrams.md')).text;
+ assert.match(startup,/FINAL_INPUT/);assert.match(startup,/<br\/>/);
+ const implementation=pages.find(page=>page.path===join(root,'rules.aug.diagrams.md')).text;
+ assert.match(implementation,/11/);assert.doesNotMatch(implementation.split(String.fromCharCode(96).repeat(3)+'mermaid')[1],/…/);
+}));
+
+test('boundary evidence distinguishes HTTP declarations and same-file tests from startup',()=>project({
+ 'main.aug':'import readValue from api\nprint(value=readValue(value=1))\n',
+ 'api.aug':'import twice from rules\nendpoint GET "/read" as readValue(int value from query) returns int { return twice(value) }\ntest readValue { when cases { it "doubles" { assert(twice(value=2) == 4) } } }\n',
+ 'rules.aug':'twice(int value) returns int { return value * 2 }\n',
+},(root,checked)=>{
+ const discovery=discoverTests(checked.project);assert.deepEqual(discovery.diagnostics,[]);
+ const testAnalysis=checkUnitTests(checked.project,discovery.tests);assert.deepEqual(testAnalysis.flatMap(test=>test.checked.diagnostics).filter(issue=>issue.severity!=='warning'),[]);
+ mergeTestAnalysis(checked,testAnalysis);
+ const pages=diagrams(checked),overview=pages.find(page=>page.path===join(root,'.aug-spec/diagrams/index.md')).text;
+ assert.match(overview,/HTTP requests.*Declaration.*api\.aug\.md#symbol-readValue/);
+ assert.match(overview,/test readValue.*api\.aug\.md#symbol-test%20readValue/);
+ assert.doesNotMatch(overview,/api\.aug\.md#startup/);
+}));
+
+test('operation synopsis keeps types, optionality and HTTP input origins with many inputs',()=>project({
+ 'main.aug':'import submit and Submission from api\nprint(value=submit(form=Submission(message="hello"), browser=null, origin=null, limit=1))\n',
+ 'api.aug':'record Submission(string message)\nendpoint POST "/submit" as submit(Submission form from form, optional string browser from cookie "browser", optional string origin from header "origin", int limit from query) returns string { return form.message }\n',
+},(root,checked)=>{
+ const page=diagrams(checked).find(page=>page.path===join(root,'api.aug.diagrams.md')).text.split('### submit\n')[1];
+ const synopsis=page.split(String.fromCharCode(96).repeat(3)+'mermaid')[0];
+ assert.match(synopsis,/Submission/);assert.match(synopsis,/optional string/);
+ assert.match(synopsis,/HTTP cookie.*browser/);assert.match(synopsis,/HTTP header.*origin/);assert.match(synopsis,/HTTP query/);
 }));

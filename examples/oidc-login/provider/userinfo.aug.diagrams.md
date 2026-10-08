@@ -27,6 +27,16 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](userinfo.aug#L8)
 
+`userinfo` handles `GET /provider/userinfo`.
+
+The opaque access token is valid only at this provider. Missing, expired and malformed credentials receive the same response.
+
+It takes `authorization` as `optional string` from the HTTP header. It gets `clock` ([`Clock`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock)) and `access` ([`ExpiringStore<AccessGrant>`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore)) from dependency injection. Omitted optional inputs are null.
+
+It can call [`Clock.now`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock.now) and [`ExpiringStore<AccessGrant>.get`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.get).
+
+It can also raise `HttpError` and `TimeError`.
+
 #### Sequence 1 of 2
 
 ```mermaid
@@ -43,16 +53,16 @@ sequenceDiagram
     p0-->>p0: parts: List‹string›
     p0->>p0: parts.length()
     p0-->>p0: length result: int
-    alt parts.length() == 2
+    alt the number of elements in parts equals 2
     opt Try body； stops on a checked failure
     p0->>p0: parts.get(index=0)
     p0-->>p0: get result: string
-    alt parts.get(index=0) == ”Bearer”
+    alt the item at index 0 in parts equals ”Bearer”
     p0->>p0: parts.get(index=1)
     p0-->>p0: token: string
     p0->>p0: token.isToken(min=43, max=43)
     p0-->>p0: isToken result: bool
-    alt token.isToken(min=43, max=43)
+    alt token is a URL-safe ASCII token with 43 to 43 characters
     p0->>p1: now() · interface dispatch
     p1-->>p0: now result: int
     p0->>p2: get(key=token, now=now result) · interface dispatch
@@ -81,15 +91,15 @@ sequenceDiagram
     participant p0 as userinfo
     participant p1 as common/headers
     alt Continuing Match when some header:
-    alt parts.length() == 2
+    alt the number of elements in parts equals 2
     opt Try body； stops on a checked failure
-    alt parts.get(index=0) == ”Bearer”
-    alt token.isToken(min=43, max=43)
+    alt the item at index 0 in parts equals ”Bearer”
+    alt token is a URL-safe ASCII token with 43 to 43 characters
     alt Continuing Match when some grant:
     Note over p0: Sequence continued from the previous view
     p0->>p0: HttpResponse(body=Json result, headers=securityHeaders<br/>result)
     p0-->>p0: HttpResponse result: HttpResponse‹Json›
-    Note over p0: Return<br/>HttpResponse(body=Json(value=UserInfo(sub=grant.subject,<br/>name=grant.name)), headers=securityHeaders())； requir…
+    Note over p0: Return<br/>HttpResponse(body=Json(value=UserInfo(sub=grant.subject,<br/>name=grant.name)), headers=securityHeaders())； required<br/>cleanup runs before exit
     end
     end
     end
@@ -107,7 +117,7 @@ sequenceDiagram
     p0-->>p0: Json result 2: Json
     p0->>p0: HttpResponse(body=Json result 2, status=401,<br/>headers=headers)
     p0-->>p0: HttpResponse result 2: HttpResponse‹Json›
-    Note over p0: Return HttpResponse(body=Json(value=｛”error”:<br/>”invalid_token”｝), status=401, headers=headers)；<br/>required cleanup runs …
+    Note over p0: Return HttpResponse(body=Json(value=｛”error”:<br/>”invalid_token”｝), status=401, headers=headers)；<br/>required cleanup runs before exit
     Note over p0: May leave with checked errors: HttpError, TimeError
     Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```

@@ -107,6 +107,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](operations.aug#L4)
 
+It takes `value` as `T`.
+
+It returns `bool`.
+
 Interface contract; implementation selected at runtime. [Explanation](operations.aug.md).
 
 <a id="sequence-Transformation.apply"></a>
@@ -114,6 +118,10 @@ Interface contract; implementation selected at runtime. [Explanation](operations
 ### Transformation.apply
 
 [Source](operations.aug#L8)
+
+It takes `value` as `T`.
+
+It returns `U`.
 
 Interface contract; implementation selected at runtime. [Explanation](operations.aug.md).
 
@@ -123,6 +131,10 @@ Interface contract; implementation selected at runtime. [Explanation](operations
 
 [Source](operations.aug#L12)
 
+It takes `total` as `U` and `value` as `T`.
+
+It returns `U`.
+
 Interface contract; implementation selected at runtime. [Explanation](operations.aug.md).
 
 <a id="sequence-Comparator.compare"></a>
@@ -130,6 +142,10 @@ Interface contract; implementation selected at runtime. [Explanation](operations
 ### Comparator.compare
 
 [Source](operations.aug#L16)
+
+It takes `left` and `right` as `T`.
+
+It returns `int`.
 
 Interface contract; implementation selected at runtime. [Explanation](operations.aug.md).
 
@@ -139,6 +155,11 @@ Interface contract; implementation selected at runtime. [Explanation](operations
 
 [Source](operations.aug#L21)
 
+Return a new list of matching values in snapshot order; an empty input returns an empty list.
+Read references without copying their contents or granting mutable access.
+
+It takes `values` as `List<T>` and `predicate` as [`Predicate<T>`](operations.aug.md#symbol-Predicate).
+
 ```mermaid
 sequenceDiagram
     participant p0 as filter
@@ -147,7 +168,7 @@ sequenceDiagram
     loop For each item in values
     p0->>p1: accepts(value=value) · interface dispatch
     p1-->>p0: accepts result: bool
-    alt predicate.accepts(value)
+    alt predicate.accepts with value returns true
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
     p0->>p0: selected.append(value=value)
@@ -163,6 +184,11 @@ sequenceDiagram
 ### transform
 
 [Source](operations.aug#L32)
+
+Transform every snapshot value once, preserving order in a new list.
+An empty input returns an empty list. Transformations cannot mutate inputs or perform I/O.
+
+It takes `values` as `List<T>` and `transformation` as [`Transformation<T,U>`](operations.aug.md#symbol-Transformation).
 
 ```mermaid
 sequenceDiagram
@@ -187,6 +213,11 @@ sequenceDiagram
 
 [Source](operations.aug#L43)
 
+Combine snapshot values from left to right, starting with initial.
+An empty input returns initial. This operation does not choose a numeric overflow policy.
+
+It takes `values` as `List<T>`, `aggregator` as [`Aggregator<T,U>`](operations.aug.md#symbol-Aggregator), and `initial` as `U`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as aggregate
@@ -205,6 +236,10 @@ sequenceDiagram
 
 [Source](operations.aug#L50)
 
+Return a new list without matching values, preserving snapshot order; do not mutate values.
+
+It takes `values` as `List<T>` and `predicate` as [`Predicate<T>`](operations.aug.md#symbol-Predicate).
+
 ```mermaid
 sequenceDiagram
     participant p0 as remove
@@ -213,7 +248,7 @@ sequenceDiagram
     loop For each item in values
     p0->>p1: accepts(value=value) · interface dispatch
     p1-->>p0: accepts result: bool
-    alt not predicate.accepts(value)
+    alt predicate.accepts with value returns false
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
     p0->>p0: remaining.append(value=value)
@@ -230,6 +265,11 @@ sequenceDiagram
 
 [Source](operations.aug#L61)
 
+Read the first matching snapshot value or null, stopping after the first match.
+A matching null value is also null; use an explicit loop when presence must be distinguished.
+
+It takes `values` as `List<T>` and `predicate` as [`Predicate<T>`](operations.aug.md#symbol-Predicate).
+
 ```mermaid
 sequenceDiagram
     participant p0 as find
@@ -237,7 +277,7 @@ sequenceDiagram
     loop For each item in values
     p0->>p1: accepts(value=value) · interface dispatch
     p1-->>p0: accepts result: bool
-    alt predicate.accepts(value)
+    alt predicate.accepts with value returns true
     Note over p0: Return value； required cleanup runs before exit
     end
     end
@@ -249,6 +289,14 @@ sequenceDiagram
 ### sort
 
 [Source](operations.aug#L71)
+
+Return a stably sorted copy. Equal values keep their input order; values remains unchanged.
+Bottom-up merging uses O(n log n) comparisons and O(n) additional elements per merge pass; retained allocation depends on collection by the runtime.
+Checked indexed reads retain IndexError in the contract; internal indices stay within the snapshot.
+
+It takes `values` as `List<T>` and `comparator` as [`Comparator<T>`](operations.aug.md#symbol-Comparator).
+
+Failures can raise `IndexError`.
 
 #### Sequence 1 of 2
 
@@ -272,11 +320,11 @@ sequenceDiagram
     Note over p0: Set start to 0
     loop While start ‹ length
     Note over p0: Set middle to length
-    alt width ‹ length - start
+    alt width is less than (length minus start)
     Note over p0: Set middle to start + width
     end
     Note over p0: Set end to length
-    alt width ‹ length - middle
+    alt width is less than (length minus middle)
     Note over p0: Set end to middle + width
     end
     Note over p0: Set left to start
@@ -288,7 +336,7 @@ sequenceDiagram
     p0-->>p0: later: T
     p0->>p1: compare(left=earlier, right=later) · interface dispatch
     p1-->>p0: compare result: int
-    alt comparator.compare(left=earlier, right=later) ‹= 0
+    alt comparator.compare with left from earlier and right from<br/>later is at most 0
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
     p0->>p0: merged.append(value=earlier)
@@ -309,7 +357,7 @@ sequenceDiagram
     loop While width ‹ length
     loop While start ‹ length
     loop While left ‹ middle and right ‹ end
-    alt comparator.compare(left=earlier, right=later) ‹= 0
+    alt comparator.compare with left from earlier and right from<br/>later is at most 0
     Note over p0: Sequence continued from the previous view
     Note over p0: Set left to left + 1
     else otherwise
@@ -344,7 +392,7 @@ sequenceDiagram
     Note over p0: Set start to end
     end
     Note over p0: Set ordered to merged
-    alt width ›= length - width
+    alt width is at least (length minus width)
     Note over p0: Set width to length
     else otherwise
     Note over p0: Set width to width + width
@@ -360,6 +408,8 @@ sequenceDiagram
 
 [Source](operations.aug#L120)
 
+Order integers without subtracting and overflowing at the int64 boundaries. It implements [`Comparator<int>`](operations.aug.md#symbol-Comparator).
+
 [Explanation](operations.aug.md).
 
 <a id="sequence-IntegerOrder.compare"></a>
@@ -368,14 +418,16 @@ sequenceDiagram
 
 [Source](operations.aug#L121)
 
+It takes `left` and `right` as integers.
+
 ```mermaid
 sequenceDiagram
     participant p0 as IntegerOrder.compare
 
-    alt left ‹ right
+    alt left is less than right
     Note over p0: Return -1； required cleanup runs before exit
     end
-    alt left › right
+    alt left is greater than right
     Note over p0: Return 1； required cleanup runs before exit
     end
     Note over p0: Return 0； required cleanup runs before exit
@@ -387,6 +439,8 @@ sequenceDiagram
 
 [Source](operations.aug#L129)
 
+Order unsigned UTF-8 bytes lexicographically without locale collation or normalization. It implements [`Comparator<string>`](operations.aug.md#symbol-Comparator).
+
 [Explanation](operations.aug.md).
 
 <a id="sequence-TextOrder.compare"></a>
@@ -394,6 +448,8 @@ sequenceDiagram
 ### TextOrder.compare
 
 [Source](operations.aug#L130)
+
+It takes `left` and `right` as strings.
 
 ```mermaid
 sequenceDiagram
@@ -409,6 +465,12 @@ sequenceDiagram
 ### sortIntegers
 
 [Source](operations.aug#L134)
+
+Return a stable ascending copy of integer values.
+
+It takes `values` as `List<int>`.
+
+Failures can raise `IndexError`.
 
 ```mermaid
 sequenceDiagram
@@ -427,6 +489,12 @@ sequenceDiagram
 ### sortText
 
 [Source](operations.aug#L138)
+
+Return a stable ordinal copy of text values.
+
+It takes `values` as `List<string>`.
+
+Failures can raise `IndexError`.
 
 ```mermaid
 sequenceDiagram

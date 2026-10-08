@@ -101,7 +101,7 @@ export function buildExamplePages(overrides) {
     const navigation=planExampleNavigation(artifacts,docs,sources);
     const nav=files.map(file=>`- [${code(slash(relative(directory,file.path)))}](${url(relative(dirname(home),sources.get(file.path)))})`).join('\n');
     let overview=frontmatter(example.title,example.path)+`# ${example.title}\n\n${example.description}\n\n`+
-      'Open a file to read the code beside its compiled explanation. Choose **Indentation** or **Braces** to change the code view. The choice carries across files.\n\n';
+      'Start with the [project overview](diagrams/index.md), then open an operation’s sequence or explanation. Source stays beside its spec when you need to inspect an expression. Choose **Indentation** or **Braces** for that code view; the choice carries across files.\n\n';
     const native=example.group==='Native libraries (LLVM preview)';
     if(native)overview+=`This project runs with August \`${compilerVersion()}\` on macOS 14+ with Apple Silicon, or GNU/Linux x64 or ARM64 with glibc 2.36+. The CLI obtains the verified compiler and library artifacts automatically.\n\n`;
     if(example.walkthrough?.length) {
@@ -109,7 +109,7 @@ export function buildExamplePages(overrides) {
       for(const step of example.walkthrough) {
         const file=files.find(file=>slash(relative(directory,file.path))===step.file);
         if(!file)throw new Error(example.path+': walkthrough refers to missing file '+step.file);
-        overview+=`Read [${code(step.file)}](${url(relative(dirname(home),sources.get(file.path)))}). ${step.explanation}\n\n`;
+        overview+=`Read the explanation of [${code(step.file)}](${url(relative(dirname(home),sources.get(file.path)))}#specification). ${step.explanation}\n\n`;
       }
     }
     overview+='[Explore the generated project diagrams](diagrams/index.md) to follow data between folders, then open module interactions and API sequences.\n\n';

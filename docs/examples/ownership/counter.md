@@ -76,7 +76,7 @@ It implements [`ICounter`](counter.md#symbol-ICounter). It takes `value` as an i
 #### `Counter.increment` · [source](counter.md#source-L3) {#symbol-Counter.increment}
 
 ::: spec-paragraph specification-paragraph-1
-With temporary permission to change `self`, it increases `value` by `1`. [source](counter.md#source-L4-L6)
+It may change `self`. With temporary permission to change `self`, it increases `value` by `1`. [source](counter.md#source-L4-L6)
 :::
 
 ::: details Checked interface

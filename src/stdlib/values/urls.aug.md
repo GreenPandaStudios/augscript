@@ -24,7 +24,7 @@ It calls [`_validateHttpUrl`](urls.aug.md#symbol-_validateHttpUrl) with `text`. 
 <a id="symbol-parseHttpUrl"></a>
 ## `parseHttpUrl` · [source](urls.aug#L17)
 
-Parse the same ASCII HTTP(S)/DNS profile as HttpUrl, preserving case, escapes and an empty query. It takes `text` as a string. It returns a [`HttpUrl`](urls.aug.md#symbol-HttpUrl) with `text`. [source](urls.aug#L18)
+Parse the same ASCII HTTP(S)/DNS profile as HttpUrl, preserving case, escapes and an empty query. It takes `text` as a string. Failures can raise `ConversionError` (Invalid or unsupported URL syntax). It returns a [`HttpUrl`](urls.aug.md#symbol-HttpUrl) with `text`. [source](urls.aug#L18)
 
 <details>
 <summary>Checked interface</summary>
@@ -56,7 +56,7 @@ It takes `value` as [`HttpUrl`](urls.aug.md#symbol-HttpUrl).
 <a id="symbol-_validateHttpUrl"></a>
 ## `_validateHttpUrl` · [source](urls.aug#L24)
 
-It is private to its defining scope. It takes `text` as a string.
+It is private to its defining scope. It takes `text` as a string. Failures can raise `ConversionError`.
 
 It checks that `text.byteLength` is at least `8` and `text.byteLength` is at most `8192`. It raises a `ConversionError` at the first failed check. It sets `bytes` to the UTF-8 bytes of `text`. It sets `start` to `7`. [source](urls.aug#L25-L28)
 
@@ -84,7 +84,7 @@ It takes `text` as a string. Failures can raise `ConversionError`.
 <a id="symbol-_validateAuthority"></a>
 ## `_validateAuthority` · [source](urls.aug#L59)
 
-It is private to its defining scope. It takes `authority` as a string.
+It is private to its defining scope. It takes `authority` as a string. Failures can raise `ConversionError`.
 
 It sets `parts` to `authority.split` with `separator` `":"`. It checks that the number of elements in `parts` is at most `2`. It raises a `ConversionError` at the first failed check. It sets `host` to the item at index `0` in `parts`. [source](urls.aug#L60-L91)
 

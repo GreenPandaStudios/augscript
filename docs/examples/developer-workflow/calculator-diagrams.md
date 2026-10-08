@@ -43,6 +43,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](calculator.md#source-L6)
 :::
 
+It takes `left` and `right` as integers. It gets `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection.
+
+It returns `int`. It can call [`Console.write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write).
+
 Interface contract; implementation selected at runtime. [Explanation](calculator.md).
 
 ### Calculator constructor {#sequence-Calculator-20-constructor}
@@ -51,6 +55,10 @@ Interface contract; implementation selected at runtime. [Explanation](calculator
 [Source](calculator.md#source-L9)
 :::
 
+Uses the selected logger to describe each addition. It implements [`Arithmetic`](calculator.md#symbol-Arithmetic).
+
+The `_logger` dependency is injected as [`Logger`](logging/logger.md#symbol-Logger) and stored read-only and privately.
+
 Receive fields: injected \_logger. [Explanation](calculator.md).
 
 ### Calculator.add {#sequence-Calculator.add}
@@ -58,6 +66,12 @@ Receive fields: injected \_logger. [Explanation](calculator.md).
 ::: spec-paragraph specification-paragraph-3
 [Source](calculator.md#source-L16)
 :::
+
+Adds left and right, logging the operation.
+
+It takes `left` and `right` as integers. It gets `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection.
+
+It returns `int` — Sum of the two integers. It can call [`Console.write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write).
 
 ```mermaid
 sequenceDiagram
@@ -73,11 +87,17 @@ sequenceDiagram
 [Source](calculator.md#source-L26)
 :::
 
+Demonstrates a checked failure instead of a successful result.
+
+It takes `fail` as a boolean.
+
+Failures can raise `FileError` (when fail is true).
+
 ```mermaid
 sequenceDiagram
     participant p0 as load
 
-    alt fail
+    alt fail is true
     p0->>p0: FileError()
     p0-->>p0: FileError result: FileError
     Note over p0: Raise checked failure FileError()； required cleanup runs<br/>before exit
@@ -92,6 +112,8 @@ sequenceDiagram
 [Source](calculator.md#source-L33)
 :::
 
+Test adapter: keeps calculator tests independent of console output. It implements [`Logger`](logging/logger.md#symbol-Logger). It is private to this file.
+
 [Explanation](calculator.md).
 
 ### \_SilentLogger.log {#sequence-_SilentLogger.log}
@@ -99,6 +121,10 @@ sequenceDiagram
 ::: spec-paragraph specification-paragraph-6
 [Source](calculator.md#source-L34)
 :::
+
+It takes `message` as a string. It gets `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection.
+
+It can call [`Console.write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write).
 
 [Explanation](calculator.md).
 

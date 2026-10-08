@@ -37,6 +37,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](discovery.md#source-L6)
 :::
 
+Discovery advertises exactly this provider's supported authorization-code profile.
+
+It takes `issuer`, `authorization_endpoint`, `token_endpoint`, `userinfo_endpoint`, and `jwks_uri` as strings, kept read-only and `response_types_supported`, `grant_types_supported`, `subject_types_supported`, `id_token_signing_alg_values_supported`, `token_endpoint_auth_methods_supported`, `scopes_supported`, `claims_supported`, and `code_challenge_methods_supported` as `List<string>`, kept read-only.
+
 Receive fields: issuer, authorization\_endpoint, token\_endpoint, userinfo\_endpoint, jwks\_uri, response\_types\_supported, grant\_types\_supported, subject\_types\_supported, id\_token\_signing\_alg\_values\_supported, token\_endpoint\_auth\_methods\_supported, scopes\_supported, claims\_supported, code\_challenge\_methods\_supported. [Explanation](discovery.md).
 
 ### discovery {#sequence-discovery}
@@ -45,6 +49,8 @@ Receive fields: issuer, authorization\_endpoint, token\_endpoint, userinfo\_endp
 [Source](discovery.md#source-L7)
 :::
 
+`discovery` handles `GET /provider/.well-known/openid-configuration`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as discovery
@@ -52,9 +58,9 @@ sequenceDiagram
     Note over p0: GET /provider/.well-known/openid-configuration
     p0->>p1: settings()
     p1-->>p0: config: Settings
-    p0->>p0: Discovery(issuer=config.issuer,<br/>authorization_endpoint=config.issuer + ”/authorize”,<br/>token_endpoint=config.issuer + ”…
+    p0->>p0: Discovery(issuer=config.issuer,<br/>authorization_endpoint=config.issuer + ”/authorize”,<br/>token_endpoint=config.issuer + ”/token”,<br/>userinfo_endpoint=config.issuer + ”/userinfo”,<br/>jwks_uri=config.issuer + ”/jwks”,<br/>response_types_supported=［”code”］,<br/>grant_types_supported=［”authorization_code”］,<br/>subject_types_supported=［”public”］,<br/>id_token_signing_alg_values_supported=［”RS256”］,<br/>token_endpoint_auth_methods_supported=［”none”］,<br/>scopes_supported=［”openid”, ”profile”］,<br/>claims_supported=［”iss”, ”sub”, ”aud”, ”exp”, ”iat”,<br/>”nonce”, ”name”］,<br/>code_challenge_methods_supported=［”S256”］) · construct<br/>value
     p0-->>p0: Discovery result: Discovery
-    Note over p0: Return Discovery(issuer=config.issuer,<br/>authorization_endpoint=config.issuer + ”/authorize”,<br/>token_endpoint=config.iss…
+    Note over p0: Return Discovery(issuer=config.issuer,<br/>authorization_endpoint=config.issuer + ”/authorize”,<br/>token_endpoint=config.issuer + ”/token”,<br/>userinfo_endpoint=config.issuer + ”/userinfo”,<br/>jwks_uri=config.issuer + ”/jwks”,<br/>response_types_supported=［”code”］,<br/>grant_types_supported=［”authorization_code”］,<br/>subject_types_supported=［”public”］,<br/>id_token_signing_alg_values_supported=［”RS256”］,<br/>token_endpoint_auth_methods_supported=［”none”］,<br/>scopes_supported=［”openid”, ”profile”］,<br/>claims_supported=［”iss”, ”sub”, ”aud”, ”exp”, ”iat”,<br/>”nonce”, ”name”］,<br/>code_challenge_methods_supported=［”S256”］)； required<br/>cleanup runs before exit
     Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
 
@@ -63,6 +69,16 @@ sequenceDiagram
 ::: spec-paragraph specification-paragraph-3
 [Source](discovery.md#source-L12)
 :::
+
+`jwks` handles `GET /provider/jwks`.
+
+Only the provider's public signing key is published. Session keys never enter this JWKS.
+
+It gets `crypto` ([`Crypto`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto)) and `keys` ([`SigningKeys`](../common/keys.md#symbol-SigningKeys)) from dependency injection.
+
+It can call [`SigningKeys.provider`](../common/keys.md#symbol-SigningKeys.provider), [`Crypto.publicRsa`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.publicRsa), and [`Crypto.exportRsa`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.exportRsa).
+
+It can also raise `CryptoError` and `KeyError`.
 
 ```mermaid
 sequenceDiagram

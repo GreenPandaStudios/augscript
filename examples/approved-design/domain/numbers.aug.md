@@ -19,7 +19,7 @@ A pure validation layer, shared by any compatible callable. The type parameters 
 <a id="symbol-Positive.around"></a>
 ### `Positive.around` · [source](numbers.aug#L7)
 
-It takes `amount` as an integer. If `amount` is negative, it raises a [`RangeError`](numbers.aug.md#symbol-RangeError) with `value` from `amount`. It returns `next`. [source](numbers.aug#L8-L10)
+It takes `amount` as an integer. Failures can raise [`RangeError`](numbers.aug.md#symbol-RangeError). If `amount` is negative, it raises a [`RangeError`](numbers.aug.md#symbol-RangeError) with `value` from `amount`. It returns `next`. [source](numbers.aug#L8-L10)
 
 <details>
 <summary>Checked interface</summary>
@@ -35,9 +35,9 @@ It takes `amount` as an integer. Failures can raise [`RangeError`](numbers.aug.m
 <a id="symbol-double"></a>
 ## `double` · [source](numbers.aug#L18)
 
-Double a nonnegative amount. It takes `amount` as an integer. Layers run in the declared order. Call [`Positive.around`](numbers.aug.md#symbol-Positive.around).
+Double a nonnegative amount. It takes `amount` as an integer. It returns `int` — Twice the amount, with defined integer wrapping. Failures can raise [`RangeError`](numbers.aug.md#symbol-RangeError) (A validation layer rejected a negative input).
 
-It returns `amount` times `2`. [source](numbers.aug#L19)
+Layers run in the declared order. Call [`Positive.around`](numbers.aug.md#symbol-Positive.around). It returns `amount` times `2`. [source](numbers.aug#L19)
 
 <details>
 <summary>Checked interface</summary>

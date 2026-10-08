@@ -6,6 +6,7 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="startup"></a>
 ## Startup
 
 It calls [`announce`](native.aug.md#symbol-announce). [source](main.aug#L3)

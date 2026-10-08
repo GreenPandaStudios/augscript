@@ -15,6 +15,12 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](compute.aug#L5)
 
+Add two lists on a GPU and return copied values. GPU resources stay local.
+
+It takes `left` and `right` as `List<float>`.
+
+Failures can raise [`GpuError`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.aug.md#symbol-GpuError).
+
 ```mermaid
 sequenceDiagram
     participant p0 as calculate

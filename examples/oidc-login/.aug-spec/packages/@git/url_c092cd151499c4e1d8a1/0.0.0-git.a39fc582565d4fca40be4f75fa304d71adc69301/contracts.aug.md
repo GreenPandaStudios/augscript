@@ -24,7 +24,9 @@ Operating-system wall clock. It implements [`Clock`](contracts.aug.md#symbol-Clo
 <a id="symbol-SystemClock.now"></a>
 ### `SystemClock.now` · [source](contracts.aug#L9)
 
-Read whole Unix seconds in UTC. Within an unsafe block, it returns [`_aug_time_now`](contracts.aug.md#symbol-_aug_time_now). Native operations must satisfy their declared C contracts. [source](contracts.aug#L10-L11)
+Read whole Unix seconds in UTC. It can call [`Clock.now`](contracts.aug.md#symbol-Clock.now). Failures can raise `TimeError`.
+
+Within an unsafe block, it returns [`_aug_time_now`](contracts.aug.md#symbol-_aug_time_now). Native operations must satisfy their declared C contracts. [source](contracts.aug#L10-L11)
 
 <details>
 <summary>Checked interface</summary>
@@ -33,7 +35,7 @@ Read whole Unix seconds in UTC. Within an unsafe block, it returns [`_aug_time_n
 now() returns int unless TimeError uses Clock.now
 ```
 
-Failures can raise `TimeError`.
+It can call [`Clock.now`](contracts.aug.md#symbol-Clock.now). Failures can raise `TimeError`.
 
 </details>
 

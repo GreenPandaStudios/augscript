@@ -31,9 +31,9 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as LoginPage
     participant p1 as common/views
-    p0->>p1: Page(title=”Sign in”, children=‹Page title=”Sign in”›<br/>‹p›This August app is both an OpenID Connect provider<br/>and a log…
+    p0->>p1: Page(title=”Sign in”, children=‹Page title=”Sign in”›<br/>‹p›This August app is both an OpenID Connect provider<br/>and a login client.‹/p› ‹p›‹a href=”/login/start”<br/>style=”display:inline-block；padding:12px<br/>20px；border-radius:10px；background:＃4852d7；color:white；text-decoration:none”›Sign<br/>in with OpenID Connect‹/a›‹/p› ‹p›The server uses<br/>authorization codes, S256 PKCE, state and nonce<br/>validation. Your session is a separate signed JWT in an<br/>HttpOnly cookie.‹/p› ‹/Page›)
     p1-->>p0: Page result: Html
-    Note over p0: Return ‹Page title=”Sign in”› ‹p›This August app is both<br/>an OpenID Connect provider and a login client.‹/p› ‹p›‹a<br/>hre…
+    Note over p0: Return ‹Page title=”Sign in”› ‹p›This August app is both<br/>an OpenID Connect provider and a login client.‹/p› ‹p›‹a<br/>href=”/login/start”<br/>style=”display:inline-block；padding:12px<br/>20px；border-radius:10px；background:＃4852d7；color:white；text-decoration:none”›Sign<br/>in with OpenID Connect‹/a›‹/p› ‹p›The server uses<br/>authorization codes, S256 PKCE, state and nonce<br/>validation. Your session is a separate signed JWT in an<br/>HttpOnly cookie.‹/p› ‹/Page›； required cleanup runs<br/>before exit
 ```
 
 ### Welcome {#sequence-Welcome}
@@ -42,14 +42,18 @@ sequenceDiagram
 [Source](views.md#source-L13)
 :::
 
+It takes `session` as [`SessionClaims`](contracts.md#symbol-SessionClaims).
+
+Failures can raise `HttpError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as Welcome
     participant p1 as common/views
     Note over p0: Create browser action for POST /logout； called on<br/>submission
-    p0->>p1: Page(title=”Welcome, ” + session.name, children=‹Page<br/>title=｛”Welcome, ” + session.name｝› ‹p›You are signed in<br/>as ‹st…
+    p0->>p1: Page(title=”Welcome, ” + session.name, children=‹Page<br/>title=｛”Welcome, ” + session.name｝› ‹p›You are signed in<br/>as ‹strong›｛session.name｝‹/strong›.‹/p› ‹p›Subject:<br/>‹code›｛session.sub｝‹/code›‹/p› ‹p›‹a href=”/me”›View the<br/>protected JSON endpoint‹/a›‹/p› ‹form method=”post”<br/>action=”/logout” onSubmit=｛handle logout(input from<br/>form)｝› ‹input type=”hidden” name=”csrf”<br/>value=｛session.csrf｝ /› ‹button type=”submit”<br/>style=”padding:10px<br/>18px；border-radius:10px；border:0；background:＃17233a；color:white；font:inherit”›Sign<br/>out‹/button› ‹/form› ‹/Page›)
     p1-->>p0: Page result: Html
-    Note over p0: Return ‹Page title=｛”Welcome, ” + session.name｝› ‹p›You<br/>are signed in as ‹strong›｛session.name｝‹/strong›.‹/p›<br/>‹p›Subj…
+    Note over p0: Return ‹Page title=｛”Welcome, ” + session.name｝› ‹p›You<br/>are signed in as ‹strong›｛session.name｝‹/strong›.‹/p›<br/>‹p›Subject: ‹code›｛session.sub｝‹/code›‹/p› ‹p›‹a<br/>href=”/me”›View the protected JSON endpoint‹/a›‹/p›<br/>‹form method=”post” action=”/logout” onSubmit=｛handle<br/>logout(input from form)｝› ‹input type=”hidden”<br/>name=”csrf” value=｛session.csrf｝ /› ‹button<br/>type=”submit” style=”padding:10px<br/>18px；border-radius:10px；border:0；background:＃17233a；color:white；font:inherit”›Sign<br/>out‹/button› ‹/form› ‹/Page›； required cleanup runs<br/>before exit
     Note over p0: May leave with checked errors: HttpError
 ```
 

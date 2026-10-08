@@ -49,6 +49,12 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](token.aug#L8)
 
+It is private to its defining scope.
+
+It takes `code` and `description` as strings.
+
+Failures can raise `HttpError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as _oauthError
@@ -61,7 +67,7 @@ sequenceDiagram
     p1-->>p0: securityHeaders result: Headers
     p0->>p0: HttpResponse(body=Json result, status=400,<br/>headers=securityHeaders result)
     p0-->>p0: HttpResponse result: HttpResponse‹Json›
-    Note over p0: Return<br/>HttpResponse(body=Json(value=OAuthError(error=code,<br/>error_description=description)), status=400,<br/>headers=secur…
+    Note over p0: Return<br/>HttpResponse(body=Json(value=OAuthError(error=code,<br/>error_description=description)), status=400,<br/>headers=securityHeaders())； required cleanup runs before<br/>exit
     Note over p0: May leave with checked errors: HttpError
 ```
 
@@ -70,6 +76,18 @@ sequenceDiagram
 ### token
 
 [Source](token.aug#L12)
+
+`token` handles `POST /provider/token`.
+
+A real OAuth token endpoint. Exact client/redirect binding, S256 PKCE, expiry and one-use codes are enforced. Errors use OAuth JSON.
+
+It takes `http` as `HttpRequest` from the HTTP request. It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)), `clock` ([`Clock`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys)), `codes` ([`ExpiringStore<AuthorizationCode>`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore)), and `access` ([`ExpiringStore<AccessGrant>`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore)) from dependency injection.
+
+It can call [`Clock.now`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock.now), [`ExpiringStore<AuthorizationCode>.take`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.take), [`Crypto.sha256`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.sha256), [`Crypto.equal`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal), [`SigningKeys.provider`](../common/keys.aug.md#symbol-SigningKeys.provider), [`Crypto.random`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.random), [`ExpiringStore<AccessGrant>.put`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.put), and [`Crypto.signRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.signRsa).
+
+The handler responds with HTTP 503 for `CryptoError`, HTTP 503 for `TimeError`, and HTTP 503 for [`StoreFull`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-StoreFull).
+
+It can also raise `HttpError`, `JwtError`, and `KeyError`.
 
 #### Sequence 1 of 3
 
@@ -85,26 +103,26 @@ sequenceDiagram
     opt Try body； stops on a checked failure
     p0->>p0: http.form‹TokenForm›()
     p0-->>p0: form: TokenForm
-    alt form.grant_type != ”authorization_code”
+    alt form.grant_type does not equal ”authorization_code”
     p0->>p0: _oauthError(code=”unsupported_grant_type”,<br/>description=”Only authorization_code is supported.”)
     p0-->>p0: _oauthError result: HttpResponse‹Json›
-    Note over p0: Return _oauthError(code=”unsupported_grant_type”,<br/>description=”Only authorization_code is supported.”)；<br/>required clea…
+    Note over p0: Return _oauthError(code=”unsupported_grant_type”,<br/>description=”Only authorization_code is supported.”)；<br/>required cleanup runs before exit
     end
-    alt form.client_id != config.clientId
+    alt form.client_id does not equal config.clientId
     p0->>p0: _oauthError(code=”invalid_client”, description=”The<br/>registered client is required.”)
     p0-->>p0: _oauthError result 2: HttpResponse‹Json›
-    Note over p0: Return _oauthError(code=”invalid_client”,<br/>description=”The registered client is required.”)；<br/>required cleanup runs be…
+    Note over p0: Return _oauthError(code=”invalid_client”,<br/>description=”The registered client is required.”)；<br/>required cleanup runs before exit
     end
     p0->>p0: form.code.isToken(min=43, max=43)
     p0-->>p0: isToken result: bool
-    opt Left is false
+    opt (not isToken result) is false
     p0->>p0: form.code_verifier.isToken(min=43, max=128)
     p0-->>p0: isToken result 2: bool
     end
-    alt not form.code.isToken(min=43, max=43)) or (not form.code_verifier.isToken(min=43, max=128)
+    alt form.code is not a URL-safe ASCII token with 43 to 43<br/>characters or form.code_verifier is not a URL-safe ASCII<br/>token with 43 to 128 characters
     p0->>p0: _oauthError(code=”invalid_grant”, description=”The<br/>authorization grant is invalid.”)
     p0-->>p0: _oauthError result 3: HttpResponse‹Json›
-    Note over p0: Return _oauthError(code=”invalid_grant”,<br/>description=”The authorization grant is invalid.”)；<br/>required cleanup runs be…
+    Note over p0: Return _oauthError(code=”invalid_grant”,<br/>description=”The authorization grant is invalid.”)；<br/>required cleanup runs before exit
     end
     p0->>p2: now() · interface dispatch
     p2-->>p0: now: int
@@ -127,7 +145,7 @@ sequenceDiagram
     opt Try body； stops on a checked failure
     alt Match when null:
     Note over p0: Sequence continued from the previous view
-    Note over p0: Return _oauthError(code=”invalid_grant”,<br/>description=”The authorization grant is invalid.”)；<br/>required cleanup runs be…
+    Note over p0: Return _oauthError(code=”invalid_grant”,<br/>description=”The authorization grant is invalid.”)；<br/>required cleanup runs before exit
     else Match when some grant:
     p0->>p0: form.code_verifier.bytes()
     p0-->>p0: bytes result: Bytes
@@ -135,7 +153,7 @@ sequenceDiagram
     p1-->>p0: sha256 result: Bytes
     p0->>p0: sha256 result.base64url()
     p0-->>p0: challenge: string
-    opt Left is false
+    opt (grant.clientId != form.client_id or grant.redirectUri<br/>!= form.redirect_uri) is false
     p0->>p0: challenge.bytes()
     p0-->>p0: bytes result 2: Bytes
     p0->>p0: grant.challenge.bytes()
@@ -143,12 +161,12 @@ sequenceDiagram
     p0->>p1: equal(left=bytes result 2, right=bytes result 3) ·<br/>interface dispatch
     p1-->>p0: equal result: bool
     end
-    alt grant.clientId != form.client_id or grant.redirectUri != form.redirect_uri or (not crypto.equal(left=challenge.bytes(…
+    alt grant.clientId does not equal form.client_id or<br/>grant.redirectUri does not equal form.redirect_uri or<br/>crypto.equal with left from the UTF-8 bytes of challenge<br/>and right from the UTF-8 bytes of grant.challenge<br/>returns false
     p0->>p0: _oauthError(code=”invalid_grant”, description=”The<br/>authorization grant is invalid.”)
     p0-->>p0: _oauthError result 5: HttpResponse‹Json›
-    Note over p0: Return _oauthError(code=”invalid_grant”,<br/>description=”The authorization grant is invalid.”)；<br/>required cleanup runs be…
+    Note over p0: Return _oauthError(code=”invalid_grant”,<br/>description=”The authorization grant is invalid.”)；<br/>required cleanup runs before exit
     end
-    p0->>p0: IdClaims(iss=config.issuer, sub=grant.subject,<br/>aud=grant.clientId, exp=now + 300, iat=now,<br/>nonce=grant.nonce, name=gr…
+    p0->>p0: IdClaims(iss=config.issuer, sub=grant.subject,<br/>aud=grant.clientId, exp=now + 300, iat=now,<br/>nonce=grant.nonce, name=grant.name) · construct value
     p0-->>p0: claims: IdClaims
     p0->>p2: provider() · interface dispatch
     p2-->>p0: provider result: RsaPrivateKey
@@ -179,7 +197,7 @@ sequenceDiagram
     p0->>p0: AccessGrant(subject=grant.subject, name=grant.name,<br/>expires=now + 300) · construct value
     p0-->>p0: value: AccessGrant
     p0->>p3: put(key=accessToken, value=value, expires=value.expires,<br/>now=now) · interface dispatch
-    p0->>p0: TokenResponse(token_type=”Bearer”,<br/>access_token=accessToken, id_token=idToken,<br/>expires_in=300, scope=”openid profile”…
+    p0->>p0: TokenResponse(token_type=”Bearer”,<br/>access_token=accessToken, id_token=idToken,<br/>expires_in=300, scope=”openid profile”) · construct<br/>value
     p0-->>p0: body: TokenResponse
     p0->>p0: Json(value=body)
     p0-->>p0: Json result 2: Json
@@ -193,7 +211,7 @@ sequenceDiagram
     opt Catch HttpError
     p0->>p0: _oauthError(code=”invalid_request”, description=”Submit<br/>the required URL-encoded token fields once each.”)
     p0-->>p0: _oauthError result 6: HttpResponse‹Json›
-    Note over p0: Return _oauthError(code=”invalid_request”,<br/>description=”Submit the required URL-encoded token<br/>fields once each.”)； re…
+    Note over p0: Return _oauthError(code=”invalid_request”,<br/>description=”Submit the required URL-encoded token<br/>fields once each.”)； required cleanup runs before exit
     end
     Note over p0: May leave with checked errors: CryptoError, HttpError,<br/>JwtError, KeyError, StoreFull, TimeError
     Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500

@@ -35,6 +35,8 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](console.md#source-L4)
 :::
 
+It implements [`Logger`](logger.md#symbol-Logger).
+
 [Explanation](console.md).
 
 ### ConsoleLogger.log {#sequence-ConsoleLogger.log}
@@ -42,6 +44,12 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ::: spec-paragraph specification-paragraph-2
 [Source](console.md#source-L5)
 :::
+
+Writes one message.
+
+It takes `message` as a string. It gets `console` ([`Console`](../dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection.
+
+It can call [`Console.write`](../dependencies/august/1.0.0/io/contracts.md#symbol-Console.write).
 
 ```mermaid
 sequenceDiagram

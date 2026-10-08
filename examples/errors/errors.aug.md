@@ -9,7 +9,9 @@
 <a id="symbol-load"></a>
 ## `load` · [source](errors.aug#L2)
 
-It takes `fail` as a boolean. It checks that `fail` is false. It raises a `FileError` at the first failed check. It returns `"loaded"`. [source](errors.aug#L3-L6)
+It takes `fail` as a boolean. Failures can raise `FileError`.
+
+It checks that `fail` is false. It raises a `FileError` at the first failed check. It returns `"loaded"`. [source](errors.aug#L3-L6)
 
 <details>
 <summary>Checked interface</summary>

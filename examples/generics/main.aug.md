@@ -6,10 +6,12 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="providers"></a>
 ## Providers
 
 `Formatter` is provided by [`TextFormatter`](types.aug.md#symbol-TextFormatter). The same instance is shared.
 
+<a id="startup"></a>
 ## Startup
 
 It sets `formatter` to the instance provided for `Formatter`. It prints [`formatter.title`](types.aug.md#symbol-Formatter.title). It prints [`formatter.format`](types.aug.md#symbol-Formatter.format) for `int` with `value` `42`. It sets `box` to a [`Box`](types.aug.md#symbol-Box) for `string` with `value` `"inside a generic box"`. [source](main.aug#L6-L9)

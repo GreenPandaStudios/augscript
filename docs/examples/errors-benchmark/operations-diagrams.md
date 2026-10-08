@@ -25,11 +25,15 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](operations.md#source-L2)
 :::
 
+It takes `value` as an integer.
+
+Failures can raise `FileError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as validate
 
-    alt value - (value / 16) * 16 == 0
+    alt (value minus ((value divided by 16) times 16)) equals 0
     p0->>p0: FileError()
     p0-->>p0: FileError result: FileError
     Note over p0: Raise checked failure FileError()； required cleanup runs<br/>before exit

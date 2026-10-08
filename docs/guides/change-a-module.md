@@ -1,6 +1,6 @@
 # Change an unfamiliar module
 
-Add a test for a negative operand to the calculator project. Before editing, read the operation, its dependency, and its compiled spec. Afterward, run the test and review both diffs.
+Add a test for a negative operand to the calculator project. Before editing, read the operation's compiled spec, sequence and dependency contracts. Open the affected source when you are ready to make the change. Afterward, run the test and review both diffs.
 
 ## Establish a working baseline
 
@@ -73,9 +73,9 @@ This operation rejects changed checked promises and changes to neighboring decla
 
 A useful instruction is:
 
-> Read `calculator.aug.md` first and follow its linked contracts. Inspect the August source and tests before editing. Add a case that verifies addition with a negative operand. Run `aug check` and `aug test`, regenerate with `aug spec`, and review the source and spec diffs. Report the checks that passed and any limits.
+> Read the project overview and `calculator.aug.md` first, then follow the operation's sequence and linked contracts. Inspect the source locations and tests relevant to the edit. Add a case that verifies addition with a negative operand. Run `aug check` and `aug test`, regenerate with `aug spec`, and review the source and spec diffs. Report the checks that passed and any limits.
 
-Ask the agent to read the spec, inspect the source, and run the checks. Review its patch before accepting it. The unreleased [requirements review](../testing.md#review-requirements-with-test-results) can retain author requirements, exact selected source, its explanation and native test results together. Keep expected behavior in your requirements and tests; the generated explanation describes the proposed implementation.
+Ask the agent to begin with the generated views, open the source needed for the edit, and run the checks. Review its patch before accepting it. The unreleased [requirements review](../testing.md#review-requirements-with-test-results) can retain author requirements, exact selected source, its explanation and native test results together. Keep expected behavior in your requirements and tests; the generated explanation describes the proposed implementation.
 
 For a larger boundary example, explore [modules and composition](../examples/approved-design/index.md). For a different task, return to the [guides](index.md).
 

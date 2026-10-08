@@ -15,6 +15,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](contracts.aug#L3)
 
+A provider request is bound to a browser cookie, a form CSRF token, and a registered client.
+
+It takes `clientId`, `redirectUri`, `state`, `nonce`, `challenge`, `browser`, and `csrf` as strings, kept read-only and `expires` as an integer, kept read-only.
+
 Receive fields: clientId, redirectUri, state, nonce, challenge, browser, csrf, expires. [Explanation](contracts.aug.md).
 
 <a id="sequence-AuthorizationCode-20-constructor"></a>
@@ -22,6 +26,10 @@ Receive fields: clientId, redirectUri, state, nonce, challenge, browser, csrf, e
 ### AuthorizationCode constructor
 
 [Source](contracts.aug#L5)
+
+Codes are short-lived, single-use and bound to a redirect URI and S256 challenge.
+
+It takes `clientId`, `redirectUri`, `challenge`, `nonce`, `subject`, and `name` as strings, kept read-only and `expires` as an integer, kept read-only.
 
 Receive fields: clientId, redirectUri, challenge, nonce, subject, name, expires. [Explanation](contracts.aug.md).
 
@@ -31,6 +39,8 @@ Receive fields: clientId, redirectUri, challenge, nonce, subject, name, expires.
 
 [Source](contracts.aug#L6)
 
+It takes `iss`, `sub`, and `aud` as strings, kept read-only, `exp` and `iat` as integers, kept read-only, and `nonce` and `name` as strings, kept read-only.
+
 Receive fields: iss, sub, aud, exp, iat, nonce, name. [Explanation](contracts.aug.md).
 
 <a id="sequence-AccessGrant-20-constructor"></a>
@@ -38,6 +48,8 @@ Receive fields: iss, sub, aud, exp, iat, nonce, name. [Explanation](contracts.au
 ### AccessGrant constructor
 
 [Source](contracts.aug#L7)
+
+It takes `subject` and `name` as strings, kept read-only and `expires` as an integer, kept read-only.
 
 Receive fields: subject, name, expires. [Explanation](contracts.aug.md).
 
@@ -47,6 +59,8 @@ Receive fields: subject, name, expires. [Explanation](contracts.aug.md).
 
 [Source](contracts.aug#L8)
 
+It takes `token_type`, `access_token`, and `id_token` as strings, kept read-only, `expires_in` as an integer, kept read-only, and `scope` as a string, kept read-only.
+
 Receive fields: token\_type, access\_token, id\_token, expires\_in, scope. [Explanation](contracts.aug.md).
 
 <a id="sequence-OAuthError-20-constructor"></a>
@@ -54,6 +68,8 @@ Receive fields: token\_type, access\_token, id\_token, expires\_in, scope. [Expl
 ### OAuthError constructor
 
 [Source](contracts.aug#L9)
+
+It takes `error` and `error_description` as strings, kept read-only.
 
 Receive fields: error, error\_description. [Explanation](contracts.aug.md).
 
@@ -63,6 +79,8 @@ Receive fields: error, error\_description. [Explanation](contracts.aug.md).
 
 [Source](contracts.aug#L10)
 
+It takes `grant_type`, `code`, `redirect_uri`, `client_id`, and `code_verifier` as strings, kept read-only.
+
 Receive fields: grant\_type, code, redirect\_uri, client\_id, code\_verifier. [Explanation](contracts.aug.md).
 
 <a id="sequence-LoginForm-20-constructor"></a>
@@ -70,6 +88,8 @@ Receive fields: grant\_type, code, redirect\_uri, client\_id, code\_verifier. [E
 ### LoginForm constructor
 
 [Source](contracts.aug#L11)
+
+It takes `request_id`, `csrf`, `username`, and `password` as strings, kept read-only.
 
 Receive fields: request\_id, csrf, username, password. [Explanation](contracts.aug.md).
 
@@ -79,6 +99,8 @@ Receive fields: request\_id, csrf, username, password. [Explanation](contracts.a
 
 [Source](contracts.aug#L12)
 
+It takes `sub` and `name` as strings, kept read-only.
+
 Receive fields: sub, name. [Explanation](contracts.aug.md).
 
 <a id="sequence-LoginError-20-constructor"></a>
@@ -87,6 +109,8 @@ Receive fields: sub, name. [Explanation](contracts.aug.md).
 
 [Source](contracts.aug#L13)
 
+It implements `Error`.
+
 [Explanation](contracts.aug.md).
 
 <a id="sequence-CodeError-20-constructor"></a>
@@ -94,5 +118,7 @@ Receive fields: sub, name. [Explanation](contracts.aug.md).
 ### CodeError constructor
 
 [Source](contracts.aug#L15)
+
+It implements `Error`.
 
 [Explanation](contracts.aug.md).

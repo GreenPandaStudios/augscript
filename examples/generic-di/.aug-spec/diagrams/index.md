@@ -2,7 +2,23 @@
 
 # Project diagrams
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 2 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
+
+## Where execution begins
+
+<a id="providers"></a>
+### Providers
+
+`Console` is provided by [`SystemConsole`](../august/1.0.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Repository<int>` is provided by [`NumberRepository`](../../types.aug.md#symbol-NumberRepository). The same instance is shared.
+
+`app` is provided by [`Program`](../../types.aug.md#symbol-Program). The same instance is shared. It requires bindings for `Repository<int>`.
+
+<a id="startup"></a>
+### Startup
+
+It sets `program` to the instance provided for `app`. It calls [`program.start`](../../types.aug.md#symbol-Program.start) using injected `Console` for `console`. [source](../../main.aug#L9-L10)
 
 ## Data flow
 
@@ -27,15 +43,51 @@ flowchart LR
 
 </details>
 
-<details>
-<summary>Data crossing these boundaries (2 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| Startup | types | [Program.start](../../types.aug.md#symbol-Program.start) | void |
-| types | August libraries | [Console.write](../august/1.0.0/io/contracts.aug.md#symbol-Console.write) · value: int · interface dispatch | void |
+| Startup | types | 1 | [Inputs, results and call sites](index.md#boundary-0f6d1d161bd4) |
+| types | August libraries | 1 | [Inputs, results and call sites](index.md#boundary-2aa7744b47e2) |
+
+#### Data crossing these boundaries (2 contracts)
+
+<a id="boundary-0f6d1d161bd4"></a>
+
+#### Startup → types
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[Program.start](../../types.aug.md#symbol-Program.start)**
+
+No caller-supplied inputs. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L10) · [Caller explanation](../../main.aug.md#startup) |
 
 </details>
+
+<a id="boundary-2aa7744b47e2"></a>
+
+#### types → August libraries
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[Console.write](../august/1.0.0/io/contracts.aug.md#symbol-Console.write)** · interface dispatch
+
+Inputs: value: int. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Program.start | [Call site](../../types.aug#L13) · [Caller explanation](../../types.aug.md#symbol-Program.start) |
+
+</details>
+
 
 ## Open a module
 
