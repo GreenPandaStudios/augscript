@@ -4,8 +4,8 @@ Use two August base images. The build image has the released CLI and its verifie
 
 | Image | Use |
 | --- | --- |
-| `ghcr.io/greenpandastudios/aug-build:0.23.0` | Build, run and test August projects; develop in a container. |
-| `ghcr.io/greenpandastudios/aug-runtime:0.23.0` | Deploy the compiled executable with its libraries and notices. |
+| `ghcr.io/greenpandastudios/aug-build:1.0.0` | Build, run and test August projects; develop in a container. |
+| `ghcr.io/greenpandastudios/aug-runtime:1.0.0` | Deploy the compiled executable with its libraries and notices. |
 
 Both tags contain Linux ARM64 and x86-64 variants. Docker selects the variant for your engine. They work on Linux and Docker Desktop for Mac, including Apple Silicon and Intel Macs. Applications built in these containers are Linux executables. Use the [native CLI](getting-started.md) to build a macOS executable. See [Docker's platform guide](https://docs.docker.com/build/building/multi-platform/) for architecture selection and emulation.
 
@@ -14,8 +14,8 @@ Both tags contain Linux ARM64 and x86-64 variants. Docker selects the variant fo
 Pull the bases; there are no toolchain Dockerfiles to create:
 
 ```sh
-docker pull ghcr.io/greenpandastudios/aug-build:0.23.0
-docker pull ghcr.io/greenpandastudios/aug-runtime:0.23.0
+docker pull ghcr.io/greenpandastudios/aug-build:1.0.0
+docker pull ghcr.io/greenpandastudios/aug-runtime:1.0.0
 ```
 
 The version is the bundled compiler version. The build image has Node.js 24, the CLI, its matching standard library and a prepared compiler cache. Application-specific source packages and native artifacts are installed during the application build. Source code and compiler development tools are not required on your host.
@@ -25,14 +25,16 @@ The version is the bundled compiler version. The build image has Node.js 24, the
 Save this `Dockerfile` beside your project's `main.aug`:
 
 ```dockerfile
-FROM ghcr.io/greenpandastudios/aug-build:0.23.0 AS build
+FROM ghcr.io/greenpandastudios/aug-build:1.0.0 AS build
 COPY --chown=node:node . .
 RUN aug install . \
     && aug test . \
-    && aug build . --out /tmp/deploy/program
+    && aug bundle . --out /tmp/deploy \
+    && aug bundle verify /tmp/deploy
 
-FROM ghcr.io/greenpandastudios/aug-runtime:0.23.0
+FROM ghcr.io/greenpandastudios/aug-runtime:1.0.0
 COPY --from=build --chown=august:august /tmp/deploy/ /app/
+ENTRYPOINT ["/app/app"]
 ```
 
 Save `.dockerignore` beside it:
@@ -57,13 +59,13 @@ docker build -t my-app .
 docker run --rm my-app
 ```
 
-The build installs project dependencies, runs same-file tests and compiles the program. The final image contains the deployment directory: `program`, `lib` and `share`. Copy the whole directory so shared libraries, licenses and source provenance stay with the executable. Both bases use Debian Bookworm and run their normal commands as unprivileged users.
+The build installs project dependencies, runs same-file tests and creates a verified deployment bundle. The final image contains `app`, its neighboring `lib` and `share` directories, and `bundle.json`. Copy the whole bundle so shared libraries, licenses and source provenance stay with the executable. Both bases use Debian Bookworm and run their normal commands as unprivileged users.
 
 Commit `aug.lock.json` to retain exact package revisions. For a deployment with an established Linux lock, change the install step to `aug install . --frozen`. Native package locks must include the Linux target you deploy; a lock created only on macOS may need its first Linux install before it can be frozen. See [reproducible builds](packages.md#reproducible-builds).
 
-### Bundle with the next compiler
+### Verify a deployment bundle {#bundle-with-the-next-compiler}
 
-**Unreleased:** the next CLI can replace the build command with `aug bundle . --out /tmp/deploy`. Copy that complete directory into the runtime image and set `ENTRYPOINT ["/app/app"]`. Use a build base that contains that compiler release; the published 0.23.0 base has no `bundle` command. Verify the directory with `aug bundle verify /tmp/deploy` before copying it.
+`aug bundle verify /tmp/deploy` checks the recorded file set and hashes. It detects changed or missing files; it does not authenticate the application author or verify the application’s behavior. Keep the complete directory together when copying or relocating it.
 
 ## Deploy an HTTP application
 
@@ -139,6 +141,6 @@ docker run --detach --name my-api --init \
 
 Build for the server's architecture. On an ARM64 Mac targeting an x86-64 Linux server, use `docker build --platform linux/amd64 -t my-api .`; Docker Desktop runs the build under emulation. Native ARM64 and x86-64 CI runners qualify the base images separately. August does not cross-compile a macOS binary inside these containers.
 
-For a release, retain the application image digest and pin reviewed base-image digests in its Dockerfile. Numbered base tags select the August compiler version; a rebuild can update Debian runtime packages. Use a TLS reverse proxy or [August's native TLS configuration](web.md#openapi-configuration), and mount application data or credentials at the paths its code expects. See [production readiness](production-readiness.md) for workload and dependency limits.
+For a release, retain the application image digest and pin reviewed base-image digests in its Dockerfile. Numbered base tags select the August compiler version; a rebuild can update Debian runtime packages. Use a TLS reverse proxy for this bundle recipe, and mount application data or credentials at the paths its code expects. August 1.0 bundles reject `web.tls` certificate, private-key and CA paths because they cannot be relocated; separate runtime certificate configuration is not available. See [production readiness](production-readiness.md) for workload and dependency limits.
 
 For editing in the build image, use [a Dev Container](dev-containers.md).

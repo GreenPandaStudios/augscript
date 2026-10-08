@@ -1,6 +1,6 @@
 # Try a snippet
 
-The scratch command checks an entry fragment without creating a permanent project. It is implemented in the unreleased candidate; published August 0.23.0 does not contain it. Until the containing release, use `aug init` to make a small project.
+The scratch command checks an entry fragment without creating a permanent project. Use `aug scratch` to try a short program, or `aug init` when you want to keep and extend it.
 
 Save this entry fragment as `experiment.aug`:
 
@@ -30,7 +30,7 @@ It prints `result: 42`. Arguments after `--` go to the program. The process runs
 A standalone scratch file can use standard-library imports and direct repository imports. This entry fragment uses the native zlib package:
 
 ```text
-import CompressionError and compress and decompress from "https://github.com/GreenPandaStudios/aug-zlib#v0.1.5"
+import CompressionError and compress and decompress from "https://github.com/GreenPandaStudios/aug-zlib#v0.2.0"
 
 try:
     input = "scratch zlib".bytes()

@@ -6,11 +6,11 @@ next:
 
 # The August book
 
-This book teaches you to read, write, and change August programs. It assumes you have written code in another language. August builds a native executable when you run a program; August 0.23.0 downloads its own LLVM tools on [supported platforms](../getting-started.md).
+This book teaches you to read, write, and change August programs. It assumes you have written code in another language. August builds a native executable when you run a program; August 1.0 downloads its own LLVM tools on [supported platforms](../getting-started.md).
 
 Start with a working application. Then add one idea at a time: labeled inputs, data and failures, module boundaries, dependencies, and controlled mutation. Each chapter contains a complete small project. Save its files together, run the commands, and compare your result with the output shown.
 
-If you are reading an existing application, begin with its compiled explanation. The unreleased diagram views also provide a [folder data flow and linked sequences](../examples/hello/diagrams/index.md). Move down to the source for an exact expression, or back up to see how a module fits the application. [Compiled specifications](../specifications.md) describes this workflow.
+If you are reading an existing application, begin with its compiled explanation. The diagram views also provide a [folder data flow and linked sequences](../examples/hello/diagrams/index.md). Move down to the source for an exact expression, or back up to see how a module fits the application. [Compiled specifications](../specifications.md) describes this workflow.
 
 ## Read in order
 
@@ -29,4 +29,4 @@ Chapters use indentation to keep the first examples compact. [Indentation and br
 
 The [task guides](../guides/index.md) cover testing, services, packages, specifications, and measurement. The [language reference](../reference.md) states detailed rules, including cases these lessons leave for later. Library API pages describe exported operations. You can use those pages without reading the book from beginning to end.
 
-August is still experimental. The lessons teach the implemented language; [readiness](../production-readiness.md) describes the limits of deploying it. The complete source examples are checked and run in CI.
+The lessons teach August 1.0; [readiness](../production-readiness.md) describes the limits of deploying it. The complete source examples are checked and run in CI.

@@ -2,7 +2,7 @@
 
 You should be able to answer most questions about an August application from its generated explanations and diagrams. Begin with the whole application, then open only the part your question needs.
 
-The diagram views and this expanded workflow are unreleased work for 1.0. You can explore their actual generated output in the wiki. The public preview already supports neighboring compiled specifications.
+August 1.0 generates these views alongside neighboring compiled specifications. The wiki shows their actual output.
 
 ## Begin with a question
 

@@ -2,7 +2,7 @@
 
 A package states which compilers can check its source and which machines can run its native libraries. The project lock records the exact inputs used. These are different promises: a library can support several compiler releases, while an application build still uses one exact compiler.
 
-**Unreleased:** compiler ranges, immutable source snapshots and interrupted-install recovery described here are implemented in the next compiler. Published August 0.23.0 accepts only an exact `compiler` value. The public ABI below records its existing native calling convention; the adapter header ships with the next CLI.
+August 1.0 accepts exact or bounded compiler requirements, keeps immutable source snapshots, and recovers interrupted installs. First-party npm packages retain one exact compiler version. The native ABI contract applies through August 1.x.
 
 ## State a compiler requirement
 
@@ -13,7 +13,7 @@ A package states which compilers can check its source and which machines can run
   "format": 1,
   "name": "@example/arithmetic",
   "version": "0.1.0",
-  "compiler": "~0.23.0",
+  "compiler": "~1.0.0",
   "source": "src",
   "dependencies": {}
 }
@@ -41,12 +41,12 @@ After upgrading, run the application's checks and tests and rebuild its executab
 
 ## Published formats
 
-These versioned formats are the candidate contracts for 1.0. Changing a native calling convention requires a new ABI profile. Changing the meaning of a required manifest or lock field requires a new format. A new compiler must diagnose an unsupported format rather than guessing its meaning.
+These versioned formats are the published contracts for August 1.0. Changing a native calling convention requires a new ABI profile. Changing the meaning of a required manifest or lock field requires a new format. A new compiler must diagnose an unsupported format rather than guessing its meaning.
 
 | File | Format | Required information |
 | --- | --- | --- |
 | `aug-package.json` | `1`, source package | Package `name`, exact package `version`, `compiler` requirement and relative `source` folder containing `export.aug`. Optional `dependencies` maps local aliases to package requests. |
-| `aug-package.json` | `2`, native package | The source fields plus `native`: ABI profile, binding file/digest, upstream identity, platform artifacts and optional explicit source-build metadata. Unreleased artifact entries may pin the exact member manifest with `fileManifestSha256`. |
+| `aug-package.json` | `2`, native package | The source fields plus `native`: ABI profile, binding file/digest, upstream identity, platform artifacts and optional explicit source-build metadata. Artifact entries may pin the exact member manifest with `fileManifestSha256`. |
 | `native.abi.json` | `1`, profile `aug-native-abi-1` | Resource/release declarations and function contracts: physical symbol, labeled inputs, outputs, status, error, ownership, capabilities, mutation and thread permission. |
 | `aug.lock.json` | `1` | Exact `compiler`, requested `specifications`, root aliases, checked package entries with source digests and resolved dependency paths, registry integrity, and Git revisions. `native` optionally records target and compiler/runtime selections. |
 | Native artifact file manifest | `1` | Exact regular-file paths and SHA-256 digests. The downloaded archive has its own SHA-256 and size bounds. |
@@ -65,10 +65,10 @@ The process-interruption tests kill installers on both sides of publication. The
 
 Old generations and abandoned staging directories are retained. When no build or editor is using the project, removing `.aug-packages` and `.aug-install-*` reclaims them; `aug install --frozen` restores the active graph from its original sources or verified caches. Keep `aug.lock.json`. A local folder dependency still requires that folder, and offline restoration requires every requested input to have been cached.
 
-Changed installed source is an error during checking and running. An explicit install can restore it from verified inputs. Native caches are immutable by archive digest and are checked again before use; a corrupted native cache must be removed and installed again. The unreleased CLI also authenticates each native member manifest against its source-owned `fileManifestSha256` when present, otherwise against the retained original archive. Legacy caches without that archive require one online restore; regenerating a cached manifest cannot authorize changed native bytes.
+Changed installed source is an error during checking and running. An explicit install can restore it from verified inputs. Native caches are immutable by archive digest and are checked again before use; a corrupted native cache must be removed and installed again. The CLI also authenticates each native member manifest against its source-owned `fileManifestSha256` when present, otherwise against the retained original archive. Legacy caches without that archive require one online restore; regenerating a cached manifest cannot authorize changed native bytes.
 
 ## Qualification
 
 Contributors run `npm run test:compatibility`. Its regressions cover bounded compiler requirements, preserved revisions during upgrades and additions, package conflicts, offline/frozen restoration, concurrent terminated-writer recovery, source readers, native download rejection and configuration recovery. Maintainer header tests compare the public ABI to actual C declarations and reject layout/signature changes. Linux qualification requires these header checks to run with the selected Clang.
 
-The release workflows also run real repository imports and LLVM programs on macOS ARM64 and GNU/Linux ARM64/x86-64, then execute relocated deployment bundles without consumer toolchains. Installed npm tests check compiler ranges from a packed library and ensure the ABI header ships. Those platform gates passed for the reviewed 1.0.0 candidate on all three hosts and must repeat for final source and assembled release artifacts. The [roadmap](roadmap.md) links the exact runs; passing local regressions alone does not complete release qualification.
+The release workflows also run real repository imports and LLVM programs on macOS ARM64 and GNU/Linux ARM64/x86-64, then execute relocated deployment bundles without consumer toolchains. Installed npm tests check compiler ranges from a packed library and ensure the ABI header ships. The [1.0 tagged qualification](https://github.com/GreenPandaStudios/augscript/actions/runs/37800823512) retains those platform checks for the exact source and assembled release artifacts. Subsequent releases repeat them; passing local regressions alone does not complete release qualification.

@@ -2,7 +2,7 @@
 
 `aug-native-abi-1` is the public contract between August and a native adapter. It uses the target's C calling convention. It does not expose August heap objects, tagged values, classes or task storage. C++ and Rust libraries provide a C adapter; using LLVM in both languages does not make their object layouts compatible.
 
-The [adapter header](https://github.com/GreenPandaStudios/augscript/blob/main/native/aug-native-abi-1.h) records the existing fixed error layout and caller-thread cancellation probe. **Unreleased:** this header ships in the next CLI under `native/aug-native-abi-1.h`. Use it when authoring an adapter instead of redeclaring the error record. Consumers import the package's August declarations and need no headers or native compiler.
+The [adapter header](https://github.com/GreenPandaStudios/augscript/blob/main/native/aug-native-abi-1.h) records the existing fixed error layout and caller-thread cancellation probe. The CLI includes this header under `native/aug-native-abi-1.h`. Use it when authoring an adapter instead of redeclaring the error record. Consumers import the package's August declarations and need no headers or native compiler.
 
 ## Values and arguments
 

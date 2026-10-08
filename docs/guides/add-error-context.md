@@ -1,6 +1,6 @@
 # Explain a failure without losing its cause
 
-This feature is unreleased. Catch an error where you can explain the failed operation, then deliberately throw it with context. The caller sees the original cause type and fields. No logging or recovery policy is added automatically.
+Catch an error where you can explain the failed operation, then deliberately throw it with context. The caller sees the original cause type and fields. No logging or recovery policy is added automatically.
 
 ## Add context at the operation
 

@@ -1,6 +1,6 @@
 # Pass a small function
 
-This feature is unreleased. A pure function or expression can fill a single-method interface. Use it when the interface already describes the operation you want, such as selecting or transforming collection values.
+A pure function or expression can fill a single-method interface. Use it when the interface already describes the operation you want, such as selecting or transforming collection values.
 
 ## Select and transform values
 

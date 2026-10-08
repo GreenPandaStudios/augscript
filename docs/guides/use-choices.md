@@ -1,6 +1,6 @@
 # Describe a finite choice
 
-This feature is unreleased. Use a choice when an operation has a fixed set of data outcomes. Each outcome keeps its own record fields. A match names the outcome before reading those fields.
+Use a choice when an operation has a fixed set of data outcomes. Each outcome keeps its own record fields. A match names the outcome before reading those fields.
 
 ## Return one of two records
 

@@ -53,14 +53,14 @@ Each tuple row becomes a separately listed and executed case. The checker verifi
 
 ## Suggest boundary inputs
 
-**Unreleased:** the compiler containing `--suggest-inputs` can propose rows from a function's checked input types. It does not run the function or choose its expected results. Start from a project that passes `aug check`, then request a same-file function:
+`aug test --suggest-inputs` proposes rows from a function's checked input types. It does not run the function or choose its expected results. Start from a project that passes `aug check`, then request a same-file function:
 
 ```sh
 aug test --suggest-inputs sign --file numbers.aug
 aug test --suggest-inputs sign --file numbers.aug --json > inputs.json
 ```
 
-The source fragment is an `it boundaries` case to put inside a new, empty test group. Replace `__author_property` with an assertion based on your requirements. The placeholder is deliberately unresolved. In the unreleased editor, complete `itboundaries` inside a function test group for the same rows and an editable assertion. It follows the project's block, indentation and assignment preferences.
+The source fragment is an `it boundaries` case to put inside a new, empty test group. Replace `__author_property` with an assertion based on your requirements. The placeholder is deliberately unresolved. In the editor, complete `itboundaries` inside a function test group for the same rows and an editable assertion. It follows the project's block, indentation and assignment preferences.
 
 For example, the requirement for `sign` is to return −1 for negative integers, 0 for zero and 1 for positive integers. Save this independently chosen set of answers in `numbers.aug`:
 
@@ -108,7 +108,7 @@ JSON records the concrete rows, their origin, limit, ordering, generator version
 
 ## Review requirements with test results
 
-**Unreleased:** `aug verify` puts author-written requirements, checked code, its generated explanation and native test results in one report. Write the requirements before choosing implementation answers. August checks the mapping and runs the selected cases; it cannot determine whether your tests were written independently or cover the intended business behavior.
+`aug verify` puts author-written requirements, checked code, its generated explanation and native test results in one report. Write the requirements before choosing implementation answers. August checks the mapping and runs the selected cases; it cannot determine whether your tests were written independently or cover the intended business behavior.
 
 Save this program as `math.aug`. The requirement is to double the input, including negative integers and zero. The three expected values are ordinary author-written test rows.
 
@@ -229,7 +229,7 @@ An uncaught checked error, a native crash, a nonzero exit, or a timeout fails th
 
 ## CLI and coverage
 
-Use `npx @greenpandastudios/aug-cli@next` in place of `aug` below, or use an installed `aug` command. See [Your first project](getting-started.md) for the npm workflow.
+Use `npx @greenpandastudios/aug-cli` in place of `aug` below, or use an installed `aug` command. See [Your first project](getting-started.md) for the npm workflow.
 
 | Command | Action |
 | --- | --- |
@@ -239,16 +239,16 @@ Use `npx @greenpandastudios/aug-cli@next` in place of `aug` below, or use an ins
 | `aug test PROJECT --list --json` | Discover IDs, subject, group, case, row, file, and line. |
 | `aug test PROJECT --case ID` | Select an exact ID; repeat for several. |
 | `aug test PROJECT --json` | Machine-readable pass/fail counts, captured output and loaded-source revision. |
-| `aug test PROJECT --expected-revision SHA256` | **Unreleased:** reject a different loaded source/configuration before native execution. |
+| `aug test PROJECT --expected-revision SHA256` | reject a different loaded source/configuration before native execution. |
 | `aug test PROJECT --timeout 2000` | Limit each native execution to 2 seconds. |
 | `aug test PROJECT --coverage` | Merge executed statement lines across selected cases. |
-| `aug test PROJECT --rebuild` | **Unreleased:** compile selected cases again, bypassing compilation reuse. |
+| `aug test PROJECT --rebuild` | compile selected cases again, bypassing compilation reuse. |
 
 Selection is exact and case sensitive. Quote names containing spaces. Unknown selections fail. The default timeout is ten seconds per native case; compilation is outside that timeout.
 
 ### Reuse test compilation
 
-**Unreleased:** LLVM tests that use the core runtime can reuse unchanged compiled programs. Each case still starts a new native process, runs its setup and assertions, and gets its own managed heap. A cached program never supplies a previous test result. Tests that use task, JSON, HTTP or other runtime components, or native calls and package artifacts, currently compile on each invocation. The C reference backend also compiles every case. Reuse requires a verified compiler tool pack; custom contributor tools and scripts compile normally. Qualified LLVM tools use a fixed compilation environment. Native test processes retain their ordinary environment.
+LLVM tests that use the core runtime can reuse unchanged compiled programs. Each case still starts a new native process, runs its setup and assertions, and gets its own managed heap. A cached program never supplies a previous test result. Tests that use task, JSON, HTTP or other runtime components, or native calls and package artifacts, currently compile on each invocation. The C reference backend also compiles every case. Reuse requires a verified compiler tool pack; custom contributor tools and scripts compile normally. Qualified LLVM tools use a fixed compilation environment. Native test processes retain their ordinary environment.
 
 Use `aug test --case ID` to run a selected case, or `aug test --rebuild` to compile the selected cases again. JSON case results include `compilation.cache`: `hit`, `miss`, `refresh` or `disabled`. A disabled cache does not skip the test. Damaged entries are recompiled.
 
@@ -266,6 +266,6 @@ Test Explorer groups cases by project, declaration, and when group. Parameterize
 
 Choose **Native tests** to run or **Native coverage** to see merged statement-line coverage when the installed VS Code supports its coverage API. **AugScript: Test Project** runs the project CLI in a task terminal.
 
-Use `try`/`always` for cleanup. Snapshots and nested groups are unsupported. Each selected case runs a separate native binary. The unreleased core-runtime compilation cache can reuse that binary while every execution remains isolated.
+Use `try`/`always` for cleanup. Snapshots and nested groups are unsupported. Each selected case runs a separate native binary. The core-runtime compilation cache can reuse that binary while every execution remains isolated.
 
-The unreleased `aug graph --composition --case TEST_ID --json` checks and describes a selected case’s providers without executing it. Use an id from `aug test --list --json`. The [service wiring guide](guides/reuse-services.md) compares application and test compositions; application startup and test execution remain separate checks.
+The `aug graph --composition --case TEST_ID --json` checks and describes a selected case’s providers without executing it. Use an id from `aug test --list --json`. The [service wiring guide](guides/reuse-services.md) compares application and test compositions; application startup and test execution remain separate checks.

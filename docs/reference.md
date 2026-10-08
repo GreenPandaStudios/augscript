@@ -2,7 +2,7 @@
 
 Use this page to look up the implemented language rules. It covers syntax, types, visibility, effects, dependency injection, ownership, and checked failures. For a first introduction, read [the August book](learn/index.md). For the reasons behind the design, read [why August exists](about.md).
 
-August is experimental; [compatibility](compatibility.md) describes its version policy. Examples marked with a project and filename are complete, tested applications. Short `text` blocks are syntax fragments.
+The [compatibility guide](compatibility.md) defines the supported platforms and version policy. Examples marked with a project and filename are complete, tested applications. Short `text` blocks are syntax fragments.
 
 ## A complete project
 
@@ -71,15 +71,15 @@ export ConsoleLogger from console
 export folder nested
 ```
 
-Cross-folder access requires the export entry. A dotted path also requires each crossed child folder to be exposed by its parent. A folder with no export file exposes nothing across its boundary. `export.aug` accepts export declarations and the unreleased internal entries described below. Private modules and folders cannot be exported.
+Cross-folder access requires the export entry. A dotted path also requires each crossed child folder to be exposed by its parent. A folder with no export file exposes nothing across its boundary. `export.aug` accepts export declarations and the internal entries described below. Private modules and folders cannot be exported.
 
 `import Logger and ConsoleLogger from logging` combines imports. `import everything from logging` imports visible declarations and rejects collisions; it never exposes a module's internal imports. The formatter preserves it. Hover shows available names, **Expand to named imports** offers an explicit list, and the [compiled spec](specifications.md) explains dependencies actually used.
 
-Import cycles are errors. Configure allowed module dependencies and export-count warnings in `main.yaml`. `strict_modules: true` also requires sibling imports to appear in the local export file, as an export or an unreleased internal entry. Ctrl-click `from` or a path segment to open its source file or export file, including `august.io`.
+Import cycles are errors. Configure allowed module dependencies and export-count warnings in `main.yaml`. `strict_modules: true` also requires sibling imports to appear in the local export file, as an export or an internal entry. Ctrl-click `from` or a path segment to open its source file or export file, including `august.io`.
 
 ### Internal folder contracts
 
-**Unreleased:** `internal Name from sibling` names a declaration that other files in the same folder can import under strict checking. It appears in the existing `export.aug`:
+`internal Name from sibling` names a declaration that other files in the same folder can import under strict checking. It appears in the existing `export.aug`:
 
 ```text
 export TicketService from service
@@ -194,7 +194,7 @@ record Point(int x, int y)
 
 Record fields contain data, including safe literal or explicitly frozen collections. A mutable collection alias must be frozen before storage. Records cannot retain capabilities or ownership inputs. Records compare and hash by type and field values. Validation uses `record Positive(int value) unless DomainError { initialize { ... } }`; it may reject an input, and cannot replace immutable fields. Behavioral classes compare by identity.
 
-## Closed record choices (unreleased)
+## Closed record choices {#closed-record-choices-unreleased}
 
 `choice Delivery from Delivered and Failed` names a closed set of at least two distinct, concrete nongeneric immutable records. Define or explicitly import those records in the same module. A choice has no constructor: use an alternative’s ordinary labeled constructor. Assignment, function inputs and results accept exactly those record identities. Generic inputs can use a non-null choice bound; nullable inputs use `optional T`. Records can contain choices, and choices satisfy the data rules for pure callbacks and copied workers.
 
@@ -222,13 +222,13 @@ Empty literals require context: `List<int> values = []`, `Set<int> values = {}`,
 
 Managed mutations need a borrow; owned collections mutate directly. Collections cannot store borrowed or owned references by copying them. Reference results grant reading.
 
-**Unreleased:** `values[index]` reads a List with the same checked IndexError as get, a Map with an optional result, or a Tuple with a compile-time constant position. Indexing does not grant mutation; text and byte operations stay explicit.
+`values[index]` reads a List with the same checked IndexError as get, a Map with an optional result, or a Tuple with a compile-time constant position. Indexing does not grant mutation; text and byte operations stay explicit.
 
-**Unreleased loop control.** `break` leaves the nearest loop; `continue` starts its next iteration. Both run intervening `always` cleanup, join child scopes, release locks and borrows, and drop owned locals. A cleanup error propagates instead of completing the jump. Neither accepts a label. Jumps require an enclosing `for` or `while`; an `always` block cannot jump out of its cleanup.
+**Loop control.** `break` leaves the nearest loop; `continue` starts its next iteration. Both run intervening `always` cleanup, join child scopes, release locks and borrows, and drop owned locals. A cleanup error propagates instead of completing the jump. Neither accepts a label. Jumps require an enclosing `for` or `while`; an `always` block cannot jump out of its cleanup.
 
 Tuple destructuring introduces new local names and checks arity. A one-name tuple pattern binds the tuple’s cell; use `(value,)` for a one-cell tuple. A single loop item or wait result still receives its whole value. `for item in values` snapshots List, Set, and homogeneous Tuple elements. `for (key, value) in map` snapshots entries in insertion order. Modifying the original collection does not extend the current iteration. Reference elements remain read-only.
 
-### Record and nested tuple bindings (unreleased)
+### Record and nested tuple bindings {#record-and-nested-tuple-bindings-unreleased}
 
 Select record fields by name, or unpack tuple positions into new local names. `field: name` renames a field; another pattern can unpack the selected value further. This example selects two fields from `Person` and unpacks its ratings:
 
@@ -254,7 +254,7 @@ The source expression runs once. Bindings grant read access without copying thei
 
 Use the same patterns after `for` to unpack each snapshot item. Parameterized same-file test rows retain their flat tuple input form. Hover over a renamed field label to read its type and documentation; follow its definition to the record field. The selected local has its own definition in the pattern.
 
-### List comprehensions (unreleased)
+### List comprehensions {#list-comprehensions-unreleased}
 
 Select and transform collection items in one expression:
 
@@ -283,9 +283,9 @@ Items have read-only access. The result has a fresh container; it does not copy 
 
 Calls retain ordinary labeled inputs, inferred effects, checked failures, ownership rules and task scopes. Handle a failing result or predicate as you would a call in a loop. A failure stops selection; enclosing scopes clean up normally. Worker tasks may be selected inside a scope and joined with `wait for`. Owned values cannot be copied into the result, and repeated transfer of an outer owned value is rejected. Use a loop for multiple statements, state updates, early exit or several iteration clauses; this expression has one `for` and at most one `if`.
 
-## Collection functions (unreleased)
+## Collection functions {#collection-functions-unreleased}
 
-The unreleased `mapWorkers` operation runs a named pure transformation on copied data in bounded chunk waves. It preserves result order, joins each wave, and retains checked admission failures. Its stricter callback profile and limits are explained in [the worker guide](workers.md#map-a-list-in-bounded-waves).
+The `mapWorkers` operation runs a named pure transformation on copied data in bounded chunk waves. It preserves result order, joins each wave, and retains checked admission failures. Its stricter callback profile and limits are explained in [the worker guide](workers.md#map-a-list-in-bounded-waves).
 
 Import `filter`, `transform`, `aggregate`, `remove`, `find`, or `sort` from `august.collections` when the operation fits a pure data callback. `Predicate<T>`, `Transformation<T,U>`, `Aggregator<T,U>`, and `Comparator<T>` describe those callbacks through ordinary interfaces. Their `optional Data` constraints also admit null values. They accept data, return data, and permit no I/O, mutation or checked failures. Use an ordinary loop when processing needs those effects.
 
@@ -379,7 +379,7 @@ Outside main and test setup, every injected dependency is declared in the callab
 
 Raw `print`, `arguments`, `read_file`, and `write_file` are available to main/test tooling and the trusted standard adapters. Other callables receive explicit capabilities. Pure construction cannot perform these effects.
 
-### Pure function values (unreleased)
+### Pure function values {#pure-function-values-unreleased}
 
 An expected concrete single-method interface can receive a managed standalone function name or a typed expression closure: `Predicate<int> positive = (int value) => value > 0`. The interface must have one public abstract pure data method, with no checked failures, ownership transfers, defaults, injection, annotations or native contract. Every inherited entry, including an overridden ancestor, must have that same supported pure signature. Function references match resolved input types and public labels; declaration order can differ. Closures list those labels in order. Calls use the ordinary labeled interface method. Generic call arguments can infer their types from the callback's inputs and result; generic function references remain unsupported.
 
@@ -405,7 +405,7 @@ See [the scoped composition example](../examples/approved-design/counters.aug).
 
 ## Ownership and read access
 
-**Unreleased:** a new local initialized by a call with an `own` result inherits ownership. For example, `connection = open(path)` has deterministic cleanup when `open` returns an owned connection. Editor hints and the spec show that lifetime. Copies or transfers from an existing owned local still require an explicit `own` destination; a fresh managed result does not imply ownership.
+a new local initialized by a call with an `own` result inherits ownership. For example, `connection = open(path)` has deterministic cleanup when `open` returns an owned connection. Editor hints and the spec show that lifetime. Copies or transfers from an existing owned local still require an explicit `own` destination; a fresh managed result does not imply ownership.
 
 Default objects are managed and reclaimed by the runtime. Ordinary reads require no borrow. An `own` value has exclusive lifetime control; passing it to an own input, field, or return moves it. Using a moved value or copying it into managed storage is rejected.
 
@@ -427,13 +427,13 @@ When the checker cannot establish separate origins or freshness, it rejects the 
 
 ## Null, matching, and checked failures
 
-**Unreleased:** `name otherwise "Guest"` evaluates its right operand only when the left operand is null. Both operands have compatible types. False, zero and empty text remain values; this expression does not catch failures or transfer owned resources. Use an explicit match when selecting ownership.
+`name otherwise "Guest"` evaluates its right operand only when the left operand is null. Both operands have compatible types. False, zero and empty text remain values; this expression does not catch failures or transfer owned resources. Use an explicit match when selecting ownership.
 
 Nullable locals narrow after null checks, short-circuit conditions, match patterns, and surviving early-return branches. Mutable fields are narrowed conservatively.
 
 `match value` uses `when null`, `when some name`, `when true`, `when false`, or `when Type name`. Nullable and bool matches must cover every case. Open class/interface domains require `else`. Duplicate/unreachable cases and incompatible patterns are errors.
 
-**Unreleased:** A match can also produce a value. Put one result expression in each case. The input is evaluated once; only the selected result is evaluated. Results have compatible types, with null making the result optional. An explicit input or return contract can provide a common interface for results from different implementations. Checked errors, capability calls and possible ownership moves inside the selected expression follow their ordinary rules. Choosing a result does not grant mutable access or transfer ownership; use a statement match to return or move an owned value or native resource.
+A match can also produce a value. Put one result expression in each case. The input is evaluated once; only the selected result is evaluated. Results have compatible types, with null making the result optional. An explicit input or return contract can provide a common interface for results from different implementations. Checked errors, capability calls and possible ownership moves inside the selected expression follow their ordinary rules. Choosing a result does not grant mutable access or transfer ownership; use a statement match to return or move an owned value or native resource.
 
 This program chooses a display name and a number without declaring mutable temporary values:
 
@@ -458,11 +458,11 @@ It prints `Guest` and `7` on separate lines. The same case blocks can use braces
 
 ### Checked failures {#errors}
 
-**Unreleased:** `error InvalidQuantity(int value)` declares a data-only Error implementation without an empty body. Its fields, labels, checked propagation and cleanup follow ordinary classes. It cannot contain injected, owned or mutable storage; use a full Error implementation for custom behavior.
+`error InvalidQuantity(int value)` declares a data-only Error implementation without an empty body. Its fields, labels, checked propagation and cleanup follow ordinary classes. It cannot contain injected, owned or mutable storage; use a full Error implementation for custom behavior.
 
-**Unreleased error context.** `august.errors.errorContext(cause, operation, location)` constructs `ContextError<E>` without throwing or logging. The concrete cause type, original value and public fields are retained; the caller chooses whether to throw this new error. `sourceLocation()` captures an immutable `Tuple<string, int, int>` containing the source identity and one-based line/column at that call expression. It reads no files and captures no stack. Project paths are relative, and package code uses `name@version/path`. See [error context](guides/add-error-context.md).
+**Error context.** `august.errors.errorContext(cause, operation, location)` constructs `ContextError<E>` without throwing or logging. The concrete cause type, original value and public fields are retained; the caller chooses whether to throw this new error. `sourceLocation()` captures an immutable `Tuple<string, int, int>` containing the source identity and one-based line/column at that call expression. It reads no files and captures no stack. Project paths are relative, and package code uses `name@version/path`. See [error context](guides/add-error-context.md).
 
-**Unreleased generic catches.** A short generic error can be caught by checking every direct, non-null read-only managed field that carries a type parameter. Arguments must be concrete errors, up to 128 nested supported short errors or `Error`. This narrows the stored values; generic public contracts remain invariant. Unsupported generic catches produce `ERROR_MATCH`; generic HTTP status mappings require explicit conversion to a non-generic domain error.
+**Generic catches.** A short generic error can be caught by checking every direct, non-null read-only managed field that carries a type parameter. Arguments must be concrete errors, up to 128 nested supported short errors or `Error`. This narrows the stored values; generic public contracts remain invariant. Unsupported generic catches produce `ERROR_MATCH`; generic HTTP status mappings require explicit conversion to a non-generic domain error.
 
 An error satisfies Error. A body infers escaping errors. A bodyless signature or explicit bound names specific errors with `returns T unless FileError and DomainError`. It can throw any value satisfying its declaration; declaring Error accepts any Error implementation. Calls must catch or propagate all effective errors, including interceptor layers; executable callers infer propagation when unless is omitted.
 
@@ -551,35 +551,35 @@ Numeric widths, Unicode behavior, FFI, configuration, debugging, benchmarks, and
 
 First-party endpoints, wire inputs, HTTP policies, streams, server components and actions, scoped tasks, OpenAPI, endpoint tests and cryptographic capabilities are specified in the [web guide](web.md). The [same-app login proof](../examples/oidc-login/README.md) demonstrates these features through an OpenID Connect provider and client in one executable.
 
-### Literal parameter defaults (unreleased)
+### Literal parameter defaults {#literal-parameter-defaults-unreleased}
 
 An ordinary managed input can declare a scalar or collection literal default: `greet(string name = "August")`. The default supplies an omitted label; passing `null` remains an explicit value and requires an optional type. A collection default is created afresh for each call. Defaults cannot read names, call functions, resolve dependencies, or perform effects. They are part of an interface's checked signature and appear in hover and compiled specs. Native, HTTP-bound, injected, borrowed, and owned inputs do not accept defaults in this profile. Constructor inputs follow the same rule; a storage alias precedes its default, as in `int initial to _count = 0`.
 
-### String interpolation (unreleased)
+### String interpolation {#string-interpolation-unreleased}
 
 `$"Hello, {name}!"` builds text from checked scalar expressions. Each expression runs once, from left to right. Integers use decimal notation, booleans use `true` or `false`, null uses `null`, and floats use invariant binary64 text with up to 17 significant digits. Double an opening or closing brace to insert it literally. Ordinary quoted strings never interpolate. Records and collections require an explicit formatter. Interpolated text is not HTML or SQL escaping; use the typed markup and parameterized database interfaces for those contexts.
 
-### Integer remainder (unreleased)
+### Integer remainder {#integer-remainder-unreleased}
 
 `left % right` returns the remainder after integer division truncates toward zero. A nonzero result has the dividend's sign: `-7 % 3` is `-1`. Zero divisors raise checked `ArithmeticError`; the signed minimum divided by `-1` has remainder zero. Floating operands are rejected. Addition, subtraction, and multiplication retain their existing wrapping int64 rules.
 
-### Text helpers (unreleased)
+### Text helpers {#text-helpers-unreleased}
 
 Use `endsWith(suffix)` for an exact suffix and `replace(search, replacement)` for nonoverlapping exact replacement. Replacement rejects an empty search with `ConversionError`. `List<string>.join(separator)` retains order and empty elements; an empty list produces empty text. `codePointLength()` counts Unicode scalar values after checking UTF-8; combining marks remain separate. `byteLength()` explicitly counts UTF-8 bytes, with the same result as `length()`. `utf16Length()` counts UTF-16 units. `graphemeLength()` counts default extended grapheme clusters using Unicode 18.0.0, and `graphemes()` returns their ordered nonempty copies. Both check UTF-8 and raise `ConversionError` for invalid input. Empty text gives zero and an empty list; joining clusters with an empty separator preserves the original bytes. They do not normalize text, tailor boundaries by locale, or measure display width. See [measure text](guides/measure-text.md).
 
 `parseInteger()` accepts decimal digits with an optional leading minus and checks signed int64 bounds. `parseFloat()` accepts finite invariant decimal text, including a fraction and exponent, and rejects overflow and underflow. Both reject whitespace, a leading plus, trailing text, and embedded NUL with `ConversionError`. Trim input explicitly when that is the intended contract.
 
-### Immutable collection contracts (unreleased)
+### Immutable collection contracts {#immutable-collection-contracts-unreleased}
 
 `record Invoice(string number, immutable List<Line> items)` states that a collection and all its reachable data are frozen. Nested collection literals can satisfy this contract directly; their construction freezes the result without copying it. An existing mutable collection must be explicitly frozen first. The qualifier applies to `List`, `Map`, `Set`, and `Tuple` of data values, including immutable records. It does not make a behavioral object immutable. Mutation and mutable borrowing remain rejected through every alias; lookups retain the deep frozen guarantee.
 
-### Record copies (unreleased)
+### Record copies {#record-copies-unreleased}
 
 `paid = invoice with (paid=true)` creates a new value of the same record type. It evaluates the original once, then replacement expressions once in written order, retains unchanged data, and runs construction validation. Its checked failures remain caller obligations. Labels are the record's constructor inputs; duplicate or unknown replacements and access to private fields are rejected. This operation does not mutate the original or copy an entire unchanged collection. Mutable aliases cannot enter replacements; freeze them explicitly first.
 
 ## Bounded integer ranges
 
-**Unreleased:** `import range and RangeError from august.collections` supplies an ordinary library function. `range(end=5)` allocates a new list containing 0, 1, 2, 3 and 4. `range(start=5, end=0, step=-2)` contains 5, 3 and 1. The boundary is excluded. A step facing away from it produces an empty list.
+`import range and RangeError from august.collections` supplies an ordinary library function. `range(end=5)` allocates a new list containing 0, 1, 2, 3 and 4. `range(start=5, end=0, step=-2)` contains 5, 3 and 1. The boundary is excluded. A step facing away from it produces an empty list.
 
 `step` defaults to 1 and must be nonzero. `limit` defaults to 1,000,000 and must be from 1 to 1,000,000; producing more items raises `RangeError`. A step past the int64 boundary ends the range without wrapping values into its output. For very large numeric loops, use `while` to avoid allocating the list.
 
@@ -599,7 +599,7 @@ catch RangeError error:
 ```
 
 
-## Checked mathematics (unreleased)
+## Checked mathematics {#checked-mathematics-unreleased}
 
 Import `checkedAdd`, `checkedSubtract`, `checkedMultiply`, `checkedDivide`, `checkedNegate`, `checkedAbs`, or `checkedSum` from `august.math` when an integer calculation must stay within int64. These ordinary August functions raise `ArithmeticError` on overflow; division also rejects zero. `checkedSum` visits a list in order and rejects an overflowing intermediate sum. Ordinary operators keep their wrapping behavior.
 
@@ -625,4 +625,4 @@ catch ConversionError error:
 
 ## Validated domain values
 
-**Unreleased:** `august.values` supplies ordinary immutable `CivilDate`, `Duration`, `TokenId`, `HttpUrl`, `PortableRelativePath` and `BoundedText` records. Constructors, parsers, copies and JSON decoding enforce the same documented bounds. Parsing/validation raises `ConversionError`; duration arithmetic raises `ArithmeticError` on overflow. These values perform no I/O. Read [the domain-value guide](guides/use-domain-values.md) and [complete contracts](api/values.md) for the supported date, URL, path and text profiles.
+`august.values` supplies ordinary immutable `CivilDate`, `Duration`, `TokenId`, `HttpUrl`, `PortableRelativePath` and `BoundedText` records. Constructors, parsers, copies and JSON decoding enforce the same documented bounds. Parsing/validation raises `ConversionError`; duration arithmetic raises `ArithmeticError` on overflow. These values perform no I/O. Read [the domain-value guide](guides/use-domain-values.md) and [complete contracts](api/values.md) for the supported date, URL, path and text profiles.

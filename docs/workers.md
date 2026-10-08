@@ -2,7 +2,7 @@
 
 A worker runs a task on an OS thread with its own heap. Use it for CPU work or for a native operation that should run away from the request or main task. It uses the same `Task<T>`, `scope`, and `wait for` operations as other August tasks.
 
-These examples require August 0.23.0. Cooperative tasks use their current heap; `start worker` uses an isolated heap on an OS thread.
+These examples use August 1.0. Cooperative tasks use their current heap; `start worker` uses an isolated heap on an OS thread.
 
 ## Start work and read the results
 
@@ -37,7 +37,7 @@ Ordinary `start` continues to schedule cooperative work on its current heap. `st
 
 ## Map a list in bounded waves
 
-`mapWorkers` is implemented in the unreleased 1.0 candidate. Import it from `august.collections` and supply a named pure function. This example doubles five integers with two values per chunk and at most two chunk jobs in each wave.
+Use `mapWorkers` to transform copied values on isolated workers. Import it from `august.collections` and supply a named pure function. This example doubles five integers with two values per chunk and at most two chunk jobs in each wave.
 
 ```aug project=worker-map-guide file=calculations.aug
 /** Double one integer without changing any state. */

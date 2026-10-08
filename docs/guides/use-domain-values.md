@@ -1,6 +1,6 @@
 # Validate values at the boundary
 
-The unreleased `august.values` module gives ordinary data a checked type. Use it when text has a meaning beyond “some string”: a calendar date, a URL, an identifier or a relative path. Construction validates the value once. Code that receives that type can rely on its documented limits.
+The `august.values` module gives ordinary data a checked type. Use it when text has a meaning beyond “some string”: a calendar date, a URL, an identifier or a relative path. Construction validates the value once. Code that receives that type can rely on its documented limits.
 
 ## Parse and keep a typed value
 

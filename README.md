@@ -2,16 +2,16 @@
 
 **The world runs on language.**
 
-AugScript is an experimental, statically checked language for developers working with LLMs. Its tenets are **simplicity** and **developer scalability**: a module should explain its dependencies, state changes, errors, and public behavior in the code itself.
+August is a statically checked language for developers working with LLMs. Its tenets are **simplicity** and **developer scalability**: a module should explain its dependencies, state changes, errors, and public behavior in the code itself.
 
-August is designed to help developers and coding agents understand and change large codebases. It reads like pseudocode, compiles a human-readable specification, and runs as a native executable. The unreleased diagram compiler adds linked project, module, class and API-sequence views, so readers can move from an overview to the explanation and source. The [homepage](https://greenpandastudios.github.io/augscript/) shows the same program as source and compiled prose beside a measured C comparison. The TypeScript compiler lowers checked August through LLVM. This repository includes the compiler, managed runtime, CLI, standard capabilities, examples, tests, documentation, two Docker base images, and VS Code extension. Public exports, labeled inputs, checked errors, same-file tests, and generated specifications keep behavior close to the code that implements it.
+August is designed to help developers and coding agents understand and change large codebases. It reads like pseudocode, compiles a human-readable specification, and runs as a native executable. The diagram compiler adds linked project, module, class and API-sequence views, so readers can move from an overview to the explanation and source. The [homepage](https://greenpandastudios.github.io/augscript/) shows the same program as source and compiled prose beside a measured C comparison. The TypeScript compiler lowers checked August through LLVM. This repository includes the compiler, managed runtime, CLI, standard capabilities, examples, tests, documentation, two Docker base images, and VS Code extension. Public exports, labeled inputs, checked errors, same-file tests, and generated specifications keep behavior close to the code that implements it.
 
 ## Start a project
 
 Install the CLI once, then create and run an application:
 
 ```sh
-npm install --global @greenpandastudios/aug-cli@next
+npm install --global @greenpandastudios/aug-cli
 aug init hello-august
 cd hello-august
 aug run
@@ -19,7 +19,7 @@ aug run
 
 Requires Node.js 24+ and npm on macOS 14+ ARM64 or GNU/Linux x64/ARM64 with glibc 2.36+. `aug run` downloads its verified LLVM/runtime pack, prepares declared packages, compiles the project, and starts it. Consumers do not install Clang, LLVM, or an SDK. The starter refuses to overwrite a nonempty directory. [Your first project](https://greenpandastudios.github.io/augscript/getting-started) walks through running, testing, and explaining it. See [the August book](docs/learn/index.md), [downloadable example projects](docs/examples/index.md) with code beside compiled specs, and [native packages](docs/native-packages.md).
 
-August 0.23.0 is available through npm's `next` tag and [GitHub Releases](https://github.com/GreenPandaStudios/augscript/releases/tag/v0.23.0). See [implementation status](docs/native-implementation.md) for qualification evidence.
+August 1.0 is available on npm and [GitHub Releases](https://github.com/GreenPandaStudios/augscript/releases/tag/v1.0.0). See [implementation status](docs/native-implementation.md) for qualification evidence.
 
 ## The language
 
@@ -74,4 +74,4 @@ code --install-extension vscode/augscript-1.0.0.vsix --force
 
 Development dependency versions are pinned in both manifests and lockfiles. The extension bundles the same compiler, runtime, guides and native bootstrap. Native commands prepare required libraries automatically; contributors can prewarm all dependencies with `node scripts/bootstrap-native.mjs`. Set `augscript.nativeHome` to this repository's `.aug-native` directory to share it with the bundled compiler.
 
-August is experimental until the 1.0 candidate completes qualification. Cooperative tasks share their current heap and thread. Worker tasks run on OS threads with isolated heaps and copied inputs/results. Developers can create and import source packages with public exports and frozen dependency locks. The [production readiness review](docs/production-readiness.md), [roadmap](docs/roadmap.md), and [gap ledger](docs/web-library-gaps.md) state current limits and release gates.
+August 1.x has a documented source, package, CLI and native ABI compatibility contract. Cooperative tasks share their current heap and thread. Worker tasks run on OS threads with isolated heaps and copied inputs/results. Developers can create and import source packages with public exports and frozen dependency locks. The [production readiness review](docs/production-readiness.md), [roadmap](docs/roadmap.md), and [gap ledger](docs/web-library-gaps.md) state current limits and release gates.

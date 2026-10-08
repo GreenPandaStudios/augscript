@@ -1,6 +1,8 @@
 # Native service boundaries
 
-This guide describes ingestion support in the published [August 0.23.0 preview](https://github.com/GreenPandaStudios/augscript/releases/tag/v0.23.0). A [clean Linux ARM64 install](./qualification/0.23.0/native-ingestion-linux-arm64.json) downloaded the public compiler and native package, compiled these operations through LLVM, and checked their results and cleanup. See [library limits](web-library-gaps.md) for remaining transport and deployment work.
+An ingestion handler needs to authenticate the sender, preserve the wire format and bound database work. August supplies checked operations for these boundaries. The [1.0 qualification](https://github.com/GreenPandaStudios/augscript/actions/runs/37800823512) records native execution and cleanup checks on the supported hosts. Application authorization and retry behavior still need independent tests. See [library limits](web-library-gaps.md) for remaining transport and deployment work.
+
+The earlier [0.23.0 Linux ARM64 check](./qualification/0.23.0/native-ingestion-linux-arm64.json) remains historical evidence for that preview. It started with empty caches and no native development tools.
 
 ## Authenticate before reading the upload
 
@@ -18,7 +20,7 @@ Keep the original JSON text when a receipt hashes the client's bytes. Parsing an
 
 ## Keep PostgreSQL on its worker
 
-The separate [PostgreSQL package repository](https://github.com/GreenPandaStudios/aug-postgres) uses real libpq 18.6 with OpenSSL 3.5.9. Its [v0.1.0 release](https://github.com/GreenPandaStudios/aug-postgres/releases/tag/v0.1.0) is qualified on macOS ARM64 and Debian 12 ARM64 and x86-64. The public Linux ARM64 check starts with empty caches and no native development tools. Create its pool, lease and results inside the worker that uses them. Return copied August data to the handler. A pool has at most 64 sessions and rejects a full lease request immediately. One lease stays on its creating OS thread, so BEGIN, SAVEPOINT, account-filtered SQL and advisory locks use the same connection. Text parameters use PostgreSQL placeholders and explicit casts; bytea parameters use `"\\x" + bytes.hex()`, and bytea results are copied into Bytes. Never concatenate user values into SQL.
+The separate [PostgreSQL package repository](https://github.com/GreenPandaStudios/aug-postgres) uses real libpq 18.6 with OpenSSL 3.5.9. Use its [v0.2.0 package](https://github.com/GreenPandaStudios/aug-postgres/releases/tag/v0.2.0) with August 1.0 on macOS 14+ ARM64 or GNU/Linux ARM64 and x86-64 with glibc 2.36+. The PostgreSQL package remains a preview with the limits described below. Create its pool, lease and results inside the worker that uses them. Return copied August data to the handler. A pool has at most 64 sessions and rejects a full lease request immediately. One lease stays on its creating OS thread, so BEGIN, SAVEPOINT, account-filtered SQL and advisory locks use the same connection. Text parameters use PostgreSQL placeholders and explicit casts; bytea parameters use `"\\x" + bytes.hex()`, and bytea results are copied into Bytes. Never concatenate user values into SQL.
 
 Query time, copied rows and copied result bytes are explicit call inputs. Cancellation and timeout initiate bounded libpq cancellation and discard the connection. Cancelling a query is not proof that the server completed it. An unfinished transaction is rolled back before pool reuse; cleanup failures discard it. Server errors retain SQLSTATE, while messages omit connection strings, parameters and server text. The result-copy budget does not cap libpq's internal wire buffer for a single large field. SQL NULL is checked separately from empty data.
 

@@ -8,13 +8,13 @@ If `aug run` cannot prepare or start a program, its message identifies the faile
 
 When a fix changes a dependency, effect, error, or mutable input, review the caller's contract too. A suggested edit can satisfy a language rule without deciding the right recovery or design for your application. [The book](learn/index.md) includes deliberate mistakes you can check and repair yourself.
 
-## Call inputs (unreleased)
+## Call inputs {#call-inputs-unreleased}
 
 A call-input type error names the public input, its expected type and the value’s actual type. Related locations point to the imported function, constructor input or inherited method declaration; VS Code exposes those links in Problems. A duplicate input points to its first occurrence. JSON preserves these facts in `expected`, `actual` and `related`.
 
 For a misspelled or unlabeled input, check the listed caller labels first. The compiler postpones omitted-input and dependent inference errors until that mapping is valid. A spelling fix can correct a label; missing values and recovery decisions still belong to the application author.
 
-## Interface contracts (unreleased)
+## Interface contracts {#interface-contracts-unreleased}
 
 An implementation must satisfy every inherited interface contract, including when it uses a default method. A mismatch identifies the first differing input, result, ownership, mutation, capability or checked-error fragment and links to the interface declaration. Generic fragments use the substituted types, including explicit capability arguments. When names collide, the fragments include their resolved module origins. JSON retains the same `expected`, `actual` and `related` fields as call diagnostics; VS Code exposes the related locations in Problems.
 
@@ -34,7 +34,7 @@ Choose whether to remove the operation, change the design or deliberately revise
 | CALL | Supply ordinary labels exactly once; resolve inputs are omitted from a call. Inference must be concrete and consistent. |
 | COLLECTION | Empty literals need context. List/Set elements and Map keys/values must fit. Tuple indexes are compile-time constants. |
 | RECORD | Data fields must be deeply immutable. Records cannot retain mutable collections, DI inputs, or ownership; validation cannot replace fields. |
-| LOCATION | Unreleased: call sourceLocation() without inputs or type arguments. Capture at the operation, then pass the location explicitly into a helper. |
+| LOCATION | call sourceLocation() without inputs or type arguments. Capture at the operation, then pass the location explicitly into a helper. |
 | MATCH | Cover null/bool cases and add else for open type domains. Remove duplicate, incompatible, or unreachable cases. |
 | PATTERN | Tuple destructuring needs matching arity and new names in the current scope. |
 | ITERATION | Iterate List, Set, Map, or a homogeneous Tuple; destructure heterogeneous tuples explicitly. |
@@ -44,7 +44,7 @@ Both braces and indentation are accepted. The formatter uses main.yaml preferenc
 
 ## Package installation
 
-`PACKAGE_COMPILER` names a library whose compiler requirement excludes the installed release, or explains an invalid requirement. Select a compatible compiler/package; a frozen lock cannot perform an upgrade. `PACKAGE_LOCK` reports an unsupported lock, changed dependency declarations, another active installer or an interrupted `aug add` that needs review. Use `aug install` to recover a terminated writer. If it names later edits to `main.yaml`, `aug.lock.json` or `.aug-add.json`, inspect those files before retrying. The [package compatibility guide](package-compatibility.md) distinguishes currently published and unreleased behavior.
+`PACKAGE_COMPILER` names a library whose compiler requirement excludes the installed release, or explains an invalid requirement. Select a compatible compiler/package; a frozen lock cannot perform an upgrade. `PACKAGE_LOCK` reports an unsupported lock, changed dependency declarations, another active installer or an interrupted `aug add` that needs review. Use `aug install` to recover a terminated writer. If it names later edits to `main.yaml`, `aug.lock.json` or `.aug-add.json`, inspect those files before retrying. The [package compatibility guide](package-compatibility.md) defines compiler requirements, locks and installation recovery.
 
 ## Modules and interfaces
 
@@ -52,11 +52,11 @@ Both braces and indentation are accepted. The formatter uses main.yaml preferenc
 | --- | --- |
 | PROJECT / MAIN | Supply main.aug at the root. Keep declarations in other files and imports/bindings before startup. |
 | SYNTAX | Use word booleans, initialize blocks, implement/with, and resolve/to. Preview `aug migrate PROJECT`, then use --write or the editor's verified migration fix. |
-| IMPORT / EXPORT | Import each file's dependencies. Cross-folder access needs export.aug. The unreleased internal entries admit explicit sibling imports without exposing the declaration outside the folder. Wildcards import visible local declarations, never internal imports. |
+| IMPORT / EXPORT | Import each file's dependencies. Cross-folder access needs export.aug. The internal entries admit explicit sibling imports without exposing the declaration outside the folder. Wildcards import visible local declarations, never internal imports. |
 | NAME | Correct spelling or import a visible declaration. Quick Fix offers an import when a unique accessible source exists. |
 | PRIVATE | A leading _ confines a declaration/member/module to its scope. Private names cannot be imported or exported. Constructor labels can differ from private storage. |
 | INTERFACE | Classes need implements and matching method types, labels, ownership, errors, and effects. Override conflicting defaults. Records are the immutable-data alternative. |
-| MODULE_SURFACE | Unreleased: an exported signature exposes a type that consumers cannot import. Export its required data or service contract, or keep the implementation internal behind an exported service and explicit composition. Constructor inputs, including resolve inputs, remain construction requirements. |
+| MODULE_SURFACE | an exported signature exposes a type that consumers cannot import. Export its required data or service contract, or keep the implementation internal behind an exported service and explicit composition. Constructor inputs, including resolve inputs, remain construction requirements. |
 | MODULE | An import cycle or forbidden folder dependency violates the module contract. The message includes the cycle or allowed dependencies. |
 | LINT | An optional architectural warning: wildcard imports, public helper growth, dependency fan-out, broad errors, discarded errors, or explicit shared state. |
 
@@ -84,7 +84,7 @@ An own value moves into an own input/field/return. Do not copy it into managed s
 
 Alias tracking includes nested references, call arguments/results, DI identities, branches, and loop re-entry. An exclusive argument cannot overlap another argument or receiver. Quick Fix can wrap a standalone managed mutation in a borrow block when its local access is otherwise legal.
 
-**Unreleased:** conflicting reads, exclusive borrows, moves and call inputs link
+Conflicting reads, exclusive borrows, moves and call inputs link
 to the borrow, transfer or earlier input that blocks access. Task conflicts also
 link to active capture sites, including writes inside an open borrow and cleanup
 of a captured owned local. These are static possibilities: shared origins mean

@@ -1,0 +1,46 @@
+{
+  "format": 1,
+  "host": "linux-x64",
+  "editor": "1.90.0",
+  "compilerMode": "candidate",
+  "baseline": "0.23.0",
+  "rendering": "software",
+  "passed": true,
+  "checks": [
+    {
+      "mode": "clean",
+      "passed": true,
+      "extensionPath": "/tmp/aug-editor-Wubnqq/clean/extensions/augscript.augscript-1.0.0",
+      "language": true,
+      "completion": true,
+      "hover": true,
+      "navigation": true,
+      "unsavedDiagnostics": true,
+      "quickFix": true,
+      "inlayHints": true,
+      "testDiscovery": true,
+      "formatting": true,
+      "setupReport": true,
+      "setupRecovery": true
+    },
+    {
+      "mode": "upgrade",
+      "passed": true,
+      "extensionPath": "/tmp/aug-editor-Wubnqq/upgrade/extensions/augscript.augscript-1.0.0",
+      "language": true,
+      "completion": true,
+      "hover": true,
+      "navigation": true,
+      "unsavedDiagnostics": true,
+      "quickFix": true,
+      "inlayHints": true,
+      "testDiscovery": true,
+      "formatting": true,
+      "setupReport": true,
+      "setupRecovery": true
+    }
+  ],
+  "compiler": "1.0.0",
+  "extension": "1.0.0",
+  "artifactSha256": "e1b35388ae8b5733824b177aeee61ca6e1817ca8fab7d3cb7dbf5781b21dcff8"
+}

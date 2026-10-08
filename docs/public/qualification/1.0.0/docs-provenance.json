@@ -1,0 +1,24 @@
+{
+  "format": 1,
+  "compilerTag": "v1.0.0",
+  "compilerCommit": "9e8be2926e83f551c365f1db1154f0ba2a43c11f",
+  "documentationCommit": "68bb488e91b7f121bc27c0946695869136138d40",
+  "documentationPullRequest": "https://github.com/GreenPandaStudios/augscript/pull/58",
+  "wikiArchive": {
+    "file": "augscript-docs-1.0.0.tar.gz",
+    "sha256": "4ed81de18b72e428ead1ee9268f444daaed5cc8c778740269db653cb2c686ceb",
+    "bytes": 18190477
+  },
+  "qualification": "https://github.com/GreenPandaStudios/augscript/actions/runs/37800823512",
+  "correction": "HTML backlink routes, retained errors anchor and source-menu click targets",
+  "compilerAndClientArchives": "unchanged from the qualified tagged artifacts",
+  "sourceNavigation": {
+    "htmlPages": 460,
+    "backlinks": 3368,
+    "missingRoutesOrAnchors": 0,
+    "highlighterRegressionTests": 9,
+    "browserSingleLink": true,
+    "browserBracesMenu": true
+  },
+  "replacedWikiSha256": "3bb1258940f29f56544943a02665b1f725501921c87e0a62f2068af3368b53bf"
+}

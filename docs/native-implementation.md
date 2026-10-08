@@ -1,6 +1,6 @@
 # LLVM and native package support
 
-August 0.23.0 uses LLVM 23.1.2 by default. It compiles checked execution IR directly to a host executable and downloads a pinned compiler/runtime pack. Consumers need Node.js 24 and a supported OS; they do not install a native compiler or SDK.
+August 1.0 uses LLVM 23.1.2 by default. It compiles checked execution IR directly to a host executable and downloads a pinned compiler/runtime pack. Consumers need Node.js 24 and a supported OS; they do not install a native compiler or SDK.
 
 ## Supported hosts
 
@@ -8,7 +8,7 @@ August 0.23.0 uses LLVM 23.1.2 by default. It compiles checked execution IR dire
 | --- | --- | --- |
 | Apple Silicon | macOS 14 | Verified compiler/runtime pack, source debug information and dSYM. |
 | Linux x86-64 | glibc 2.36 | Verified LLVM/runtime pack and relocatable ELF application bundle. |
-| Linux ARM64 | glibc 2.36 | The same native profile, qualified in CI and on physical DGX Spark. |
+| Linux ARM64 | glibc 2.36 | The same native profile, qualified in CI; the [physical DGX report](dgx-spark.md) retains its separate source and measurements. |
 
 Compiler and native libraries are published through release archives. Installed-CLI tests use public downloads in clean consumer environments without Clang, LLVM, Git, or development headers. Frozen/offline runs, relocated bundles, checked failures, task joins, and resource release are exercised. [Release validation](release-review.md) describes the gates that must repeat for later versions.
 

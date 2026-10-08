@@ -33,15 +33,15 @@ node scripts/publish-release.mjs dist/release --verify-only
 node scripts/publish-extension.mjs dist/release --verify-only
 ```
 
-Choose the reviewed release version before running these maintainer commands. `1.0.0` is the current candidate; running them does not publish it or establish stability. The merge step requires the exact qualified producer archives and manifests for all three hosts under `.aug-build/release-packs`; `release.yml` obtains them before packaging. Update both changelogs and relevant guides, and commit regenerated docs. The final artifact step combines four installable npm tarballs, a VSIX, compiler packs, offline documentation, package metadata and SHA-256 checksums under `dist/release`. It excludes native caches, private credentials and application build output.
+Choose the reviewed release version before running these maintainer commands. `1.0.0` is shown as an example; choose the next reviewed version for a new release. Running these commands does not publish it or establish stability. The merge step requires the exact qualified producer archives and manifests for all three hosts under `.aug-build/release-packs`; `release.yml` obtains them before packaging. Update both changelogs and relevant guides, and commit regenerated docs. The final artifact step combines four installable npm tarballs, a VSIX, compiler packs, offline documentation, package metadata and SHA-256 checksums under `dist/release`. It excludes native caches, private credentials and application build output.
 
-Before tagging 1.0, the exact main commit runs the 30-minute lifecycle profile on macOS and both Linux architectures. Producer jobs allow 150 minutes for the full regression, sanitizer, performance and soak gates. Assembly receives the same execution budget for its regression suite, packaging and native consumer checks. A timeout is incomplete qualification. Public native consumer checks import the exact reviewed repository commits from `native/library-qualification.json`; an unpublished package tag is not substituted for a source identity. The ordinary installer still verifies the source manifest, artifact and lock.
+Before a full release tag, the exact main commit runs the 30-minute lifecycle profile on macOS and both Linux architectures. Producer jobs allow 150 minutes for the full regression, sanitizer, performance and soak gates. Assembly receives the same execution budget for its regression suite, packaging and native consumer checks. A timeout is incomplete qualification. Public native consumer checks import the exact reviewed repository commits from `native/library-qualification.json`; an unpublished package tag is not substituted for a source identity. The ordinary installer still verifies the source manifest, artifact and lock.
 
 Before cache tests, maintainers build the current host’s sealed compiler archive and run `prepare-qualified-test-tools.mjs --local-compiler`. That explicit transport checks the archive against the source-owned SHA-256 even when a verified cache already exists. The normal installer then checks the complete file manifest and tool identities. A missing, modified, oversized or linked archive fails; the command does not fall back to a public download. Omit the flag to check the published compiler transport. CI and release preparation use the local transport while the candidate remains unpublished.
 
 ## Installed CLI and editor gates
 
-The unreleased distribution gates qualify the actual install archives. `npm run test:editor` installs the candidate VSIX in an empty profile, then in another profile containing the checksum-pinned published preview. Both runs use a real VS Code extension host and exercise language recognition, labeled completion, Javadoc hover, import navigation, unsaved diagnostics, applied quick fixes, inferred hints, test discovery, formatting, and setup recovery. They activate the installed extension, not the source development extension.
+The distribution gates qualify the actual install archives. `npm run test:editor` installs the candidate VSIX in an empty profile, then in another profile containing the checksum-pinned published preview. Both runs use a real VS Code extension host and exercise language recognition, labeled completion, Javadoc hover, import navigation, unsaved diagnostics, applied quick fixes, inferred hints, test discovery, formatting, and setup recovery. They activate the installed extension, not the source development extension.
 
 `editor-qualification.yml` repeats these checks on macOS 14 ARM64 and Linux x86-64/ARM64, using VS Code 1.90.0 and the pinned current editor in `scripts/distribution-inputs.json`. Keep that current pin reviewed and aligned with the workflow matrix. Linux uses a virtual display. Full and editor-only release preparation feed their exact reviewed VSIX into this matrix; a failed editor job blocks the draft. Retained-compiler patches check the older compiler's actual features and report an unavailable doctor command rather than claiming it ran.
 
@@ -67,7 +67,7 @@ A release tag retains its original workflows. A retry must preserve the reviewed
 
 ## npm publication
 
-The LLVM preview release builds official pinned LLVM tools and the August runtime
+The release builds official pinned LLVM tools and the August runtime
 on macOS ARM64, Linux x86-64 and Linux ARM64 before packaging. Linux producers
 use the pinned Debian 12 maintainer image. `scripts/merge-compiler-packs.mjs`
 rejects missing, duplicate, stale or modified platform inputs, then records all
@@ -105,7 +105,7 @@ The CLI is published last because its dependencies use exact matching versions. 
 
 ## Create a qualified version tag
 
-The candidate workflow **Create qualified release tag** accepts a numeric tag and the reviewed full main commit SHA. It verifies the checkout and all full-release package versions. The latest push runs of CI, GNU/Linux qualification and installed-editor qualification must succeed for that SHA. Main push qualification includes the three-host 30-minute soak; truncated or missing evidence rejects the request.
+The workflow **Create qualified release tag** accepts a numeric tag and the reviewed full main commit SHA. It verifies the checkout and all full-release package versions. The latest push runs of CI, GNU/Linux qualification and installed-editor qualification must succeed for that SHA. Main push qualification includes the three-host 30-minute soak; truncated or missing evidence rejects the request.
 
 Immediately before creating or accepting a tag, the workflow checks main again. It creates one lightweight tag and verifies its identity. Retries retain a matching tag and reject a different one. It never moves a tag or publishes a release.
 
@@ -115,7 +115,7 @@ GitHub does not start another workflow from a tag written with its workflow toke
 
 ## Stable release review
 
-A `1.0.0` version is an intended compatibility promise, not qualification evidence. Before tagging, close every [roadmap gate](roadmap.md), update the support and compatibility pages, review dependency notices and advisories, and obtain independent review of the final source. The release pipeline repeats language conformance, the 30-minute runtime soak, worker sanitizers, source debugger checks, safety gyms, performance limits, public native imports, relocation, installed CLI upgrades and both supported editor versions on all three targets. A failed job stops draft creation.
+A `1.0.0` version is an intended compatibility promise, not qualification evidence. Before tagging, complete the [required release checks](#verify-and-create-artifacts), update the support and compatibility pages, review dependency notices and advisories, and obtain independent review of the final source. The release pipeline repeats language conformance, the 30-minute runtime soak, worker sanitizers, source debugger checks, safety gyms, performance limits, public native imports, relocation, installed CLI upgrades and both supported editor versions on all three targets. A failed job stops draft creation.
 
 Review the exact compiler, npm, VSIX and documentation archives and retained qualification reports before publishing the draft.
 
@@ -127,7 +127,7 @@ Publishing a stable draft starts verified npm publication to `latest`; publishin
 
 ## Editor-only patches
 
-Use `node scripts/version.mjs --extension 0.23.1` to change the extension version while retaining the compiler version in `augustCompilerVersion`. Update its changelog, run the contributor checks, and commit the change. Create an `extension-v0.23.1` tag at that reviewed commit and push it. **Prepare extension patch** rejects changes to compiler, runtime, CLI manifest, or bootstrap inputs compared with the retained compiler tag.
+Choose an unused extension patch version. For a patch retaining compiler 1.0.0, use `node scripts/version.mjs --extension 1.0.1`; the compiler version stays in `augustCompilerVersion`. Update its changelog, run the contributor checks, and commit the change. Create an `extension-v1.0.1` tag at that reviewed commit and push it. **Prepare extension patch** rejects changes to compiler, runtime, CLI manifest, or bootstrap inputs compared with the retained compiler tag.
 
 The workflow downloads the published compiler's reviewed npm archives and verifies their checksums and manifests. It bundles that exact CLI archive, its matching public standard-library archive, and locked JavaScript dependencies. It compares every compiler file in the VSIX with those verified inputs. It checks editor regressions, documentation, installed npm packages and both installed-VSIX workflows on all three hosts, then creates a draft containing the VSIX, checksums, and `extension-release.json`. The report records both versions, both source commits, and the compiler and VSIX hashes. It builds no native compiler or library artifacts.
 
@@ -168,9 +168,9 @@ Enable GitHub Pages with **GitHub Actions** as its publishing source. `docs.yml`
 
 ## Current limits
 
-August is experimental. The published 0.23.0 preview targets macOS 14+ ARM64 and GNU/Linux x86-64/ARM64 with glibc 2.36+; other platforms are unsupported. The 0.23.0 producer and clean-consumer jobs passed on all three hosts, followed by a public Linux ARM64 cold install. Future publication requires the same gates described above. The 0.23.0 extension is published in Marketplace and on GitHub Releases. Marketplace OIDC uploads remain blocked by its service, as described above. User libraries use ordinary public Git repositories, local folders, or npm archives. Native library repositories publish prebuilt artifacts. Stabilizing the external adapter ABI is a 1.0 gate. See [the gap ledger](web-library-gaps.md) and [performance assessment](performance.md).
+The supported hosts are macOS 14+ ARM64 and GNU/Linux x86-64/ARM64 with glibc 2.36+; other platforms remain unsupported. Every full release requires the gates described above. User libraries use ordinary public Git repositories, local folders or npm archives, and native library repositories publish prebuilt artifacts. The [native ABI](native-abi.md) defines the supported adapter contract. Marketplace OIDC previously failed at the service boundary; verify its current response and use a reviewed manual upload when necessary. See [release evidence](release-review.md), [library limits](web-library-gaps.md) and [performance](performance.md).
 
-## Native preview qualification
+## Native package qualification {#native-preview-qualification}
 
 Before publishing a compiler with native package support, build its LLVM pack
 before the npm archives and extension. `scripts/release-artifacts.mjs` checks

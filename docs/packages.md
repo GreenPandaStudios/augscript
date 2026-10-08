@@ -7,22 +7,22 @@ August libraries are source folders with an `export.aug` file. An application im
 Install the CLI once:
 
 ```sh
-npm install --global @greenpandastudios/aug-cli@next
+npm install --global @greenpandastudios/aug-cli
 aug init hello-august
 cd hello-august
 aug run
 ```
 
-August 0.23.0 needs Node.js 24 or later and npm on macOS 14+ ARM64 or GNU/Linux x64/ARM64 with glibc 2.36+. August downloads a verified LLVM/runtime pack; native package consumers do not install a compiler or SDK. GitHub repository imports use the CLI's HTTPS transport without Git. Other Git servers require a local Git client. [Docker](docker.md) and [Dev Containers](dev-containers.md) provide a Linux workspace.
+August 1.0 needs Node.js 24 or later and npm on macOS 14+ ARM64 or GNU/Linux x64/ARM64 with glibc 2.36+. August downloads a verified LLVM/runtime pack; native package consumers do not install a compiler or SDK. GitHub repository imports use the CLI's HTTPS transport without Git. Other Git servers require a local Git client. [Docker](docker.md) and [Dev Containers](dev-containers.md) provide a Linux workspace.
 
 `aug run` finds `main.aug`, installs source dependencies declared by imports or `main.yaml`, checks the code, prepares the native libraries it needs, and compiles and starts the executable. Later runs reuse those dependencies. `aug check` and `aug spec` read the installed snapshot without fetching packages. Use `aug install` before those commands in a fresh project.
 
 To use npx instead of a global installation:
 
 ```sh
-npx @greenpandastudios/aug-cli@next init another-app
+npx @greenpandastudios/aug-cli init another-app
 cd another-app
-npx @greenpandastudios/aug-cli@next run
+npx @greenpandastudios/aug-cli run
 ```
 
 The starters include `AGENTS.md` with instructions for coding agents: read the neighboring specs, keep tests beside the code, and check changes. For a service, [start the weather API](weather-api.md) with `init weather --template weather`.
@@ -55,7 +55,7 @@ Imported names must appear in that folder's `export.aug`. An exported child fold
 
 ## Official libraries
 
-The compiler supplies `august.io` for console, file, and argument capabilities. **Unreleased:** it also supplies [bounded integer ranges](reference.md#bounded-integer-ranges) through `august.collections` and [checked mathematics](reference.md#checked-mathematics-unreleased) through `august.math`, and [typed error context](guides/add-error-context.md) through `august.errors`. JSON, time, in-memory stores, web helpers, and cryptography are optional source packages. Add only what your application uses:
+The compiler supplies `august.io` for console, file, and argument capabilities. It also supplies [bounded integer ranges](reference.md#bounded-integer-ranges) through `august.collections` and [checked mathematics](reference.md#checked-mathematics-unreleased) through `august.math`, and [typed error context](guides/add-error-context.md) through `august.errors`. JSON, time, in-memory stores, web helpers, and cryptography are optional source packages. Add only what your application uses:
 
 | Alias | Repository folder | API |
 | --- | --- | --- |
@@ -83,13 +83,13 @@ The starter exports `add` from `src/arithmetic.aug`, keeps its test in that file
 
 For a library you write by hand, `export.aug` in the root or a `src` folder is enough. `aug-package.json` is optional; use it when you want to name a package, state its version and compiler, choose another source folder, or declare dependency aliases. npm metadata is only needed for npm distribution.
 
-Commit the source, export file, tests, comments, and dependency lock to your Git repository. Include a license, run `aug check` and `aug test`, then publish a release tag. Other projects can import your repository URL with `#v0.1.0`. The unreleased [publishing guide](package-publishing.md) adds checked release metadata and consumer CI generation.
+Commit the source, export file, tests, comments, and dependency lock to your Git repository. Include a license, run `aug check` and `aug test`, then publish a release tag. Other projects can import your repository URL with `#v0.1.0`. The [publishing guide](package-publishing.md) adds checked release metadata and consumer CI generation.
 
 ## Compiler compatibility
 
-**Unreleased:** library starters direct coding agents to `src/export.aug`, its declarations and neighboring compiled specs. Application starters continue to start in `main.aug`.
+Library starters direct coding agents to `src/export.aug`, its declarations and neighboring compiled specs. Application starters continue to start in `main.aug`.
 
-A manifest names the compiler that can check the library. Published 0.23.0 requires an exact version. **Unreleased:** the next compiler also accepts bounded requirements such as `~0.23.0` and `^1.0.0`; `aug package init` still starts with an exact version. Authors must test the releases they claim to support. See [package compatibility](package-compatibility.md) for the requirement grammar, lock format and upgrade procedure.
+A manifest names the compiler that can check the library. August 1.0 accepts exact versions and bounded requirements such as `~1.0.0` and `^1.0.0`; `aug package init` starts with an exact version. Authors must test the releases they claim to support. See [package compatibility](package-compatibility.md) for the requirement grammar, lock format and upgrade procedure.
 
 ## Dependencies between libraries
 
@@ -115,11 +115,11 @@ aug test
 aug build
 ```
 
-A frozen install restores the recorded revisions and rejects changed source contents. `aug install --update` deliberately selects current revisions again. A normal install preserves a matching lock. The unreleased compiler also preserves existing repository commits when the compiler changes or a dependency is added; `--update` is the explicit revision update. `aug run --offline` and `aug install --frozen --offline` use previously cached sources and native dependencies; an uncached input produces an error explaining how to prepare it online.
+A frozen install restores the recorded revisions and rejects changed source contents. `aug install --update` deliberately selects current revisions again. A normal install preserves a matching lock. The compiler also preserves existing repository commits when the compiler changes or a dependency is added; `--update` is the explicit revision update. `aug run --offline` and `aug install --frozen --offline` use previously cached sources and native dependencies; an uncached input produces an error explaining how to prepare it online.
 
 Installation reads Git source blobs without running hooks and extracts registry archives without running lifecycle scripts. Application code can still call native adapters and unsafe operations; review those before running a dependency.
 
-## Preview a dependency update (unreleased)
+## Preview a dependency update {#preview-a-dependency-update-unreleased}
 
 Run `aug update --preview` before accepting new dependency revisions. It resolves the requested repositories into a temporary source graph, compares their public contracts and explanations, and checks your current application and same-file test bodies against the proposed dependencies. The accepted lock and installed source snapshots stay in place. Normal source transport caches may change; no native artifacts are downloaded and no dependency code or tests run.
 
@@ -150,16 +150,16 @@ Install AugScript from the [VS Code Marketplace](https://marketplace.visualstudi
 
 The CLI tarball requires its matching core stdlib package. npm normally obtains it automatically. For an archive installation, install the matching CLI and stdlib tarballs together; optional web and crypto packages are regular source libraries.
 
-Verified LLVM packs and native artifacts use `~/.cache/augscript/native-artifacts`, keyed by their archive hashes. `AUG_NATIVE_ARTIFACT_CACHE` selects another cache. Source, compiler, runtime, and platform selections remain in `aug.lock.json`. The unreleased `aug doctor --json` reports source checks, selected native artifacts, verified cached bytes and separate offline/frozen readiness without preparing anything. The C migration reference uses the older `AUG_NATIVE_HOME` source-build cache. The [native package guide](native-packages.md) covers ownership, platform requirements, and publishing; [release process](releasing.md) covers the compiler distribution.
+Verified LLVM packs and native artifacts use `~/.cache/augscript/native-artifacts`, keyed by their archive hashes. `AUG_NATIVE_ARTIFACT_CACHE` selects another cache. Source, compiler, runtime, and platform selections remain in `aug.lock.json`. The `aug doctor --json` reports source checks, selected native artifacts, verified cached bytes and separate offline/frozen readiness without preparing anything. The C migration reference uses the older `AUG_NATIVE_HOME` source-build cache. The [native package guide](native-packages.md) covers ownership, platform requirements, and publishing; [release process](releasing.md) covers the compiler distribution.
 
-The unreleased `aug cache --json` adds separate cache sizes and accepted source/native identities to the offline readiness report. `aug cache prune` previews reclaimable test compilation; `--write` clears verified idle entries. Source snapshots, repository transport and shared native artifacts are retained. See [cache management](tooling.md#inspect-and-clear-caches) for location settings and pruning limits.
+`aug cache --json` adds separate cache sizes and accepted source/native identities to the offline readiness report. `aug cache prune` previews reclaimable test compilation; `--write` clears verified idle entries. Source snapshots, repository transport and shared native artifacts are retained. See [cache management](tooling.md#inspect-and-clear-caches) for location settings and pruning limits.
 
-## Automatic aliases (unreleased)
+## Automatic aliases {#automatic-aliases-unreleased}
 
 `aug add URL` derives a short import alias from a repository or package name. For example, an `aug-sqlite` repository becomes `sqlite`; `--as database` selects a different spelling. A local package uses its manifest name. The lock still records the complete repository identity and exact revision. If the derived name is already assigned to another package, August stops and asks for `--as NAME` before changing configuration. It never replaces a different dependency merely because their names match.
 
 
-## Inspect a dependency or prepare a library (unreleased)
+## Inspect a dependency or prepare a library {#inspect-a-dependency-or-prepare-a-library-unreleased}
 
 `aug dependencies PROJECT` explains the installed graph. It shows each alias, package identity, source digest, locked Git commit, importing file and public names. Transitive aliases remain in their owner's scope. Native selections include the target, artifact identity and checksum. `--json` gives the complete structured report. This command verifies installed source bytes without fetching, updating a lock, or running package code; locked native metadata does not claim that an artifact is already cached.
 
@@ -167,14 +167,14 @@ Before publishing a source library, run `aug package check DIRECTORY`. It checks
 
 Use `aug package diff BEFORE AFTER` to compare two local package revisions that already have their dependencies installed. The report follows each `export.aug` boundary and includes labels, result types, defaults, checked errors, effects, ownership and native requirements. The contract comparison omits private storage and bodies. Changed explanations are reported separately and can describe those implementation details within an exported declaration. `--json` retains both sides of each changed contract. This command does not fetch releases or decide whether a public change is acceptable to consumers.
 
-## Find a package by task (unreleased)
+## Find a package by task {#find-a-package-by-task-unreleased}
 
 Use `aug libraries sql`, `aug libraries compression` or `aug libraries crypto` to search the curated [library catalog](library-catalog.md). Each result includes its import, installation command, platform requirements, license notes, ownership and test links. Add `--json` for native artifact metadata and exact source identities. Search works offline and changes no project or cache.
 
 The catalog is a list of known packages. You can import any public repository that satisfies August’s package conventions. `aug add` still resolves the repository and records its selected commit; native installation still verifies its descriptor, artifact checksums and supported host.
 
 
-## Review a package change (unreleased)
+## Review a package change {#review-a-package-change-unreleased}
 
 Run `aug package diff BEFORE AFTER` with two local package folders. Both revisions must check, including same-file test bodies. The report follows `export.aug`, expands inherited methods and compares labeled inputs, defaults, results, checked errors, capabilities, mutation, ownership, generic constraints and native requirements. It retains resolved type and capability identities, so two repositories exporting a type named `User` remain different types. Private storage names, source positions and the package’s own version number do not create contract changes by themselves.
 

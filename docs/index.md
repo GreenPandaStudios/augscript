@@ -40,14 +40,14 @@ This is the normal reading path for both developers and coding agents. It lets y
 
 All these views come from the checked program. The explanation describes what the implementation does; your requirements and tests establish whether that behavior is right. Native implementations and runtime interface choices remain visible boundaries.
 
-The diagram views and expanded reading workflow are being prepared for 1.0 and are **unreleased**. Try the [greeting project's overview](examples/hello/diagrams/index.md), then explore the larger [login application](examples/oidc-login/diagrams/index.md). [Understand a project](guides/understand-a-project.md) shows how to move between the views.
+Try the [greeting project's overview](examples/hello/diagrams/index.md), then explore the larger [login application](examples/oidc-login/diagrams/index.md). [Understand a project](guides/understand-a-project.md) shows how to move between the views.
 
 <!--@include: ./.vitepress/home-performance.md-->
 
-## Try the public preview
+## Try August {#try-the-public-preview}
 
-August 0.23.0 is available now. You need Node.js 24 and macOS 14+ on Apple Silicon or GNU/Linux x86-64/ARM64 with glibc 2.36+. August obtains its native compiler and libraries automatically; you do not install LLVM or Clang.
+August 1.0 is available now. You need Node.js 24 and macOS 14+ on Apple Silicon or GNU/Linux x86-64/ARM64 with glibc 2.36+. August obtains its native compiler and libraries automatically; you do not install LLVM or Clang.
 
 Start with [your first project](getting-started.md), then follow [the August book](learn/index.md). The [project gallery](examples/index.md) shows formatted code beside its actual compiled spec. Use the [task guides](guides/index.md) for packages, HTTP, tests, and deployment.
 
-The language is experimental, with no stable 1.0 compatibility promise yet. Read [supported platforms](compatibility.md), [production readiness](production-readiness.md), and the [roadmap to 1.0](roadmap.md) before choosing it for a deployment. Source and issues are on [GitHub](https://github.com/GreenPandaStudios/augscript).
+The [August 1.x compatibility contract](compatibility.md) covers source behavior, CLI and package formats, and the public native ABI. Read [supported platforms](compatibility.md), [production readiness](production-readiness.md), and the [roadmap](roadmap.md) before choosing it for a deployment. Source and issues are on [GitHub](https://github.com/GreenPandaStudios/augscript).
