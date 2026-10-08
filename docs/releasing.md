@@ -123,7 +123,7 @@ Assembly also publishes the exact `compiler-packs.json` catalog under `SHA256SUM
 
 The manual **Extract release review files** workflow accepts a successful Prepare release run, its immutable tag and the same full source SHA. It checks the run identity and tag, downloads the existing combined artifact, and runs both publication verifiers before copying its npm archives, VSIX, offline wiki, catalogs and checksums into a compact review artifact. This supports review tools with bounded downloads. The compiler archives remain in the original qualified artifact and release; their checksums remain in the copied manifest.
 
-Publishing a stable draft starts verified npm publication to `latest`; publishing a preview draft starts publication to `next`. Keep the original tag and artifacts for retries. Source changes require a new version and another qualification run. GitHub's latest-release designation is a separate review choice; preparation does not move it.
+Publishing a stable draft starts verified npm publication to `latest`; publishing a preview draft starts publication to `next`. Keep the original tag and artifacts for retries. Compiler and runtime source changes require a new version and another qualification run. GitHub's latest-release designation is a separate review choice; preparation does not move it.
 
 ## Editor-only patches
 
@@ -240,3 +240,5 @@ npm run test:docker
 ```
 
 These local names are contributor test inputs. Applications use the two published bases in the [Docker guide](docker.md).
+
+A documentation-only correction before publication can rebuild the offline wiki from a separately reviewed documentation revision. Record the immutable compiler tag and full documentation commit in `docs-provenance.json`, then update the wiki archive checksum in `SHA256SUMS`. Keep the reviewed compiler, npm and VSIX bytes. Review the corrected wiki routes, notices and archive before replacing the draft attachments. The live wiki follows its own current main revision.
