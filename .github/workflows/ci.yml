@@ -138,7 +138,7 @@ jobs:
         run: |
           node scripts/run-gyms.mjs --profile full --vectors 256
           node scripts/benchmark-kernels.mjs --iterations 30
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         if: always()
         with:
           name: llvm-macos-performance
@@ -153,7 +153,7 @@ jobs:
           if-no-files-found: error
       - run: npm run package:packages
       - run: npm run package:extension
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: native-consumer-inputs
           include-hidden-files: true
@@ -163,7 +163,7 @@ jobs:
             .aug-build/aug-llvm-macos-arm64.tar.gz
             .aug-build/compiler-pack-darwin-arm64.json
           if-no-files-found: error
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: vscode-preview
           path: vscode/*.vsix
@@ -200,7 +200,7 @@ jobs:
           node scripts/qualify-native-consumers.mjs --local-compiler
           node scripts/qualify-workers.mjs --local-compiler
           node scripts/qualify-cli-upgrade.mjs --local-compiler
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: native-consumer-macos14-evidence
           include-hidden-files: true
