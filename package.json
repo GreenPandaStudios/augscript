@@ -47,7 +47,7 @@
     "@types/markdown-it-container": "4.0.1",
     "@types/node": "26.6.3",
     "@vscode/test-electron": "3.1.0",
-    "jsdom": "26.1.0",
+    "jsdom": "30.1.2",
     "markdown-it-container": "4.0.0",
     "mermaid": "12.1.0",
     "minizlib": "3.1.0",
